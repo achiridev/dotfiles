@@ -1,0 +1,179 @@
+#!/bin/bash
+# battery-mode — Script de modos de ahorro de batería
+# Uso: battery-mode --off | --low | --high | --gaming
+# Requiere: envycontrol, auto-cpufreq, tlp, cpupower, swayidle
+
+MODE=$1
+
+notify() {
+    notify-send "🔋 Modo batería" "$1" --urgency=normal 2>/dev/null || echo "$1"
+}
+
+# Detectar interfaz WiFi dinámicamente
+WIFI_IFACE=$(iw dev 2>/dev/null | awk '/Interface/{print $2}' | head -1)
+# Capturar variables de sesión Wayland antes de cualquier sudo
+WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-1}"
+DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/$(id -u)/bus}"
+XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+
+kill_swayidle() {
+    pkill -x swayidle 2>/dev/null
+    sleep 0.3
+}
+
+# Reinicia los servicios de energía y espera confirmación antes de continuar.
+# Sin este wait, --force falla porque el daemon no está listo aún.
+restart_power_services() {
+    sudo systemctl start tlp 2>/dev/null
+    sudo systemctl start auto-cpufreq 2>/dev/null
+    local retries=5
+    while [ $retries -gt 0 ]; do
+        if systemctl is-active --quiet auto-cpufreq; then
+            return 0
+        fi
+        sleep 0.5
+        retries=$((retries - 1))
+    done
+    echo "[battery-mode] ADVERTENCIA: auto-cpufreq no pudo iniciar" >&2
+    return 1
+}
+
+case "$MODE" in
+  --off)
+    echo "[battery-mode] Restaurando modo NORMAL..."
+    kill_swayidle
+
+    # GPU: híbrido con RTD3
+    sudo envycontrol -s hybrid --rtd3
+
+    # Reiniciar servicios (por si --gaming los detuvo) y verificar
+    if restart_power_services; then
+        sudo auto-cpufreq --force=reset
+    else
+        # Fallback: resetear governor manualmente si auto-cpufreq no arrancó
+        sudo cpupower frequency-set -g schedutil 2>/dev/null
+    fi
+
+    # Turbo: restaurar
+    echo 0 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo > /dev/null 2>&1
+
+    # TLP: perfil CA
+    sudo tlp ac 2>/dev/null
+
+    # WiFi: sin ahorro en modo normal
+    [ -n "$WIFI_IFACE" ] && sudo iw dev "$WIFI_IFACE" set power_save off 2>/dev/null
+
+    notify "Modo normal activado — reinicia para aplicar cambios de GPU"
+    ;;
+
+  --low)
+    echo "[battery-mode] Activando modo AHORRO BAJO..."
+    kill_swayidle
+
+    # Reiniciar servicios y verificar
+    if restart_power_services; then
+        sudo auto-cpufreq --force=powersave
+    else
+        sudo cpupower frequency-set -g powersave 2>/dev/null
+    fi
+
+    # TLP: perfil batería
+    sudo tlp bat 2>/dev/null
+
+    # WiFi powersave
+    [ -n "$WIFI_IFACE" ] && sudo iw dev "$WIFI_IFACE" set power_save on 2>/dev/null
+
+    notify "Modo ahorro bajo activado ✓ (sin reboot)"
+    ;;
+
+  --high)
+    echo "[battery-mode] Activando modo AHORRO MÁXIMO..."
+
+    # GPU: integrado (requiere reboot)
+    CURRENT_MODE=$(envycontrol --query 2>/dev/null)
+    if [ "$CURRENT_MODE" != "integrated" ]; then
+        echo "⚠ Cambiando a modo integrado (requiere reboot)"
+        sudo envycontrol -s integrated
+        NEEDS_REBOOT=1
+    fi
+
+    # Reiniciar servicios y verificar
+    if restart_power_services; then
+        sudo auto-cpufreq --force=powersave
+    else
+        sudo cpupower frequency-set -g powersave 2>/dev/null
+    fi
+
+    # Turbo off
+    echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo > /dev/null 2>&1
+
+    # TLP: perfil batería
+    sudo tlp bat 2>/dev/null
+
+    # WiFi powersave
+    [ -n "$WIFI_IFACE" ] && sudo iw dev "$WIFI_IFACE" set power_save on 2>/dev/null
+
+    # Bluetooth off
+    rfkill block bluetooth 2>/dev/null
+
+    # swayidle: apagar pantalla agresivo
+    kill_swayidle
+    swayidle -w timeout 60 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on' &
+
+    if [ "$NEEDS_REBOOT" = "1" ]; then
+        notify "Modo ahorro máximo activado — REINICIA para apagar la NVIDIA"
+    else
+        notify "Modo ahorro máximo activado ✓"
+    fi
+    ;;
+
+  --gaming)
+    echo "[battery-mode] Activando modo GAMING..."
+    kill_swayidle
+
+    # Detener servicios que limitan rendimiento
+    sudo systemctl stop auto-cpufreq 2>/dev/null || true
+    sudo systemctl stop tlp 2>/dev/null || true
+
+    # CPU: governor performance (sin depender del daemon)
+    sudo cpupower frequency-set -g performance
+
+    # Turbo on
+    echo 0 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo > /dev/null 2>&1
+
+    # GPU: NVIDIA dedicada (requiere reboot)
+    CURRENT_MODE=$(envycontrol --query 2>/dev/null)
+    if [ "$CURRENT_MODE" != "nvidia" ]; then
+        echo "⚠ Cambiando a modo NVIDIA (requiere reboot)"
+        sudo envycontrol -s nvidia
+        NEEDS_REBOOT=1
+    fi
+
+    # Bluetooth y WiFi: sin ahorro
+    rfkill unblock bluetooth 2>/dev/null
+    [ -n "$WIFI_IFACE" ] && sudo iw dev "$WIFI_IFACE" set power_save off 2>/dev/null
+
+    if [ "$NEEDS_REBOOT" = "1" ]; then
+        notify "Modo gaming activado — REINICIA para usar la GPU dedicada"
+    else
+        notify "Modo gaming activado 🚀"
+    fi
+    ;;
+
+  *)
+    echo "Uso: battery-mode --off | --low | --high | --gaming"
+    echo ""
+    echo "  --off    Modo normal  (híbrido RTD3, CPU schedutil, turbo auto)"
+    echo "  --low    Ahorro bajo  (CPU powersave, WiFi powersave, sin reboot)"
+    echo "  --high   Ahorro máx.  (NVIDIA off, turbo off, pantalla agresiva)"
+    echo "  --gaming Gaming        (rendimiento máximo, GPU dedicada)"
+    echo ""
+    echo "Estado actual:"
+    echo "  GPU:       $(envycontrol --query 2>/dev/null || echo 'no disponible')"
+    echo "  Governor:  $(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null || echo 'no disponible')"
+    echo "  Turbo:     $(cat /sys/devices/system/cpu/intel_pstate/no_turbo 2>/dev/null | grep -q 1 && echo 'OFF' || echo 'ON')"
+    echo "  TLP:       $(systemctl is-active tlp 2>/dev/null)"
+    echo "  auto-cpufreq: $(systemctl is-active auto-cpufreq 2>/dev/null)"
+    echo "  WiFi:      ${WIFI_IFACE:-'no detectada'}"
+    ;;
+esac
