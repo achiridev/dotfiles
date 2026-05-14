@@ -1,0 +1,10 @@
+[user]
+	name = achiridev
+	email = cooperbrawl@gmail.com
+[alias]
+	tree = log --graph --decorate --all --oneline
+	timeline = log --decorate --all --oneline --reverse
+[init]
+	defaultBranch = main
+[core]
+	editor = code --wait
