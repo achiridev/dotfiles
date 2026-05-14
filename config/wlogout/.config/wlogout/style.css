@@ -1,0 +1,122 @@
+/* =============================================
+   WLOGOUT — style.css
+   Iconos: PNG desde /usr/share/wlogout/icons/
+   Paleta: consistente con waybar
+   ============================================= */
+
+* {
+    font-family: "JetBrainsMono Nerd Font";
+    background-image: none;
+}
+
+window {
+    background-color: rgba(12, 8, 22, 0.50);
+}
+
+/* ── Botón base ── */
+button {
+    color: #cdd6f4;
+    background-color: rgba(22, 14, 40, 0.80);
+    border: 1px solid rgba(157, 76, 255, 0.40);
+    border-radius: 18px;
+    font-size: 15pt;
+    font-weight: bold;
+    background-repeat: no-repeat;
+    background-position: center 30%;
+    background-size: 60px 60px;
+    padding-top: 100px;
+    transition: background-color 0.2s ease,
+                border-color 0.2s ease,
+                box-shadow 0.2s ease,
+                color 0.2s ease;
+    margin: 10px;
+    padding-bottom: 20px;
+}
+
+button:hover {
+    background-color: rgba(80, 40, 150, 0.60);
+    border-color: rgba(180, 100, 255, 0.90);
+    color: #ffffff;
+    box-shadow: 0 0 28px rgba(157, 76, 255, 0.45),
+                inset 0 0 12px rgba(157, 76, 255, 0.12);
+}
+
+button:active {
+    background-color: rgba(120, 60, 200, 0.75);
+    border-color: #cba6f7;
+    outline: none;
+}
+
+/* ── Botones individuales — color propio por acción ── */
+
+#lock {
+    background-image: url("/usr/share/wlogout/icons/lock.png");
+    color: #a8c0ff;
+    border-color: rgba(100, 140, 255, 0.50);
+}
+#lock:hover {
+    background-color: rgba(50, 80, 190, 0.60);
+    border-color: rgba(138, 180, 255, 0.95);
+    box-shadow: 0 0 28px rgba(100, 140, 255, 0.40),
+                inset 0 0 12px rgba(100, 140, 255, 0.10);
+}
+
+#logout {
+    background-image: url("/usr/share/wlogout/icons/logout.png");
+    color: #cba6f7;
+    border-color: rgba(157, 76, 255, 0.55);
+}
+#logout:hover {
+    background-color: rgba(90, 40, 180, 0.60);
+    border-color: rgba(200, 150, 255, 0.95);
+    box-shadow: 0 0 28px rgba(157, 76, 255, 0.45),
+                inset 0 0 12px rgba(157, 76, 255, 0.12);
+}
+
+#suspend {
+    background-image: url("/usr/share/wlogout/icons/suspend.png");
+    color: #94e2d5;
+    border-color: rgba(100, 210, 195, 0.45);
+}
+#suspend:hover {
+    background-color: rgba(30, 120, 110, 0.55);
+    border-color: rgba(148, 226, 213, 0.95);
+    box-shadow: 0 0 28px rgba(100, 210, 190, 0.35),
+                inset 0 0 12px rgba(100, 210, 190, 0.10);
+}
+
+#hibernate {
+    background-image: url("/usr/share/wlogout/icons/hibernate.png");
+    color: #89b4fa;
+    border-color: rgba(90, 160, 240, 0.45);
+}
+#hibernate:hover {
+    background-color: rgba(30, 70, 160, 0.55);
+    border-color: rgba(137, 180, 250, 0.95);
+    box-shadow: 0 0 28px rgba(90, 160, 240, 0.35),
+                inset 0 0 12px rgba(90, 160, 240, 0.10);
+}
+
+#reboot {
+    background-image: url("/usr/share/wlogout/icons/reboot.png");
+    color: #f9a208;
+    border-color: rgba(240, 160, 20, 0.45);
+}
+#reboot:hover {
+    background-color: rgba(130, 70, 0, 0.55);
+    border-color: rgba(249, 162, 8, 0.95);
+    box-shadow: 0 0 28px rgba(240, 155, 10, 0.40),
+                inset 0 0 12px rgba(240, 155, 10, 0.10);
+}
+
+#shutdown {
+    background-image: url("/usr/share/wlogout/icons/shutdown.png");
+    color: #f38ba8;
+    border-color: rgba(235, 100, 130, 0.45);
+}
+#shutdown:hover {
+    background-color: rgba(130, 20, 40, 0.60);
+    border-color: rgba(243, 139, 168, 0.95);
+    box-shadow: 0 0 28px rgba(235, 100, 130, 0.40),
+                inset 0 0 12px rgba(235, 100, 130, 0.10);
+}

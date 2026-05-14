@@ -1,0 +1,15 @@
+configuration {
+    modi:               "drun,run,window";
+    font:               "JetBrains Mono Nerd Font 11";
+    show-icons:         true;
+    icon-theme:         "Papirus-Dark";
+    drun-display-format: "{name}";
+    hover-select:       true;
+    me-select-entry:    "MouseSecondary";
+    me-accept-entry:    "MousePrimary";
+    display-drun:       " Apps";
+    display-run:        " Run";
+    display-window:     " Windows";
+}
+
+@theme "~/.config/rofi/themes/purple-grid.rasi"

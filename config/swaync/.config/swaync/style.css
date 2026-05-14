@@ -1,0 +1,741 @@
+/* ═══════════════════════════════════════════════════════════
+    SWAYNC — style.css
+    Variables consolidadas, críticas con color, blur-ready
+═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Fondos ──────────────────────────────────────────── */
+  --cc-bg:                rgba(20, 20, 30, 0.55);
+  --noti-bg:              30, 30, 46;          /* RGB separado para rgba() */
+  --noti-bg-alpha:        0.85;
+  --noti-bg-darker:       rgb(18, 18, 28);
+  --noti-bg-hover:        rgba(49, 50, 68, 0.9);
+  --noti-bg-focus:        rgba(68, 71, 90, 0.5);
+  --noti-bg-alt:          rgba(30, 31, 46, 0.8); /* FIX: variable faltante */
+
+  /* ── Bordes ──────────────────────────────────────────── */
+  --noti-border-color:    rgba(137, 180, 250, 0.15);
+  --border:               1px solid var(--noti-border-color);
+  --border-radius:        14px;
+  --border-radius-sm:     8px;
+
+  /* ── Close button ────────────────────────────────────── */
+  --noti-close-bg:        rgba(243, 139, 168, 0.2);
+  --noti-close-bg-hover:  rgba(243, 139, 168, 0.45);
+
+  /* ── Texto ───────────────────────────────────────────── */
+  --text-color:           rgb(205, 214, 244);
+  --text-color-disabled:  rgb(108, 112, 134);
+  --text-color-subtle:    rgb(147, 153, 178);
+  --font-size-body:       13px;
+  --font-size-summary:    14px;
+  --font-family:          "JetBrainsMono Nerd Font", "Noto Sans", sans-serif;
+
+  /* ── Acento / selección ──────────────────────────────── */
+  --bg-selected:          rgba(137, 180, 250, 0.85);
+  --accent:               rgb(137, 180, 250);
+  --accent-warning:       rgb(249, 226, 175);
+  --accent-critical:      rgb(243, 139, 168);
+  --accent-success:       rgb(166, 227, 161);
+
+  /* ── Íconos ──────────────────────────────────────────── */
+  --notification-icon-size:       52px;
+  --notification-app-icon-size:   calc(var(--notification-icon-size) / 3);
+  --notification-group-icon-size: 28px;
+
+  /* ── Mpris ───────────────────────────────────────────── */
+  --mpris-album-art-overlay:      rgba(20, 20, 30, 0.65);
+  --mpris-button-hover:           rgba(137, 180, 250, 0.15);
+  --mpris-album-art-icon-size:    110px;
+  --mpris-album-art-shadow:       0px 4px 20px rgba(0, 0, 0, 0.6);
+
+  /* ── Volume widget ───────────────────────────────────── */
+  --widget-volume-row-icon-size:  22px;
+
+  /* ── Sombras ─────────────────────────────────────────── */
+  --notification-shadow:  0 2px 8px rgba(0, 0, 0, 0.35);
+
+  /* ── Transiciones ────────────────────────────────────── */
+  --hover-transition:            background 0.18s ease-in-out;
+  --hover-tranistion:            var(--hover-transition); /* compat typo */
+  --group-collapse-transition:   opacity 350ms ease-in-out;
+  --group-collapse-tranistion:   var(--group-collapse-transition); /* compat */
+}
+
+/* Fallback colors para temas viejos que usen @define-color */
+@define-color cc-bg             rgba(20, 20, 30, 0.55);
+@define-color noti-border-color rgba(137, 180, 250, 0.15);
+@define-color noti-bg           rgba(30, 30, 46, 0.85);
+@define-color noti-bg-opaque    rgb(30, 30, 46);
+@define-color noti-bg-darker    rgb(18, 18, 28);
+@define-color noti-bg-hover     rgb(49, 50, 68);
+@define-color noti-bg-hover-opaque rgb(49, 50, 68);
+@define-color noti-bg-focus     rgba(68, 71, 90, 0.5);
+@define-color noti-close-bg     rgba(243, 139, 168, 0.2);
+@define-color noti-close-bg-hover rgba(243, 139, 168, 0.45);
+@define-color text-color        rgb(205, 214, 244);
+@define-color text-color-disabled rgb(108, 112, 134);
+@define-color bg-selected       rgba(137, 180, 250, 0.85);
+
+/* ══════════════════════════════════════════════════════════ */
+/* VENTANAS BASE                                             */
+/* ══════════════════════════════════════════════════════════ */
+
+notificationwindow,
+blankwindow {
+  background: transparent;
+}
+
+.floating-notifications {
+  background: transparent;
+}
+
+.blank-window {
+  background: transparent;
+}
+
+/* ══════════════════════════════════════════════════════════ */
+/* BOTÓN DE CIERRE                                           */
+/* ══════════════════════════════════════════════════════════ */
+
+.close-button {
+  background: var(--noti-close-bg);
+  color: var(--accent-critical);
+  text-shadow: none;
+  padding: 0;
+  border-radius: 100%;
+  margin-top: 8px;
+  margin-right: 8px;
+  box-shadow: none;
+  border: none;
+  min-width: 22px;
+  min-height: 22px;
+  font-family: var(--font-family);
+}
+
+.close-button:hover {
+  box-shadow: none;
+  background: var(--noti-close-bg-hover);
+  transition: var(--hover-transition);
+  border: none;
+}
+
+/* ══════════════════════════════════════════════════════════ */
+/* NOTIFICACIONES FLOTANTES                                  */
+/* ══════════════════════════════════════════════════════════ */
+
+.floating-notifications .notification {
+  box-shadow: none;
+}
+
+.notification-row {
+  background: none;
+  outline: none;
+}
+
+.notification-row:focus {
+  background: var(--noti-bg-focus);
+}
+
+.notification-row .notification-background {
+  padding: 6px 10px;
+}
+
+/* ── Notificación base ───────────────────────────────────── */
+.notification-row .notification-background .notification {
+  border-radius: var(--border-radius);
+  border: var(--border);
+  padding: 0;
+  transition: var(--hover-transition);
+  background: rgba(var(--noti-bg), var(--noti-bg-alpha));
+  font-family: var(--font-family);
+}
+
+/* ── Urgencia Low: sutil, borde azul tenue ──────────────── */
+.notification-row .notification-background .notification.low {
+  border-color: rgba(137, 180, 250, 0.08);
+  opacity: 0.85;
+}
+
+/* ── Urgencia Normal: estilo base ───────────────────────── */
+.notification-row .notification-background .notification.normal {
+  border-color: var(--noti-border-color);
+}
+
+/* ── Urgencia Critical: borde rojo visible ──────────────── */
+.notification-row .notification-background .notification.critical {
+  border-color: rgba(243, 139, 168, 0.6);
+  border-width: 1.5px;
+  background: rgba(40, 20, 30, 0.88);
+}
+
+/* ── Acción default (zona clickeable grande) ────────────── */
+.notification-row .notification-background .notification .notification-default-action {
+  padding: 4px;
+  margin: 0;
+  box-shadow: none;
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  transition: var(--hover-transition);
+  border-radius: var(--border-radius);
+}
+
+.notification-row .notification-background .notification .notification-default-action:hover {
+  -gtk-icon-filter: none;
+  background: var(--noti-bg-hover);
+}
+
+.notification-row .notification-background .notification .notification-default-action:not(:only-child) {
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+}
+
+/* ── Contenido interno ──────────────────────────────────── */
+.notification-row .notification-background .notification .notification-default-action .notification-content {
+  background: transparent;
+  border-radius: var(--border-radius);
+  padding: 0;
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .image {
+  -gtk-icon-filter: none;
+  -gtk-icon-size: var(--notification-icon-size);
+  border-radius: 100px;
+  margin: 6px;
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .app-icon {
+  -gtk-icon-filter: none;
+  -gtk-icon-size: var(--notification-app-icon-size);
+  -gtk-icon-shadow: 0 1px 4px rgba(0,0,0,0.8);
+  margin: 6px;
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .text-box label {
+  filter: none;
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .text-box .summary {
+  font-size: var(--font-size-summary);
+  font-weight: bold;
+  font-family: var(--font-family);
+  background: transparent;
+  color: var(--text-color);
+  text-shadow: none;
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .text-box .time {
+  font-size: 11px;
+  font-family: var(--font-family);
+  font-weight: normal;
+  background: transparent;
+  color: var(--text-color-subtle);
+  text-shadow: none;
+  margin-right: 28px;
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .text-box .body {
+  font-size: var(--font-size-body);
+  font-weight: normal;
+  font-family: var(--font-family);
+  background: transparent;
+  color: var(--text-color-subtle);
+  text-shadow: none;
+}
+
+/* ── Progress bar ───────────────────────────────────────── */
+.notification-row .notification-background .notification .notification-default-action .notification-content progressbar {
+  margin-top: 6px;
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content progressbar trough {
+  border-radius: var(--border-radius-sm);
+  background: rgba(var(--noti-bg), 1);
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content progressbar progress {
+  border-radius: var(--border-radius-sm);
+  background: var(--accent);
+  min-height: 4px;
+}
+
+/* ── Body image ─────────────────────────────────────────── */
+.notification-row .notification-background .notification .notification-default-action .notification-content .body-image {
+  margin-top: 6px;
+  background-color: transparent;
+  -gtk-icon-filter: none;
+  border-radius: var(--border-radius-sm);
+}
+
+/* ── Inline reply ───────────────────────────────────────── */
+.notification-row .notification-background .notification .notification-default-action .notification-content .inline-reply {
+  margin-top: 6px;
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .inline-reply .inline-reply-entry {
+  background: var(--noti-bg-darker);
+  color: var(--text-color);
+  caret-color: var(--accent);
+  border: var(--border);
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-family);
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .inline-reply .inline-reply-button {
+  margin-left: 4px;
+  background: rgba(var(--noti-bg), var(--noti-bg-alpha));
+  border: var(--border);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-color);
+  font-family: var(--font-family);
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .inline-reply .inline-reply-button:disabled {
+  background: initial;
+  color: var(--text-color-disabled);
+  border: var(--border);
+  border-color: transparent;
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .inline-reply .inline-reply-button:hover {
+  background: var(--noti-bg-hover);
+}
+
+/* ── Acciones alternativas (botones extra abajo) ────────── */
+.notification-row .notification-background .notification .notification-alt-actions {
+  background: none;
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+  padding: 4px;
+}
+
+.notification-row .notification-background .notification .notification-action {
+  margin: 4px;
+  padding: 0;
+}
+
+.notification-row .notification-background .notification .notification-action > button {
+  border-radius: var(--border-radius-sm);
+  color: var(--text-color);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+}
+
+/* ══════════════════════════════════════════════════════════ */
+/* GRUPOS DE NOTIFICACIONES                                  */
+/* ══════════════════════════════════════════════════════════ */
+
+.notification-group {
+  transition: opacity 250ms ease-in-out;
+}
+
+.notification-group:focus {
+  background: var(--noti-bg-focus);
+}
+
+/* Urgencias en grupos */
+.notification-group.critical .notification-group-headers {
+  color: var(--accent-critical);
+}
+
+.notification-group.collapsed.not-expanded {
+  opacity: 0.4;
+}
+
+.notification-group.collapsed .notification-row .notification {
+  background-color: rgba(var(--noti-bg), 1);
+}
+
+.notification-group.collapsed .notification-row:not(:last-child) .notification-action,
+.notification-group.collapsed .notification-row:not(:last-child) .notification-default-action {
+  opacity: 0;
+}
+
+.notification-group.collapsed:hover .notification-row:not(:only-child) .notification {
+  background-color: var(--noti-bg-hover);
+}
+
+.notification-group .notification-group-close-button .close-button {
+  margin: 12px 20px;
+}
+
+.notification-group .notification-group-buttons,
+.notification-group .notification-group-headers {
+  margin: 0 16px;
+  color: var(--text-color);
+  font-family: var(--font-family);
+}
+
+.notification-group .notification-group-headers .notification-group-icon {
+  color: var(--accent);
+  -gtk-icon-size: var(--notification-group-icon-size);
+}
+
+/* ══════════════════════════════════════════════════════════ */
+/* CONTROL CENTER                                            */
+/* ══════════════════════════════════════════════════════════ */
+
+.control-center {
+  /* Con layer-shell-cover-screen: false en config.json
+     y layerrule blur en hyprland.conf, el background
+     semitransparente dejará ver el blur real */
+  background: var(--cc-bg);
+  color: var(--text-color);
+  border-radius: var(--border-radius);
+  border: var(--border);
+  font-family: var(--font-family);
+}
+
+.control-center .control-center-list-placeholder {
+  opacity: 0.4;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--text-color-subtle);
+}
+
+.control-center .control-center-list {
+  background: transparent;
+}
+
+.control-center .control-center-list .notification {
+  box-shadow: var(--notification-shadow);
+}
+
+.control-center .control-center-list .notification .notification-default-action,
+.control-center .control-center-list .notification .notification-action {
+  transition: var(--group-collapse-transition), var(--hover-transition);
+}
+
+.control-center .control-center-list .notification .notification-default-action:hover,
+.control-center .control-center-list .notification .notification-action:hover {
+  background-color: var(--noti-bg-hover);
+}
+
+/* ══════════════════════════════════════════════════════════ */
+/* WIDGETS — BASE                                            */
+/* ══════════════════════════════════════════════════════════ */
+
+.widget {
+  margin: 6px;
+  padding: 8px;
+  border-radius: var(--border-radius);
+  font-family: var(--font-family);
+}
+
+/* ── Widget: Title ──────────────────────────────────────── */
+.widget-title {
+  margin: 8px 8px 4px 8px;
+}
+
+.widget-title > label {
+  margin-right: 8px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  font-family: var(--font-family);
+  color: var(--text-color);
+}
+
+.widget-title > button {
+  margin-left: 8px;
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-family);
+  font-size: 11px;
+  color: var(--text-color-subtle);
+  background: rgba(var(--noti-bg), 0.6);
+  border: var(--border);
+  padding: 2px 8px;
+  transition: var(--hover-transition);
+}
+
+.widget-title > button:hover {
+  background: var(--noti-bg-hover);
+  color: var(--text-color);
+}
+
+/* ── Widget: DND ────────────────────────────────────────── */
+.widget-dnd {
+  margin: 4px 8px;
+}
+
+.widget-dnd label {
+  color: var(--text-color);
+  margin-right: 8px;
+  font-size: 1rem;
+  font-family: var(--font-family);
+}
+
+.widget-dnd switch {
+  border-radius: 100px;
+  margin-left: 8px;
+  background: rgba(var(--noti-bg), 0.8);
+  border: var(--border);
+  transition: background 0.2s ease-in-out;
+}
+
+.widget-dnd switch:checked {
+  background: rgba(243, 139, 168, 0.4);
+  border-color: rgba(243, 139, 168, 0.5);
+}
+
+.widget-dnd switch slider {
+  border-radius: 100px;
+  background: var(--text-color-subtle);
+  min-width: 18px;
+  min-height: 18px;
+  margin: 2px;
+  transition: background 0.2s ease-in-out;
+}
+
+.widget-dnd switch:checked slider {
+  background: var(--accent-critical);
+}
+
+/* ── Widget: Label ──────────────────────────────────────── */
+.widget-label > label {
+  font-size: 1rem;
+  font-family: var(--font-family);
+  color: var(--text-color-subtle);
+}
+
+/* ── Widget: Mpris ──────────────────────────────────────── */
+.widget-mpris {
+  padding: 0;
+}
+
+.widget-mpris .widget-mpris-player {
+  margin: 10px 12px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--mpris-album-art-shadow);
+  overflow: hidden;
+}
+
+.widget-mpris .widget-mpris-player .mpris-background {
+  filter: blur(18px);
+  -gtk-icon-filter: brightness(0.5);
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay {
+  padding: 14px 16px;
+  background-color: var(--mpris-album-art-overlay);
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay button:hover {
+  background: var(--mpris-button-hover);
+  border-radius: var(--border-radius-sm);
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-album-art {
+  border-radius: var(--border-radius);
+  box-shadow: var(--mpris-album-art-shadow);
+  -gtk-icon-size: var(--mpris-album-art-icon-size);
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+  font-family: var(--font-family);
+  color: var(--text-color);
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-subtitle {
+  font-size: 0.95rem;
+  font-family: var(--font-family);
+  color: var(--text-color-subtle);
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay > box > button {
+  color: var(--text-color);
+  border-radius: var(--border-radius-sm);
+  margin: 0 3px;
+  padding: 4px 8px;
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay > box > button:hover {
+  background-color: var(--mpris-button-hover);
+}
+
+.widget-mpris > box > button {
+  color: var(--text-color-subtle);
+}
+
+.widget-mpris > box > button:disabled {
+  color: var(--text-color-disabled);
+}
+
+/* ── Widget: Buttons Grid ───────────────────────────────── */
+.widget-buttons-grid {
+  margin: 4px 8px 8px 8px;
+  padding: 4px;
+  background: rgba(var(--noti-bg), 0.4);
+  border-radius: var(--border-radius);
+  border: var(--border);
+}
+
+.widget-buttons-grid flowboxchild {
+  margin: 3px;
+}
+
+.widget-buttons-grid flowboxchild > button {
+  border-radius: var(--border-radius-sm);
+  min-width: 52px;
+  min-height: 52px;
+  font-size: 1.4rem;
+  color: var(--text-color-subtle);
+  background: rgba(var(--noti-bg), 0.6);
+  border: 1px solid rgba(137, 180, 250, 0.08);
+  transition: var(--hover-transition), color 0.18s ease-in-out;
+}
+
+.widget-buttons-grid flowboxchild > button:hover {
+  background: var(--noti-bg-hover);
+  color: var(--text-color);
+}
+
+/* ── Toggle activo: diferencia visual clara ─────────────── */
+.widget-buttons-grid flowboxchild > button.toggle:checked {
+  background: rgba(137, 180, 250, 0.2);
+  color: var(--accent);
+  border-color: rgba(137, 180, 250, 0.4);
+}
+
+.widget-buttons-grid flowboxchild > button.toggle:checked:hover {
+  background: rgba(137, 180, 250, 0.3);
+}
+
+/* ── Widget: Menubar ────────────────────────────────────── */
+.widget-menubar {
+  padding: 0;
+}
+
+.widget-menubar > .menu-button-bar {
+  padding: 4px 8px;
+}
+
+.widget-menubar > .menu-button-bar > .start {
+  margin-left: 4px;
+}
+
+.widget-menubar > .menu-button-bar > .end {
+  margin-right: 4px;
+}
+
+.widget-menubar > .menu-button-bar > .widget-menubar-container button {
+  border-radius: var(--border-radius-sm);
+  margin: 0 3px;
+  font-family: var(--font-family);
+  color: var(--text-color-subtle);
+  background: transparent;
+  transition: var(--hover-transition);
+}
+
+.widget-menubar > .menu-button-bar > .widget-menubar-container button:hover {
+  background: var(--noti-bg-hover);
+  color: var(--text-color);
+}
+
+/* Paneles desplegables del menubar */
+.widget-menubar > revealer > * {
+  background: rgba(var(--noti-bg), 0.7);
+  border-radius: var(--border-radius);
+  border: var(--border);
+  margin: 0 8px 8px 8px;
+  padding: 8px;
+}
+
+.widget-menubar > revealer > * button {
+  border-radius: var(--border-radius-sm);
+  margin: 4px;
+  font-family: var(--font-family);
+  color: var(--text-color);
+}
+
+.widget-menubar > revealer > * button:hover {
+  background: var(--noti-bg-hover);
+}
+
+/* ── Widget: Volume ─────────────────────────────────────── */
+.widget-volume {
+  background: rgba(var(--noti-bg), 0.4);
+  padding: 8px 12px;
+  margin: 4px 8px;
+  border-radius: var(--border-radius);
+  border: var(--border);
+}
+
+.widget-volume row image {
+  -gtk-icon-size: var(--widget-volume-row-icon-size);
+  color: var(--text-color-subtle);
+}
+
+.per-app-volume {
+  background-color: var(--noti-bg-alt); /* FIX: ahora está definida */
+  margin: 4px 8px;
+  margin-bottom: 0;
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-family);
+}
+
+/* ── Widget: Slider (backlight / custom) ────────────────── */
+.widget-slider {
+  background: rgba(var(--noti-bg), 0.4);
+  padding: 8px 12px;
+  margin: 4px 8px;
+  border-radius: var(--border-radius);
+  border: var(--border);
+}
+
+.widget-slider label {
+  font-size: var(--font-size-body);
+  font-family: var(--font-family);
+  color: var(--text-color-subtle);
+}
+
+.widget-slider scale trough {
+  border-radius: 100px;
+  background: rgba(var(--noti-bg), 1);
+  min-height: 4px;
+}
+
+.widget-slider scale highlight {
+  border-radius: 100px;
+  background: var(--accent);
+}
+
+/* ── Widget: Backlight ──────────────────────────────────── */
+.widget-backlight {
+  background: rgba(var(--noti-bg), 0.4);
+  padding: 8px 12px;
+  margin: 4px 8px;
+  border-radius: var(--border-radius);
+  border: var(--border);
+}
+
+/* ── Widget: Inhibitors ─────────────────────────────────── */
+.widget-inhibitors {
+  margin: 4px 8px;
+}
+
+.widget-inhibitors > label {
+  margin-right: 8px;
+  font-size: 1rem;
+  font-family: var(--font-family);
+  color: var(--text-color-subtle);
+}
+
+.widget-inhibitors > button {
+  margin-left: 8px;
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-family);
+  font-size: 11px;
+  color: var(--text-color-subtle);
+  background: rgba(var(--noti-bg), 0.6);
+  border: var(--border);
+  padding: 2px 8px;
+  transition: var(--hover-transition);
+}
+
+.widget-inhibitors > button:hover {
+  background: var(--noti-bg-hover);
+  color: var(--text-color);
+}
