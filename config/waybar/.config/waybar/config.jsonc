@@ -1,0 +1,235 @@
+// -*- mode: jsonc -*-
+{
+    "reload_style_on_change": true,
+    "layer": "top", // Profundidad de barra respecto a ventanas
+    "position": "top", // Posicion (top|bottom|left|right)
+
+    "height": 35, // Tamaño de la barra (pixeles)
+    // "width": 1280, // Waybar width
+    // "spacing": 4, // Espacio entre modulos
+
+/////////////// -- POSICION DE LOS MODULOS --///////////////////////
+
+    "modules-left": [
+        "custom/archicon",
+        "clock",
+        "hyprland/workspaces"
+    ],
+    "modules-center": [
+        "pulseaudio",
+        "backlight"
+    ],
+    "modules-right": [
+        "idle_inhibitor",
+        "network",
+        "group/stats",
+        "battery",
+        "tray",
+        "custom/power"
+    ],
+
+/////////////////// -- MODULOS IZQUIERDA -- ////////////////////////////
+
+    "custom/archicon": {
+        "format": "",
+        "on-click": "rofi -show drun",
+        "tooltip": false
+    },
+
+
+    "clock": {
+        "locale": "es_PE.UTF-8", // Importante para calendar
+
+        "format": "{:%H:%M} 󰥔",                 // hora + icono (reloj simple, nerd font)
+        "format-alt": "{:%a, %d %b %Y  %H:%M}",  // día semana + fecha completa (toggle con clic)
+        "format-alt-click": "click",             // clic izquierdo toggles format ↔ format-alt (buena práctica 2025+)
+
+        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+        "tooltip-format-alt": "<tt><small>{calendar}</small></tt>\n\n<span foreground='#89b4fa'>Zona horaria: {:%Z}</span>",
+
+        // Calendario interactivo (muy recomendado)
+        "calendar": {
+            "mode": "month",
+            "mode-mon-col": 3,
+            "weeks-pos": "right",
+            "on-scroll": 1,
+            "format": {
+                "months":   "<span color='#f9e2af'><b>{}</b></span>",
+                "days":     "<span color='#cdd6f4'>{}</span>",
+                "weeks":    "<span color='#94e2d5'>W{:%V}</span>",
+                "weekdays": "<span color='#f38ba8'><b>{}</b></span>",
+                "today":    "<span color='#9d4cff' background='#45475a'><b><u>{}</u></b></span>"
+            }
+        }
+    },
+
+
+    "hyprland/workspaces": {
+        "format": "{icon}",
+        "format-icons": {
+            "default": "",
+            "active": ""
+        },
+        "persistent-workspaces": {
+            "*": 2
+        },
+        "disable-scroll": true,
+        "all-outputs": true,
+        "show-special": true
+    },
+
+//////////////////// -- MODULOS MEDIO -- ////////////////////////////
+
+    "pulseaudio": {
+        // "scroll-step": 1, // %, can be a float
+        "format": "{volume}% {icon} {format_source}",
+        "format-muted": " {format_source}",
+        "format-bluetooth": "{volume}% {icon} {format_source}",
+        "format-bluetooth-muted": " {icon} {format_source}",
+
+        "format-source": "{volume}% ",
+        "format-source-muted": "",
+
+        "format-icons": {
+            "headphone": "",
+            "hands-free": "",
+            "headset": "",
+            "phone": "",
+            "portable": "",
+            "car": "",
+            "default": ["", "", ""]
+        },
+        "on-click": "pavucontrol",
+
+        "tooltip": true,
+        "tooltip-format": "{desc}\nVolumen: {volume}%\n{format_source}"
+    },
+
+    "backlight": {
+        "device": "intel_backlight",
+        "format": "{percent}% {icon}",
+        "format-icons": ["", "", "", "", ""]
+    },
+
+//////////////////// -- MODULOS DERECHA -- //////////////////////////
+
+    "idle_inhibitor": {
+        "format": "{icon}",
+        "format-icons": {
+            "activated": " ",
+            "deactivated": " "
+        },
+        "start-activated": false
+    },
+
+    "network": {
+        // "interface": "wlp2*", // (Optional) To force the use of this interface
+        "format-wifi": "{essid} ({signalStrength}%) {icon}",
+        "format-ethernet": "{ipaddr}/{cidr} ",
+        "tooltip-format": "{ifname} via {gwaddr} ",
+        "format-linked": "{ifname} (No IP) ",
+        "format-disconnected": "Disconnected ⚠",
+
+        "format-alt": "{ifname}: {ipaddr}/{cidr} ⇣{bandwidthDownBytes} ⇡{bandwidthUpBytes}",
+        "format-alt-click": "click",
+
+        "format-icons": [
+            "󰤯",   // muy bajo (~0-25%)
+            "󰤟",   // bajo
+            "󰤢",   // medio
+            "󰤥",   // bueno
+            "󰤨"    // excelente
+        ],
+        "tooltip": true,
+        "tooltip-format-wifi": "<b>{essid}</b>\nSignal: {signalStrength}% ({signaldBm} dBm)\nFreq: {frequency} GHz\nIP: {ipaddr}/{cidr}\nGW: {gwaddr}\n⇣ {bandwidthDownBytes}  ⇡ {bandwidthUpBytes}",
+        "tooltip-format-ethernet": "<b>{ifname}</b> (Ethernet)\nIP: {ipaddr}/{cidr}\nGW: {gwaddr}\n⇣ {bandwidthDownBytes}  ⇡ {bandwidthUpBytes}",
+        "tooltip-format-disconnected": "Sin conexión",
+        "tooltip-format-disabled": "Wi-Fi desactivado (RF kill)",
+
+        // abre editor de conexiones (NetworkManager)
+        "on-click": "nm-connection-editor"
+    },
+
+    "group/stats": {
+        "orientation": "horizontal",
+        "drawer": {
+            "transition-duration": 300,
+            "transition-left-to-right": false
+        },
+        "modules": ["temperature", "cpu", "memory"]
+    },
+
+    "cpu": {
+        "format": "{usage}% ",
+        "tooltip": false
+    },
+    "memory": {
+        "format": "{}% ",
+        "format-alt": "{used:0.1f}GiB / {total:0.1f}GiB ",
+        "format-alt-click": "click",
+        "tooltip": true,
+        "tooltip-format": "Usado: {used:0.1f}GiB\nLibre: {available:0.1f}GiB\nTotal: {total:0.1f}GiB\nCache: {cached:0.1f}GiB"
+    },
+    "temperature": {
+        "critical-threshold": 80,
+        "format": "{temperatureC}°C {icon}",
+        "format-icons": ["", "", ""]
+    },
+
+    "battery": {
+	"bat": "BAT1",
+        "states": {
+            // "good": 95,
+            "warning": 30,
+            "critical": 15
+        },
+        "format": "{capacity}% {icon}",
+        "format-full": "{capacity}% {icon}",
+        "format-charging": "{capacity}% ",
+        "format-plugged": "{capacity}% ",
+        "format-alt": "{time} {icon}",
+        // "format-good": "", // An empty format will hide the module
+        // "format-full": "",
+        "format-icons": ["", "", "", "", ""]
+    },
+
+    "tray": {
+        // "icon-size": 21,
+        "spacing": 10
+        // "icons": {
+        //   "blueman": "bluetooth",
+        //   "TelegramDesktop": "$HOME/.local/share/icons/hicolor/16x16/apps/telegram.png"
+        // }
+    },
+
+    "custom/power": {
+        "format" : " ⏻ ",
+        "tooltip": false,
+        "on-click": "$HOME/.config/waybar/scripts/power.sh"
+    }
+
+///////////// -- MODULOS NO USADOS -- /////////////////////
+
+/*
+  // Ventana activa (Hyprland)
+    "hyprland/window": {
+        "separate-outputs": true
+    },
+
+  // La verdad no se XD, pero parece importante
+    "custom/media": {
+        "format": "{icon} {text}",
+        "return-type": "json",
+        "max-length": 40,
+        "format-icons": {
+            "spotify": "",
+            "default": "🎜"
+        },
+        "escape": true,
+        "exec": "$HOME/.config/waybar/mediaplayer.py 2> /dev/null" // Script in resources folder
+        // "exec": "$HOME/.config/waybar/mediaplayer.py --player spotify 2> /dev/null" // Filter player based on name
+    },
+
+*/
+
+}
