@@ -1,0 +1,21 @@
+# Backend de colores (prueba kmeans, colorz, wal, vibrant)
+backend = "kmeans"
+
+# Espacio de color
+color_space = "labmixed"
+
+# (dark, light, amoled, etc)
+palette = "dark16"
+
+threshold = 11
+
+# Templates a generar
+[templates]
+kitty.template = "colors-kitty.conf"
+kitty.target = "~/.config/kitty/colors.conf"
+
+# input = "~/.config/wallust/templates/waybar.css"
+# output = "~/.config/waybar/colors.css"
+
+# input = "~/.config/wallust/templates/rofi.rasi"
+# output = "~/.config/rofi/colors.rasi"

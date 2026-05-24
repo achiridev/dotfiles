@@ -18,6 +18,8 @@ source $ZSH/oh-my-zsh.sh
 
 alias ls='eza --icons --group-directories-first --color=always --group'
 
+[ -f ~/.config/zsh/private.zsh ] && source ~/.config/zsh/private.zsh
+
 if [[ "$TERM" == "xterm-kitty" && -z "$FASTFETCH_SHOWN" ]]; then
     export FASTFETCH_SHOWN=1
     clear

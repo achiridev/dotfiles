@@ -2,3 +2,5 @@ secrets/
 cache/
 *.log
 .DS_Store
+
+home/.config/zsh/private.zsh
