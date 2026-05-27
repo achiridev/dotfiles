@@ -1,488 +1,264 @@
 /* =========================================================
-    WAYBAR — style.css
-    Paleta: Morado profundo + fondo oscuro translúcido
-    Fuente: JetBrainsMono Nerd Font
+    WAYBAR — style.css (Estilo Glassmorphism / Dark & Transparent)
+    Referencias: JaKooLit / Sabisho (Wallust)
     ========================================================= */
 
-/* ── Variables globales ─────────────────────────────────── */
-@define-color bg-base        rgba(22, 19, 32, 0.50);
-@define-color bg-module      rgba(30, 24, 46, 0.55);
-@define-color bg-hover       rgba(77, 55, 110, 0.45);
-@define-color bg-active      rgba(107, 70, 193, 0.35);
+@import "colors.css";
 
-@define-color border-base    rgba(157, 76, 255, 0.35);
-@define-color border-hover   rgba(164, 107, 255, 0.75);
+/* ── Roles Semánticos (Oscuros y Transparentes) ────────── */
+/* Fondo de la barra principal: Casi invisible*/
+@define-color bg-bar           alpha(@wl-bg, 0.55);
 
-/* Púrpuras */
-@define-color purple-dim     #6a3db5;
-@define-color purple-mid     #9d4cff;
-@define-color purple-bright  #b48dff;
-@define-color purple-soft    #cba6f7;
+/* Fondo de los módulos (Las "píldoras"): Oscuro y con transparencia cristalina */
+@define-color bg-module        alpha(@wl-bg, 0.85);
+@define-color bg-hover         alpha(@wl-color0, 0.65);
+@define-color bg-active        alpha(@wl-color5, 0.35);
 
-/* Azules */
-@define-color blue-dim       #5c6cff;
-@define-color blue-mid       #7088ff;
-@define-color blue-soft      #8aa0ff;
+/* Bordes muy sutiles para delimitar sin ensuciar el diseño */
+@define-color border-main      alpha(@wl-color7, 0.25);
+@define-color border-hover     alpha(@wl-color5, 0.60);
 
-/* Texto */
-@define-color text-main      #cdd6f4;
-@define-color text-muted     #a0a0b8;
-@define-color text-bright    #ffffff;
+/* Acentos dinámicos (Colores estándar de Wallust, no tan brillantes) */
+@define-color accent-primary   @wl-color5;
+@define-color accent-secondary @wl-color4;
+@define-color accent-tertiary  @wl-color6;
 
-/* Estados */
-@define-color red-alert      #f53c3c;
-@define-color green-ok       #26A65B;
-@define-color orange-warn    #f9a825;
+/* Tipografía */
+@define-color text-main        @wl-fg;
+@define-color text-muted       alpha(@wl-fg, 0.65);
+@define-color text-bright      #ffffff;
+
+/* ── Estados Críticos (Rojo, Verde, Naranja) ───────────── */
+@define-color color-critical   #ff5555;
+@define-color color-warning    #ffb86c;
+@define-color color-success    #50aa7b;
+
+@define-color bg-critical      alpha(#ff5555, 0.25);
+@define-color bg-warning       alpha(#ffb86c, 0.25);
 
 
-/* ── Reset y base ───────────────────────────────────────── */
+/* ── Reset y Base General GTK3 ──────────────────────────── */
 * {
-    font-family: "JetBrainsMono Nerd Font";
-    font-size: 13px;
+    font-family: "JetBrainsMono Nerd Font", sans-serif;
+    font-size: 14px;
+    font-weight: bold; /* Bold estándar, no 900 para evitar desbordes */
     min-height: 0;
     border: none;
     border-radius: 0;
+    box-shadow: none;
 }
 
-/* ── Ventana principal ──────────────────────────────────── */
 window#waybar {
-    background-color: @bg-base;
-    border-bottom: 1px solid @border-base;
+    background-color: @bg-bar;
     color: @text-main;
-    transition-property: background-color;
-    transition-duration: .5s;
 }
 
-window#waybar.hidden {
-    opacity: 0.2;
-}
-
-
-/* ── Botones (workspaces) ───────────────────────────────── */
-button {
-    box-shadow: inset 0 -2px transparent;
-    border: none;
-    border-radius: 0;
-    background: transparent;
-    transition: all 0.18s ease;
-}
-
-button:hover {
-    background: @bg-hover;
-    box-shadow: inset 0 -2px @purple-bright;
-}
-
-
-/* =========================================================
-    TODOS LOS MÓDULOS — base compartida
-    ========================================================= */
+/* ── BASE UNIFICADA PARA TODOS LOS MÓDULOS ────────────────
+   Esto asegura que el Grupo Stats, Audio, Brillo y Reloj 
+   tengan EXACTAMENTE el mismo tamaño, fondo y bordes.
+   ───────────────────────────────────────────────────────── */
 #clock,
 #battery,
-#cpu,
-#memory,
-#temperature,
-#backlight,
 #network,
-#pulseaudio,
 #idle_inhibitor,
 #mpris,
 #tray,
+#custom-notification,
+#workspaces,
 #custom-archicon,
-#custom-power,
-#custom-notification {
-    padding: 0 10px;
-    color: @text-main;
-    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-
-/* =========================================================
-    MÓDULOS IZQUIERDA
-    ========================================================= */
-
-/* Icono Arch */
-#custom-archicon {
-    font-size: 20px;
-    color: @purple-mid;
-    padding: 0 14px 0 10px;
-    background: rgba(18, 14, 28, 0.75);
-    border-right: 1px solid @border-base;
-    margin-right: 4px;
-}
-#custom-archicon:hover {
-    color: @purple-soft;
-    background: rgba(40, 25, 65, 0.75);
-}
-
-/* Reloj */
-#clock {
-    padding: 0 14px;
-    color: @purple-mid;
+#pulseaudio,
+#backlight,
+#cpu,
+#memory,
+#temperature,
+window#waybar group#stats {
     background-color: @bg-module;
-    border: 1px solid @border-base;
-    border-radius: 8px;
-    margin: 3px 2px;
+    border: 1px solid @border-main;
+    border-radius: 12px;
+    padding: 0 12px;
+    margin: 4px 4px;
+    color: @text-main;
+    transition: all 0.3s ease;
 }
-#clock:hover {
+
+/* Hover unificado */
+#clock:hover,
+#network:hover,
+#mpris:hover,
+#custom-notification:hover,
+#idle_inhibitor:hover,
+#pulseaudio:hover,
+#backlight:hover,
+window#waybar group#stats:hover {
     background-color: @bg-hover;
-    color: @purple-soft;
     border-color: @border-hover;
 }
 
-/* Workspaces */
+
+/* ── Izquierda: Arch y Workspaces ───────────────────────── */
+
+#custom-archicon {
+    font-size: 16px;
+    color: @accent-primary;
+    padding: 0 21px 0 16px;
+}
+#custom-archicon:hover {
+    background-color: @accent-primary;
+    color: @bg-bar;
+}
+
+#clock {
+    color: @accent-primary;
+}
+
+/* Workspaces tiene su propio padding interno para los botones */
 #workspaces {
-    background: rgba(18, 14, 28, 0.50);
-    border-radius: 8px;
-    margin: 3px 4px;
-    padding: 0 4px;
-    border: 1px solid rgba(120, 70, 200, 0.20);
+    padding: 2px 4px;
 }
 
 #workspaces button {
-    color: @purple-dim;
+    color: @text-muted;
     background: transparent;
-    padding: 2px 6px;
-    border-radius: 6px;
-    margin: 2px 1px;
-    transition: all 0.18s ease;
+    padding: 0 6px;
+    border-radius: 8px;
+    margin: 0 2px;
+    transition: all 0.2s ease;
 }
+
 #workspaces button.occupied {
-    color: @purple-mid;
+    color: @accent-secondary;
 }
+
 #workspaces button.active {
     color: @text-bright;
-    background: rgba(157, 76, 255, 0.22);
-    border-radius: 6px;
-    box-shadow: inset 0 -2px @purple-bright;
+    background-color: @bg-active;
+    border: 1px solid @border-hover;
 }
+
 #workspaces button:hover {
-    background: @bg-hover;
-    color: @purple-bright;
-}
-#workspaces button.active:hover {
-    background: rgba(157, 76, 255, 0.35);
-}
-
-/* Ventana activa */
-#window {
-    color: @text-muted;
-    font-size: 12px;
-    padding: 0 10px;
-    margin: 3px 2px;
-    background: transparent;
-    border-radius: 6px;
-    font-style: italic;
+    background-color: @bg-hover;
+    color: @text-bright;
 }
 
 
-/* =========================================================
-    MÓDULOS CENTRO
-    ========================================================= */
+/* ── Centro: Audio y Brillo ─────────────────────────────── */
 
-/* PulseAudio */
 #pulseaudio {
-    padding: 0 14px;
-    color: @blue-soft;
-    border: 1px solid rgba(112, 136, 255, 0.45);
-    background-color: @bg-module;
-    border-radius: 8px 0 0 8px;
-    margin: 3px 0 3px 0;
+    color: @accent-secondary;
 }
 #pulseaudio.muted {
-    background-color: rgba(30, 20, 60, 0.70);
     color: @text-muted;
-    border-color: rgba(90, 90, 140, 0.4);
-}
-#pulseaudio:hover {
-    background-color: rgba(95, 116, 221, 0.30);
-    border-color: @blue-mid;
 }
 
-/* Backlight */
 #backlight {
-    padding: 0 14px;
-    color: @purple-soft;
-    border: 1px solid rgba(171, 73, 238, 0.45);
-    background-color: @bg-module;
-    border-radius: 0 8px 8px 0;
-    margin: 3px 0;
-    border-left: none;
-}
-#backlight:hover {
-    background-color: rgba(137, 40, 204, 0.28);
-    border-color: @purple-soft;
+    color: @accent-tertiary;
 }
 
-/* MPRIS */
 #mpris {
-    padding: 0 12px;
-    color: @purple-soft;
-    background-color: @bg-module;
-    border: 1px solid @border-base;
-    border-radius: 8px;
-    margin: 3px 4px;
+    color: @text-muted;
     font-style: italic;
 }
-#mpris:hover {
-    background-color: @bg-hover;
-    color: @text-bright;
+
+
+/* ── Derecha: Grupo Stats (CPU, Memoria, Temp) ──────────── */
+
+
+window#waybar group#stats {
+    padding: 0 6px; /* Ajuste fino para los elementos internos */
+}
+
+#cpu, #memory, #temperature {
+    transition: color 0.3s ease;
+}
+
+#cpu { color: @accent-primary; }
+#memory { color: @accent-secondary; }
+#temperature { color: @accent-tertiary; }
+
+#temperature.critical {
+    color: @color-critical;
 }
 
 
-/* =========================================================
-    MÓDULOS DERECHA
-    ========================================================= */
+/* ── Batería, Red y Hardware ────────────────────────────── */
 
-/* Idle inhibitor */
-#idle_inhibitor {
-    padding: 0 10px;
-    color: @purple-dim;
-    background-color: @bg-module;
-    border: 1px solid rgba(107, 61, 181, 0.35);
-    border-radius: 8px;
-    margin: 3px 2px;
-}
-#idle_inhibitor.activated {
-    background-color: rgba(157, 76, 255, 0.30);
-    color: @text-bright;
-    border-color: @purple-mid;
-    box-shadow: 0 0 8px rgba(157, 76, 255, 0.35);
-}
-#idle_inhibitor:hover {
-    background-color: @bg-hover;
-    border-color: @border-hover;
-    color: @purple-soft;
-}
-
-/* Notificaciones (swaync) */
-#custom-notification {
-    color: @purple-soft;
-    background-color: @bg-module;
-    border: 1px solid @border-base;
-    border-radius: 8px;
-    margin: 3px 2px;
-    padding: 0 12px;
-}
-#custom-notification:hover {
-    background-color: @bg-hover;
-    border-color: @border-hover;
-}
-
-/* Red */
 #network {
-    color: @text-muted;
-    border: 1px solid rgba(136, 136, 155, 0.35);
-    background-color: @bg-module;
-    border-radius: 8px;
-    padding: 0 14px;
-    margin: 3px 2px;
+    color: @accent-secondary;
 }
 #network.disconnected {
-    background-color: rgba(200, 40, 40, 0.35);
-    color: @text-bright;
-    border-color: @red-alert;
-}
-#network:hover {
-    background-color: rgba(100, 100, 160, 0.25);
-    border-color: rgba(160, 160, 200, 0.55);
-    color: @text-main;
+    color: @color-critical;
+    background-color: @bg-critical;
+    border-color: @color-critical;
 }
 
-
-/* =========================================================
-    GRUPO STATS — CPU / MEMORY / TEMPERATUREz
-    ========================================================= */
-
-/* Contenedor del grupo — la píldora entera */
-#group-stats {
-    background-color: @bg-module;
-    border: 1px solid rgba(100, 70, 180, 0.40);
-    border-radius: 8px;
-    margin: 3px 2px;
-    padding: 0;
+#idle_inhibitor {
+    color: @text-muted;
+}
+#idle_inhibitor.activated {
+    color: @accent-primary;
+    background-color: @bg-active;
 }
 
-/* CPU — extremo izquierdo */
-#cpu {
-    color: #a259ff;
-    border: 1px solid rgba(136, 136, 155, 0.35);
-    border-radius: 8px;
-    background-color: @bg-module;
-    border-right: 1px solid rgba(157, 76, 255, 0.20);
-    border-radius: 7px 0 0 7px;
-    margin: 3px 0;
-    padding: 0 10px;
-}
-#cpu:hover {
-    background-color: rgba(162, 89, 255, 0.35);
-}
-
-/* Memoria — centro */
-#memory {
-    color: @blue-dim;
-    background-color: @bg-module;
-    border: 1px solid rgba(136, 136, 155, 0.35);
-    border-right: 1px solid rgba(92, 108, 255, 0.20);
-    margin: 3px 2px;
-    padding: 0 10px;
-}
-#memory:hover {
-    background-color: rgba(92, 108, 255, 0.35);
-}
-
-/* Temperatura — extremo derecho */
-#temperature {
-    color: #7b6cff;
-    background-color: @bg-module;
-    border: 1px solid rgba(136, 136, 155, 0.35);
-    border-radius: 7px;
-    margin: 3px 0;
-    padding: 0 10px;
-}
-#temperature:hover {
-    background-color: rgba(58, 44, 255, 0.35);
-    border-radius: 0 7px 7px 0;
-}
-#temperature.critical {
-    color: @text-bright;
-    background-color: rgba(235, 77, 75, 0.45);
-    border-color: @red-alert;
-}
-
-/* ── Clase de los hijos del drawer (para animaciones) ── */
-.stats {
-    transition: all 0.22s ease;
-}
-
-
-/* =========================================================
-    BATERÍA
-    ========================================================= */
-#battery {
-    padding: 0 12px;
-    color: @purple-soft;
-    border: 1px solid rgba(187, 187, 255, 0.35);
-    background-color: @bg-module;
-    border-radius: 8px;
-    margin: 3px 2px;
-}
 #battery.charging,
 #battery.plugged {
-    color: @green-ok;
-    border-color: rgba(38, 166, 91, 0.55);
-    background-color: rgba(0, 60, 20, 0.35);
+    color: @color-success;
+    border-color: alpha(@color-success, 0.4);
 }
+
 #battery.warning:not(.charging) {
-    color: @orange-warn;
-    border-color: rgba(249, 168, 37, 0.55);
+    color: @color-warning;
+    background-color: @bg-warning;
 }
-@keyframes blink {
-    to {
-        background-color: rgba(245, 60, 60, 0.55);
-        color: @text-bright;
-    }
+
+@keyframes blink-critical {
+    to { background-color: @bg-critical; color: @color-critical; border-color: @color-critical; }
 }
+
 #battery.critical:not(.charging) {
-    background-color: rgba(200, 30, 30, 0.35);
-    color: @text-bright;
-    border-color: @red-alert;
-    animation-name: blink;
-    animation-duration: 0.8s;
-    animation-timing-function: steps(6);
+    color: @color-critical;
+    animation-name: blink-critical;
+    animation-duration: 1s;
+    animation-timing-function: ease-in-out;
     animation-iteration-count: infinite;
     animation-direction: alternate;
 }
 
-
-/* =========================================================
-    TRAY
-    ========================================================= */
 #tray {
-    background-color: @bg-module;
-    border: 1px solid @border-base;
-    border-radius: 8px;
-    padding: 0 8px;
-    margin: 3px 2px;
+    padding: 0 10px;
 }
-#tray > .passive {
-    -gtk-icon-effect: dim;
-}
+#tray > .passive { -gtk-icon-effect: dim; opacity: 0.6; }
 #tray > .needs-attention {
     -gtk-icon-effect: highlight;
-    background-color: rgba(235, 77, 75, 0.35);
-    border-radius: 6px;
+    background-color: @bg-critical;
 }
 
 
-/* =========================================================
-    POWER — botón de apagado
-    ========================================================= */
+/* ── Botón de Apagado (Power) ───────────────────────────── */
+
 #custom-power {
-    color: #ff6b6b;
-    padding: 0 12px 0 9px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 68, 68, 0.40);
-    background-color: rgba(255, 30, 30, 0.12);
-    margin: 3px 4px 3px 2px;
-    font-size: 14px;
+    color: @color-critical;
+    background-color: @bg-module;
+    border: 1px solid @border-main;
+    border-radius: 12px;
+    padding: 0 14px 0 12px;
+    margin: 4px 6px 4px 4px;
+    font-size: 15px;
+    transition: all 0.3s ease;
 }
 #custom-power:hover {
-    background-color: rgba(255, 60, 60, 0.32);
-    border-color: #ff4444;
+    background-color: @bg-critical;
     color: @text-bright;
-    box-shadow: 0 0 10px rgba(255, 60, 60, 0.30);
+    border-color: @color-critical;
 }
 
 
-/* =========================================================
-    PRIVACY (cámara / micrófono activos)
-    ========================================================= */
-#privacy {
-    padding: 0;
-}
-#privacy-item {
-    padding: 0 6px;
-    color: @text-bright;
-    border-radius: 6px;
-    margin: 3px 1px;
-}
-#privacy-item.screenshare {
-    background-color: rgba(207, 87, 0, 0.55);
-    border: 1px solid #cf5700;
-}
-#privacy-item.audio-in {
-    background-color: rgba(28, 160, 0, 0.45);
-    border: 1px solid #1ca000;
-}
-#privacy-item.audio-out {
-    background-color: rgba(0, 105, 212, 0.45);
-    border: 1px solid #0069d4;
-}
-
-
-/* =========================================================
-    TOOLTIPS
-    ========================================================= */
+/* ── Tooltips ───────────────────────────────────────────── */
 tooltip {
-    background-color: rgba(18, 14, 30, 0.92);
-    border: 1px solid @border-base;
-    border-radius: 8px;
-    color: @text-main;
+    background-color: alpha(@wl-bg, 0.85); /* Fondo oscuro transparente */
+    border: 1px solid @border-main;
+    border-radius: 10px;
 }
 tooltip label {
     color: @text-main;
-    padding: 2px 4px;
+    padding: 6px;
 }
-
-
-/*  =========================================================
-    MISCELÁNEOS (heredados / limpieza)
-    ========================================================= */
-label:focus {
-    background-color: transparent;
-}
-
-/* Clases legacy que podrían aparecer — neutralizadas */
-#wireplumber          { background-color: transparent; color: @text-main; }
-#wireplumber.muted    { color: @red-alert; }
-#disk                 { background-color: transparent; color: @orange-warn; }

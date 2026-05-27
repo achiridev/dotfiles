@@ -1,0 +1,23 @@
+/* =========================================================
+   Rofi + Wallust
+   ========================================================= */
+
+* {
+    font: "JetBrainsMono Nerd Font 11";
+
+    /* Paleta dinámica (wallust) */
+    bg0:        {{background}};
+    bg1:        {{color0}};
+    bg2:        {{color8}};
+    bg3:        {{color4}};
+
+    fg0:        {{foreground}};
+    fg1:        {{color7}};
+
+    accent:     {{color4}};
+    urgent:     {{color1}};
+
+    background-color:   transparent;
+    text-color:         @fg0;
+    border-color:       @bg3;
+}

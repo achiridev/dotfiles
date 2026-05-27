@@ -1,0 +1,22 @@
+/* ── Variables Dinámicas de Wallust ─────────────────────── */
+@define-color wl-fg          {{foreground}};
+@define-color wl-bg          {{background}};
+@define-color wl-cursor      {{cursor}};
+
+/* Paleta ANSI */
+@define-color wl-color0      {{color0}};
+@define-color wl-color1      {{color1}};
+@define-color wl-color2      {{color2}};
+@define-color wl-color3      {{color3}};
+@define-color wl-color4      {{color4}};
+@define-color wl-color5      {{color5}};
+@define-color wl-color6      {{color6}};
+@define-color wl-color7      {{color7}};
+@define-color wl-color8      {{color8}};
+@define-color wl-color9      {{color9}};
+@define-color wl-color10     {{color10}};
+@define-color wl-color11     {{color11}};
+@define-color wl-color12     {{color12}};
+@define-color wl-color13     {{color13}};
+@define-color wl-color14     {{color14}};
+@define-color wl-color15     {{color15}};

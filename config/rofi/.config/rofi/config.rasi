@@ -12,4 +12,4 @@ configuration {
     display-window:     " Windows";
 }
 
-@theme "~/.config/rofi/themes/purple-grid.rasi"
+@theme "~/.config/rofi/themes/apps.rasi"
