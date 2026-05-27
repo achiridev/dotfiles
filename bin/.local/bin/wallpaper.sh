@@ -20,7 +20,7 @@ fi
 
 echo "$WALLPAPER" > "$CACHE_FILE"
 
-echo "🖼️ Aplicando wallpaper: $WALLPAPER"
+echo "Aplicando wallpaper: $WALLPAPER"
 
 # 1. Wallpaper (swww/awww)
 awww img "$WALLPAPER" \
@@ -30,7 +30,7 @@ awww img "$WALLPAPER" \
     --transition-fps 60
 
 # 2. Generar colores
-echo "🎨 Generando paleta..."
+echo "Generando paleta..."
 wallust --skip-sequences -d ~/dotfiles/config/wallust/.config/wallust run "$WALLPAPER"
 
 # 3. Recargar apps
@@ -38,6 +38,9 @@ wallust --skip-sequences -d ~/dotfiles/config/wallust/.config/wallust run "$WALL
 # Kitty
 kitty @ set-colors -a ~/.config/kitty/colors.conf
 pkill -USR1 kitty 2>/dev/null || true
+
+# Rofi
+pkill rofi 2>/dev/null || true # No necesario
 
 # Waybar
 pkill -SIGUSR2 waybar 2>/dev/null || true
@@ -48,4 +51,4 @@ swaync-client --reload-config 2>/dev/null || true
 # Hyprland
 hyprctl reload
 
-echo "✅ Tema aplicado correctamente"
+echo "Tema aplicado correctamente"
