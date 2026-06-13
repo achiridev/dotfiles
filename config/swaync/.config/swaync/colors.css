@@ -1,0 +1,23 @@
+:root {
+    /* ── Fondos base del wallpaper ─────────────────── */
+    --wl-bg:          #1B181F;
+    --wl-fg:          #E9EBF7;
+
+    /* ── Paleta de 16 colores ───────────────────────── */
+    --wl-color0:      #423F47;
+    --wl-color1:      #421E46;
+    --wl-color2:      #43224B;
+    --wl-color3:      #362D88;
+    --wl-color4:      #4E4A83;
+    --wl-color5:      #545E9F;
+    --wl-color6:      #9094AF;
+    --wl-color7:      #D7DAEC;
+    --wl-color8:      #9698A5;
+    --wl-color9:      #58285D;
+    --wl-color10:     #592D64;
+    --wl-color11:     #483CB5;
+    --wl-color12:     #6863AF;
+    --wl-color13:     #707ED4;
+    --wl-color14:     #C0C5E9;
+    --wl-color15:     #D7DAEC;
+}

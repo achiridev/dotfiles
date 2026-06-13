@@ -16,12 +16,12 @@
       "type": "custom"
     },
     {
-      "key": "│ {#38;5;63} user     {#keys}│",
+      "key": "│ {#38} user     {#keys}│",
       "type": "title",
       "format": "{user-name}"
     },
     {
-      "key": "│ {#38;5;105}󰇅 hname    {#keys}│",
+      "key": "│ {#36}󰇅 hname    {#keys}│",
       "type": "title",
       "format": "{host-name}"
     },
@@ -31,31 +31,31 @@
     },
     {
       "type": "command",
-      "key": "│ {#38;5;99}󱦟 os age   {#keys}│",
+      "key": "│ {#34}󱦟 os age   {#keys}│",
       "text": "printf \"\\e[0m%s days\\e[0m\" \"$(( ($(date +%s) - $(stat -c %W /)) / 86400 ))\""
     },
     {
-      "key": "│ {#34}󰅐 distro   {#keys}│",
+      "key": "│ {#35}󰅐 distro   {#keys}│",
       "type": "os"
     },
     {
-      "key": "│ {#35} kernel   {#keys}│",
+      "key": "│ {#36} kernel   {#keys}│",
       "type": "kernel"
     },
     {
-      "key": "│ {#38;5;141}󰅐 uptime   {#keys}│",
+      "key": "│ {#34}󰅐 uptime   {#keys}│",
       "type": "uptime"
     },
     {
-      "key": "│ {#38;5;63}󰏖 pkgs     {#keys}│",
+      "key": "│ {#35}󰏖 pkgs     {#keys}│",
       "type": "packages"
     },
     {
-      "key": "│ {#38;5;105} shell    {#keys}│",
+      "key": "│ {#36} shell    {#keys}│",
       "type": "shell"
     },
     {
-      "key": "│ {#38;5;99}󰗊 locale   {#keys}│",
+      "key": "│ {#34}󰗊 locale   {#keys}│",
       "type": "locale"
     },
     {
@@ -63,23 +63,23 @@
       "type": "custom"
     },
     {
-      "key": "│ {#34}󰍹 display  {#keys}│",
+      "key": "│ {#35}󰍹 display  {#keys}│",
       "type": "display"
     },
     {
-      "key": "│ {#35}󰇄 desktop  {#keys}│",
+      "key": "│ {#36}󰇄 desktop  {#keys}│",
       "type": "de"
     },
     {
-      "key": "│ {#38;5;141} wm       {#keys}│",
+      "key": "│ {#34} wm       {#keys}│",
       "type": "wm"
     },
     {
-      "key": "│ {#38;5;63}󰉼 theme    {#keys}│",
+      "key": "│ {#35}󰉼 theme    {#keys}│",
       "type": "wmtheme"
     },
     {
-      "key": "│ {#38;5;99} term     {#keys}│",
+      "key": "│ {#36} term     {#keys}│",
       "type": "terminal"
     },
     {
@@ -95,19 +95,19 @@
       "type": "cpu"
     },
     {
-      "key": "│ {#38;5;141}󰢮 gpu      {#keys}│",
+      "key": "│ {#36}󰢮 gpu      {#keys}│",
       "type": "gpu"
     },
     {
-      "key": "│ {#38;5;63} memory   {#keys}│",
+      "key": "│ {#34} memory   {#keys}│",
       "type": "memory"
     },
     {
-      "key": "│ {#38;5;105}󰓡 swap     {#keys}│",
+      "key": "│ {#35}󰓡 swap     {#keys}│",
       "type": "swap"
     },
     {
-      "key": "│ {#38;5;99}󰉉 disk     {#keys}│",
+      "key": "│ {#36}󰉉 disk     {#keys}│",
       "type": "disk"
     },
     {
@@ -123,7 +123,7 @@
       "type": "battery"
     },
     {
-      "key": "│ {#38;5;141}󰚥 power    {#keys}│",
+      "key": "│ {#36}󰚥 power    {#keys}│",
       "type": "poweradapter"
     },
     {
@@ -131,7 +131,7 @@
       "type": "custom"
     },
     {
-      "key": "│ {#39} colors   {#keys}│",
+      "key": "│ {#36} colors   {#keys}│",
       "type": "colors",
       "symbol": "circle"
     },

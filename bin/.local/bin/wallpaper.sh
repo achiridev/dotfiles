@@ -33,6 +33,10 @@ awww img "$WALLPAPER" \
 echo "Generando paleta..."
 wallust --skip-sequences -d ~/dotfiles/config/wallust/.config/wallust run "$WALLPAPER"
 
+
+# Extra. Cambiar colores del teclado
+~/dotfiles/bin/.local/bin/wallust-keyboard.sh
+
 # 3. Recargar apps
 
 # Kitty
@@ -44,9 +48,6 @@ pkill rofi 2>/dev/null || true # No necesario
 
 # Waybar
 pkill -SIGUSR2 waybar 2>/dev/null || true
-
-# SwayNC
-swaync-client --reload-config 2>/dev/null || true
 
 # Hyprland
 hyprctl reload

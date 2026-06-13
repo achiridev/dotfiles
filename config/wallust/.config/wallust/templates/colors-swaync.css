@@ -1,0 +1,23 @@
+:root {
+    /* ── Fondos base del wallpaper ─────────────────── */
+    --wl-bg:          {{ background }};
+    --wl-fg:          {{ foreground }};
+
+    /* ── Paleta de 16 colores ───────────────────────── */
+    --wl-color0:      {{ color0 }};
+    --wl-color1:      {{ color1 }};
+    --wl-color2:      {{ color2 }};
+    --wl-color3:      {{ color3 }};
+    --wl-color4:      {{ color4 }};
+    --wl-color5:      {{ color5 }};
+    --wl-color6:      {{ color6 }};
+    --wl-color7:      {{ color7 }};
+    --wl-color8:      {{ color8 }};
+    --wl-color9:      {{ color9 }};
+    --wl-color10:     {{ color10 }};
+    --wl-color11:     {{ color11 }};
+    --wl-color12:     {{ color12 }};
+    --wl-color13:     {{ color13 }};
+    --wl-color14:     {{ color14 }};
+    --wl-color15:     {{ color15 }};
+}

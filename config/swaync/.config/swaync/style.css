@@ -1,42 +1,53 @@
 /* ═══════════════════════════════════════════════════════════
-    SWAYNC — style.css
-    Variables consolidadas, críticas con color, blur-ready
-═══════════════════════════════════════════════════════════ */
+   SWAYNC — style.css
+   ═══════════════════════════════════════════════════════════
+   IMPORTANTE — Por qué se usa color-mix() en lugar de rgba():
+   ═══════════════════════════════════════════════════════════ */
+
+@import url("colors.css");
 
 :root {
-  /* ── Fondos ──────────────────────────────────────────── */
-  --cc-bg:                rgba(20, 20, 30, 0.55);
-  --noti-bg:              30, 30, 46;          /* RGB separado para rgba() */
-  --noti-bg-alpha:        0.85;
-  --noti-bg-darker:       rgb(18, 18, 28);
-  --noti-bg-hover:        rgba(49, 50, 68, 0.9);
-  --noti-bg-focus:        rgba(68, 71, 90, 0.5);
-  --noti-bg-alt:          rgba(30, 31, 46, 0.8); /* FIX: variable faltante */
+  --cc-bg:            color-mix(in srgb, var(--wl-bg)      55%, transparent);
+  --noti-bg:          var(--wl-color0);
+  --noti-bg-darker:   color-mix(in srgb, var(--wl-color0)  80%, black);
+  --noti-bg-hover:    color-mix(in srgb, var(--wl-color8)  90%, transparent);
+  --noti-bg-focus:    color-mix(in srgb, var(--wl-color8)  50%, transparent);
+  --noti-bg-alt:      color-mix(in srgb, var(--wl-bg)      80%, transparent);
 
-  /* ── Bordes ──────────────────────────────────────────── */
-  --noti-border-color:    rgba(137, 180, 250, 0.15);
-  --border:               1px solid var(--noti-border-color);
-  --border-radius:        14px;
-  --border-radius-sm:     8px;
+  /* ── Bordes — acento con baja opacidad ───────────────────
+     --wl-color4 = azul/acento principal de la paleta */
+  --noti-border-color: color-mix(in srgb, var(--wl-color4) 20%, transparent);
+  --border:            1px solid var(--noti-border-color);
+  --border-radius:     14px;
+  --border-radius-sm:  8px;
 
-  /* ── Close button ────────────────────────────────────── */
-  --noti-close-bg:        rgba(243, 139, 168, 0.2);
-  --noti-close-bg-hover:  rgba(243, 139, 168, 0.45);
+  /* ── Botón de cierre — derivado del color crítico ────────
+     --wl-color1 = rojo de la paleta */
+  --noti-close-bg:       color-mix(in srgb, var(--wl-color1) 20%, transparent);
+  --noti-close-bg-hover: color-mix(in srgb, var(--wl-color1) 45%, transparent);
 
-  /* ── Texto ───────────────────────────────────────────── */
-  --text-color:           rgb(205, 214, 244);
-  --text-color-disabled:  rgb(108, 112, 134);
-  --text-color-subtle:    rgb(147, 153, 178);
-  --font-size-body:       13px;
-  --font-size-summary:    14px;
-  --font-family:          "JetBrainsMono Nerd Font", "Noto Sans", sans-serif;
+  /* ── Texto ───────────────────────────────────────────────
+     --wl-fg      = color de texto principal (más claro)
+     --wl-color15 = blanco de la paleta
+     --wl-color8  = gris medio (disabled)
+     --wl-color7  = gris claro (sutil) */
+  --text-color:          var(--wl-fg);
+  --text-color-disabled: var(--wl-color8);
+  --text-color-subtle:   var(--wl-color7);
+  --font-size-body:      13px;
+  --font-size-summary:   14px;
+  --font-family:         "JetBrainsMono Nerd Font", "Noto Sans", sans-serif;
 
-  /* ── Acento / selección ──────────────────────────────── */
-  --bg-selected:          rgba(137, 180, 250, 0.85);
-  --accent:               rgb(137, 180, 250);
-  --accent-warning:       rgb(249, 226, 175);
-  --accent-critical:      rgb(243, 139, 168);
-  --accent-success:       rgb(166, 227, 161);
+  /* ── Acentos / selección ─────────────────────────────────
+     color4  = azul/acento
+     color1  = rojo/crítico
+     color3  = amarillo/warning
+     color2  = verde/éxito */
+  --bg-selected:    color-mix(in srgb, var(--wl-color4) 85%, transparent);
+  --accent:         var(--wl-color4);
+  --accent-warning: var(--wl-color3);
+  --accent-critical:var(--wl-color1);
+  --accent-success: var(--wl-color2);
 
   /* ── Íconos ──────────────────────────────────────────── */
   --notification-icon-size:       52px;
@@ -44,38 +55,23 @@
   --notification-group-icon-size: 28px;
 
   /* ── Mpris ───────────────────────────────────────────── */
-  --mpris-album-art-overlay:      rgba(20, 20, 30, 0.65);
-  --mpris-button-hover:           rgba(137, 180, 250, 0.15);
-  --mpris-album-art-icon-size:    110px;
-  --mpris-album-art-shadow:       0px 4px 20px rgba(0, 0, 0, 0.6);
+  --mpris-album-art-overlay:  color-mix(in srgb, var(--wl-bg) 65%, transparent);
+  --mpris-button-hover:       color-mix(in srgb, var(--wl-color4) 15%, transparent);
+  --mpris-album-art-icon-size:110px;
+  --mpris-album-art-shadow:   0px 4px 20px rgba(0, 0, 0, 0.6);
 
-  /* ── Volume widget ───────────────────────────────────── */
-  --widget-volume-row-icon-size:  22px;
+  /* ── Volume widget ──────────────────────────────────── */
+  --widget-volume-row-icon-size: 22px;
 
   /* ── Sombras ─────────────────────────────────────────── */
-  --notification-shadow:  0 2px 8px rgba(0, 0, 0, 0.35);
+  --notification-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 
   /* ── Transiciones ────────────────────────────────────── */
-  --hover-transition:            background 0.18s ease-in-out;
-  --hover-tranistion:            var(--hover-transition); /* compat typo */
-  --group-collapse-transition:   opacity 350ms ease-in-out;
-  --group-collapse-tranistion:   var(--group-collapse-transition); /* compat */
+  --hover-transition:          background 0.18s ease-in-out;
+  --hover-tranistion:          var(--hover-transition);   /* compat typo swaync */
+  --group-collapse-transition: opacity 350ms ease-in-out;
+  --group-collapse-tranistion: var(--group-collapse-transition); /* compat typo */
 }
-
-/* Fallback colors para temas viejos que usen @define-color */
-@define-color cc-bg             rgba(20, 20, 30, 0.55);
-@define-color noti-border-color rgba(137, 180, 250, 0.15);
-@define-color noti-bg           rgba(30, 30, 46, 0.85);
-@define-color noti-bg-opaque    rgb(30, 30, 46);
-@define-color noti-bg-darker    rgb(18, 18, 28);
-@define-color noti-bg-hover     rgb(49, 50, 68);
-@define-color noti-bg-hover-opaque rgb(49, 50, 68);
-@define-color noti-bg-focus     rgba(68, 71, 90, 0.5);
-@define-color noti-close-bg     rgba(243, 139, 168, 0.2);
-@define-color noti-close-bg-hover rgba(243, 139, 168, 0.45);
-@define-color text-color        rgb(205, 214, 244);
-@define-color text-color-disabled rgb(108, 112, 134);
-@define-color bg-selected       rgba(137, 180, 250, 0.85);
 
 /* ══════════════════════════════════════════════════════════ */
 /* VENTANAS BASE                                             */
@@ -147,13 +143,14 @@ blankwindow {
   border: var(--border);
   padding: 0;
   transition: var(--hover-transition);
-  background: rgba(var(--noti-bg), var(--noti-bg-alpha));
+  /* color-mix reemplaza rgba(var(--noti-bg), 0.85) — ver nota al inicio */
+  background: color-mix(in srgb, var(--noti-bg) 85%, transparent);
   font-family: var(--font-family);
 }
 
-/* ── Urgencia Low: sutil, borde azul tenue ──────────────── */
+/* ── Urgencia Low: sutil, borde tenue ───────────────────── */
 .notification-row .notification-background .notification.low {
-  border-color: rgba(137, 180, 250, 0.08);
+  border-color: color-mix(in srgb, var(--wl-color4) 10%, transparent);
   opacity: 0.85;
 }
 
@@ -162,11 +159,11 @@ blankwindow {
   border-color: var(--noti-border-color);
 }
 
-/* ── Urgencia Critical: borde rojo visible ──────────────── */
+/* ── Urgencia Critical: borde del color crítico visible ──── */
 .notification-row .notification-background .notification.critical {
-  border-color: rgba(243, 139, 168, 0.6);
+  border-color: color-mix(in srgb, var(--wl-color1) 60%, transparent);
   border-width: 1.5px;
-  background: rgba(40, 20, 30, 0.88);
+  background: color-mix(in srgb, var(--wl-color0) 88%, var(--wl-color1));
 }
 
 /* ── Acción default (zona clickeable grande) ────────────── */
@@ -208,7 +205,7 @@ blankwindow {
 .notification-row .notification-background .notification .notification-default-action .notification-content .app-icon {
   -gtk-icon-filter: none;
   -gtk-icon-size: var(--notification-app-icon-size);
-  -gtk-icon-shadow: 0 1px 4px rgba(0,0,0,0.8);
+  -gtk-icon-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
   margin: 6px;
 }
 
@@ -251,7 +248,8 @@ blankwindow {
 
 .notification-row .notification-background .notification .notification-default-action .notification-content progressbar trough {
   border-radius: var(--border-radius-sm);
-  background: rgba(var(--noti-bg), 1);
+  background: var(--noti-bg);
+  min-height: 4px;
 }
 
 .notification-row .notification-background .notification .notification-default-action .notification-content progressbar progress {
@@ -284,7 +282,7 @@ blankwindow {
 
 .notification-row .notification-background .notification .notification-default-action .notification-content .inline-reply .inline-reply-button {
   margin-left: 4px;
-  background: rgba(var(--noti-bg), var(--noti-bg-alpha));
+  background: color-mix(in srgb, var(--noti-bg) 85%, transparent);
   border: var(--border);
   border-radius: var(--border-radius-sm);
   color: var(--text-color);
@@ -334,7 +332,7 @@ blankwindow {
   background: var(--noti-bg-focus);
 }
 
-/* Urgencias en grupos */
+/* Urgencias en grupos — colorea el encabezado del grupo */
 .notification-group.critical .notification-group-headers {
   color: var(--accent-critical);
 }
@@ -344,7 +342,7 @@ blankwindow {
 }
 
 .notification-group.collapsed .notification-row .notification {
-  background-color: rgba(var(--noti-bg), 1);
+  background-color: var(--noti-bg);
 }
 
 .notification-group.collapsed .notification-row:not(:last-child) .notification-action,
@@ -377,9 +375,12 @@ blankwindow {
 /* ══════════════════════════════════════════════════════════ */
 
 .control-center {
-  /* Con layer-shell-cover-screen: false en config.json
-     y layerrule blur en hyprland.conf, el background
-     semitransparente dejará ver el blur real */
+  /* Requiere en hyprland.conf:
+       layerrule = blur, swaync-control-center
+       layerrule = ignorezero, swaync-control-center
+     Y en config.json:
+       "layer-shell-cover-screen": false
+     El fondo semitransparente deja ver el blur real. */
   background: var(--cc-bg);
   color: var(--text-color);
   border-radius: var(--border-radius);
@@ -442,7 +443,7 @@ blankwindow {
   font-family: var(--font-family);
   font-size: 11px;
   color: var(--text-color-subtle);
-  background: rgba(var(--noti-bg), 0.6);
+  background: color-mix(in srgb, var(--noti-bg) 60%, transparent);
   border: var(--border);
   padding: 2px 8px;
   transition: var(--hover-transition);
@@ -468,14 +469,15 @@ blankwindow {
 .widget-dnd switch {
   border-radius: 100px;
   margin-left: 8px;
-  background: rgba(var(--noti-bg), 0.8);
+  background: color-mix(in srgb, var(--noti-bg) 80%, transparent);
   border: var(--border);
   transition: background 0.2s ease-in-out;
 }
 
 .widget-dnd switch:checked {
-  background: rgba(243, 139, 168, 0.4);
-  border-color: rgba(243, 139, 168, 0.5);
+  /* Cuando DND está activado usa el color crítico/rojo */
+  background: color-mix(in srgb, var(--wl-color1) 40%, transparent);
+  border-color: color-mix(in srgb, var(--wl-color1) 50%, transparent);
 }
 
 .widget-dnd switch slider {
@@ -507,7 +509,6 @@ blankwindow {
   margin: 10px 12px;
   border-radius: var(--border-radius);
   box-shadow: var(--mpris-album-art-shadow);
-  overflow: hidden;
 }
 
 .widget-mpris .widget-mpris-player .mpris-background {
@@ -567,7 +568,7 @@ blankwindow {
 .widget-buttons-grid {
   margin: 4px 8px 8px 8px;
   padding: 4px;
-  background: rgba(var(--noti-bg), 0.4);
+  background: color-mix(in srgb, var(--noti-bg) 40%, transparent);
   border-radius: var(--border-radius);
   border: var(--border);
 }
@@ -582,8 +583,8 @@ blankwindow {
   min-height: 52px;
   font-size: 1.4rem;
   color: var(--text-color-subtle);
-  background: rgba(var(--noti-bg), 0.6);
-  border: 1px solid rgba(137, 180, 250, 0.08);
+  background: color-mix(in srgb, var(--noti-bg) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--wl-color4) 10%, transparent);
   transition: var(--hover-transition), color 0.18s ease-in-out;
 }
 
@@ -592,15 +593,15 @@ blankwindow {
   color: var(--text-color);
 }
 
-/* ── Toggle activo: diferencia visual clara ─────────────── */
+/* ── Toggle activo: indicador visual claro del estado ON ─── */
 .widget-buttons-grid flowboxchild > button.toggle:checked {
-  background: rgba(137, 180, 250, 0.2);
+  background: color-mix(in srgb, var(--wl-color4) 20%, transparent);
   color: var(--accent);
-  border-color: rgba(137, 180, 250, 0.4);
+  border-color: color-mix(in srgb, var(--wl-color4) 40%, transparent);
 }
 
 .widget-buttons-grid flowboxchild > button.toggle:checked:hover {
-  background: rgba(137, 180, 250, 0.3);
+  background: color-mix(in srgb, var(--wl-color4) 30%, transparent);
 }
 
 /* ── Widget: Menubar ────────────────────────────────────── */
@@ -636,7 +637,7 @@ blankwindow {
 
 /* Paneles desplegables del menubar */
 .widget-menubar > revealer > * {
-  background: rgba(var(--noti-bg), 0.7);
+  background: color-mix(in srgb, var(--noti-bg) 70%, transparent);
   border-radius: var(--border-radius);
   border: var(--border);
   margin: 0 8px 8px 8px;
@@ -656,7 +657,7 @@ blankwindow {
 
 /* ── Widget: Volume ─────────────────────────────────────── */
 .widget-volume {
-  background: rgba(var(--noti-bg), 0.4);
+  background: color-mix(in srgb, var(--noti-bg) 40%, transparent);
   padding: 8px 12px;
   margin: 4px 8px;
   border-radius: var(--border-radius);
@@ -669,7 +670,7 @@ blankwindow {
 }
 
 .per-app-volume {
-  background-color: var(--noti-bg-alt); /* FIX: ahora está definida */
+  background-color: var(--noti-bg-alt);
   margin: 4px 8px;
   margin-bottom: 0;
   border-radius: var(--border-radius-sm);
@@ -678,7 +679,7 @@ blankwindow {
 
 /* ── Widget: Slider (backlight / custom) ────────────────── */
 .widget-slider {
-  background: rgba(var(--noti-bg), 0.4);
+  background: color-mix(in srgb, var(--noti-bg) 40%, transparent);
   padding: 8px 12px;
   margin: 4px 8px;
   border-radius: var(--border-radius);
@@ -693,7 +694,7 @@ blankwindow {
 
 .widget-slider scale trough {
   border-radius: 100px;
-  background: rgba(var(--noti-bg), 1);
+  background: var(--noti-bg);
   min-height: 4px;
 }
 
@@ -704,7 +705,7 @@ blankwindow {
 
 /* ── Widget: Backlight ──────────────────────────────────── */
 .widget-backlight {
-  background: rgba(var(--noti-bg), 0.4);
+  background: color-mix(in srgb, var(--noti-bg) 40%, transparent);
   padding: 8px 12px;
   margin: 4px 8px;
   border-radius: var(--border-radius);
@@ -729,7 +730,7 @@ blankwindow {
   font-family: var(--font-family);
   font-size: 11px;
   color: var(--text-color-subtle);
-  background: rgba(var(--noti-bg), 0.6);
+  background: color-mix(in srgb, var(--noti-bg) 60%, transparent);
   border: var(--border);
   padding: 2px 8px;
   transition: var(--hover-transition);

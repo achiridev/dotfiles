@@ -6,16 +6,16 @@
     font: "JetBrainsMono Nerd Font 11";
 
     /* Paleta dinámica (wallust) */
-    bg0:        #000100;
-    bg1:        #000100;
-    bg2:        #889287;
-    bg3:        #535B34;
+    bg0:        #1B181F;
+    bg1:        #423F47;
+    bg2:        #9698A5;
+    bg3:        #4E4A83;
 
-    fg0:        #DBE4DA;
-    fg1:        #C3D0C1;
+    fg0:        #E9EBF7;
+    fg1:        #D7DAEC;
 
-    accent:     #535B34;
-    urgent:     #232B20;
+    accent:     #4E4A83;
+    urgent:     #421E46;
 
     background-color:   transparent;
     text-color:         @fg0;

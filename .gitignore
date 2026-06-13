@@ -1,6 +1,22 @@
-secrets/
-cache/
-*.log
-.DS_Store
+# JetBrains
+.idea/workspace.xml
+.idea/**/workspace.xml
 
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Configuración privada
 home/.config/zsh/private.zsh
+
+# Backups
+*.backup
+*.bak
+*.old
+
+# Cachés
+.cache/
+tmp/
+
+# Logs
+*.log

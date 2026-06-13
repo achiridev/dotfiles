@@ -11,8 +11,8 @@ threshold = 11
 
 [templates]
 
-kitty.template = "colors-kitty.conf"
-kitty.target = "~/.config/kitty/colors.conf"
+kitty.template = 'colors-kitty.conf'
+kitty.target = '~/.config/kitty/colors.conf'
 
 rofi.template = 'colors-rofi.rasi'
 rofi.target = '~/.config/rofi/themes/colors.rasi'
@@ -22,3 +22,13 @@ waybar.target = '~/.config/waybar/colors.css'
 
 hypr.template = 'colors-hyprland.conf'
 hypr.target = '~/.config/hypr/conf/colors.conf'
+
+swaync.template = 'colors-swaync.css'
+swaync.target = '~/.config/swaync/colors.css'
+
+keyboard.template = "colors-keyboard.txt"
+keyboard.target = "~/.cache/wallust/keyboard-colors"
+
+[hooks]
+# --reload-css y --reload-config no invalidan el caché de @import de GTK
+reload_swaync = "pkill -x swaync; sleep 0.5; swaync &"

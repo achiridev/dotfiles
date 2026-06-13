@@ -105,22 +105,22 @@
           "label": "󰤨",
           "type": "toggle",
           "active": true,
-          "command": "sh -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && nmcli radio wifi on || nmcli radio wifi off'",
-          "update-command": "sh -c '[[ $(nmcli radio wifi) == \"enabled\" ]] && echo true || echo false'"
+          "command": "sh -c \"[ $SWAYNC_TOGGLE_STATE = true ] && nmcli radio wifi on || nmcli radio wifi off\"",
+          "update-command": "sh -c \"nmcli radio wifi | grep -q enabled && echo true || echo false\""
         },
         {
           "label": "󰂯",
           "type": "toggle",
           "active": false,
-          "command": "sh -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && bluetoothctl power on || bluetoothctl power off'",
-          "update-command": "sh -c '[[ $(bluetoothctl show | grep \"Powered: yes\") ]] && echo true || echo false'"
+          "command": "sh -c \"[ $SWAYNC_TOGGLE_STATE = true ] && bluetoothctl power on || bluetoothctl power off\"",
+          "update-command": "sh -c \"bluetoothctl show | grep -q 'Powered: yes' && echo true || echo false\""
         },
         {
           "label": "󰕾",
           "type": "toggle",
           "active": false,
-          "command": "sh -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && pamixer --mute || pamixer --unmute'",
-          "update-command": "sh -c '[[ $(pamixer --get-mute) == \"true\" ]] && echo false || echo true'"
+          "command": "sh -c \"[ $SWAYNC_TOGGLE_STATE = true ] && pamixer --unmute || pamixer --mute\"",
+          "update-command": "sh -c \"pamixer --get-mute | grep -q true && echo false || echo true\""
         },
         {
           "label": "󰃠",
