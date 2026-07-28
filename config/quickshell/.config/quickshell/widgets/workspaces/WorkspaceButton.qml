@@ -8,7 +8,7 @@ Rectangle {
     property int workspaceId
 
     width: 34
-    height: Theme.heightBar - 4
+    height: AppTheme.heightBar - 4
 
     radius: 8
 

@@ -36,7 +36,7 @@ Singleton
 
     readonly property string colorCharning: "#308b5b"
     readonly property string colorWarning: "#ff5555"
-    readonly property string colorDefault: Theme.color1
+    readonly property string colorDefault: Qt.alpha(AppTheme.bg, 0.85)
     readonly property string color: {
         if (isCharging && percentage < 100 ) return colorCharning
         return colorDefault

@@ -7,10 +7,10 @@ import qs.globals
 
 Rectangle {
     width: 80
-    height: Theme.heightBar
-    radius: Theme.radius
+    height: AppTheme.heightBar
+    radius: AppTheme.radius
     border.width: 1
-    border.color: Qt.alpha(Theme.fg, 0.4)
+    border.color: Qt.alpha(AppTheme.fg, 0.4)
 
     property color displayColor: BatteryService.color
 
@@ -41,16 +41,16 @@ Rectangle {
 
         Text {
             text: BatteryService.batteryIcon
-            font.family: Theme.fontMono
-            font.pixelSize: Theme.fontLarge
-            color: Theme.fg
+            font.family: AppTheme.fontMono
+            font.pixelSize: AppTheme.fontLarge
+            color: AppTheme.fg
         }
 
         Text {
             text: BatteryService.percentage + "%"
-            font.family: Theme.fontLayout
-            font.pixelSize: Theme.fontBase
-            color: Theme.fg
+            font.family: AppTheme.fontLayout
+            font.pixelSize: AppTheme.fontBase
+            color: AppTheme.fg
         }
 
     }

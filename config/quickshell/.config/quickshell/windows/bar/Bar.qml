@@ -17,7 +17,7 @@ PanelWindow {
         right: true
     }
 
-    implicitHeight: Theme.heightBar
+    implicitHeight: AppTheme.heightBar
 
     // Excluir esta zona del área de ventanas (como en Waybar)
     exclusiveZone: height
@@ -25,7 +25,7 @@ PanelWindow {
     // Layer: background, bottom, top, overlay
     WlrLayershell.layer: WlrLayer.Top
 
-    color: Qt.alpha(Theme.bg, 0.55)
+    color: Qt.alpha(AppTheme.bg, 0.55)
 
     RowLayout {
         anchors.fill: parent

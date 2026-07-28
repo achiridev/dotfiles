@@ -5,7 +5,7 @@ import qs.globals
 
 Rectangle {
 
-    color: Theme.bg
+    color: AppTheme.bg
 
     radius: 12
 

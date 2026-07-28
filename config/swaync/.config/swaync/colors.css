@@ -1,23 +1,23 @@
 :root {
     /* ── Fondos base del wallpaper ─────────────────── */
-    --wl-bg:          #1B181F;
-    --wl-fg:          #E9EBF7;
+    --wl-bg:          #121312;
+    --wl-fg:          #F6EFEB;
 
     /* ── Paleta de 16 colores ───────────────────────── */
-    --wl-color0:      #423F47;
-    --wl-color1:      #421E46;
-    --wl-color2:      #43224B;
-    --wl-color3:      #362D88;
-    --wl-color4:      #4E4A83;
-    --wl-color5:      #545E9F;
-    --wl-color6:      #9094AF;
-    --wl-color7:      #D7DAEC;
-    --wl-color8:      #9698A5;
-    --wl-color9:      #58285D;
-    --wl-color10:     #592D64;
-    --wl-color11:     #483CB5;
-    --wl-color12:     #6863AF;
-    --wl-color13:     #707ED4;
-    --wl-color14:     #C0C5E9;
-    --wl-color15:     #D7DAEC;
+    --wl-color0:      #3A3B3A;
+    --wl-color1:      #421C18;
+    --wl-color2:      #2D3F50;
+    --wl-color3:      #8B2E2A;
+    --wl-color4:      #9E332E;
+    --wl-color5:      #538C77;
+    --wl-color6:      #AC9D95;
+    --wl-color7:      #EAE0DA;
+    --wl-color8:      #A49C99;
+    --wl-color9:      #582620;
+    --wl-color10:     #3C546A;
+    --wl-color11:     #BA3E38;
+    --wl-color12:     #D2443D;
+    --wl-color13:     #6EBA9F;
+    --wl-color14:     #E6D1C6;
+    --wl-color15:     #EAE0DA;
 }

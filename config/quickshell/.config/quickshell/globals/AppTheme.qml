@@ -66,5 +66,5 @@ QtObject {
     readonly property int radiusLarge: 12
 
     // Bar  (waybar es de 35 pero no ocupa todo asi que xd)
-    readonly property int heightBar: 32
+    readonly property int heightBar: 30
 }

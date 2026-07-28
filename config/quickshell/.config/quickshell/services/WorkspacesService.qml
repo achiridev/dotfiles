@@ -28,24 +28,24 @@ Singleton
     function textColor(id) {
 
         if (isActive(id))
-            return Theme.fg
+            return AppTheme.fg
 
         if (exists(id))
-            return Qt.alpha(Theme.fg, 0.55)
+            return Qt.alpha(AppTheme.fg, 0.55)
 
-        return Qt.alpha(Theme.fg, 0.35)
+        return Qt.alpha(AppTheme.fg, 0.35)
     }
 
     function background(id) {
 
         if (isActive(id))
-            return Theme.color4
+            return AppTheme.color4
         if (exists(id))
-            return Qt.alpha(Theme.color4, 0.35)
+            return Qt.alpha(AppTheme.color4, 0.35)
         return "transparent"
     }
 
-    readonly property string backgroundHover: Theme.color5
+    readonly property string backgroundHover: AppTheme.color5
 
     readonly property var visibleWorkspaces: {
         let ids = [];
