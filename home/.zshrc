@@ -1,4 +1,5 @@
 export COLORTERM=truecolor
+export PATH="$HOME/.local/bin:$PATH"
 
 typeset -g POWERLEVEL9K_INSTANT_PROMPT=off
 

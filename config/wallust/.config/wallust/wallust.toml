@@ -29,6 +29,9 @@ swaync.target = '~/.config/swaync/colors.css'
 keyboard.template = "colors-keyboard.txt"
 keyboard.target = "~/.cache/wallust/keyboard-colors"
 
+quickshell.template = "colors-quickshell.json"
+quickshell.target = "~/.cache/wallust/colors.json"
+
 [hooks]
 # --reload-css y --reload-config no invalidan el caché de @import de GTK
 reload_swaync = "pkill -x swaync; sleep 0.5; swaync &"
