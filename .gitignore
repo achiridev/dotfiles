@@ -20,3 +20,10 @@ tmp/
 
 # Logs
 *.log
+
+# Colores generados por Wallust
+config/hypr/.config/hypr/conf/colors.conf
+config/kitty/.config/kitty/colors.conf
+config/rofi/.config/rofi/themes/colors.rasi
+config/swaync/.config/swaync/colors.css
+config/waybar/.config/waybar/colors.css
