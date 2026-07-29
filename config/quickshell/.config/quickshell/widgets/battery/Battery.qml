@@ -10,7 +10,7 @@ Rectangle {
     height: AppTheme.heightBar
     radius: AppTheme.radius
     border.width: 1
-    border.color: Qt.alpha(AppTheme.fg, 0.4)
+    border.color: AppTheme.borderColor
 
     property color displayColor: BatteryService.color
 

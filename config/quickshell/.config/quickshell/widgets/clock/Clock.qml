@@ -6,7 +6,7 @@ import qs.services
 
 Text {
     color: AppTheme.fg
-    font.pixelSize: 14
+    font.pixelSize: AppTheme.fontBase
     Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
     text: TimeService.currentTime
 }

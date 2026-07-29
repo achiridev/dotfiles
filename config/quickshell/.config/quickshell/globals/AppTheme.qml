@@ -24,6 +24,8 @@ QtObject {
     readonly property color fg: colors ? colors.special.foreground : "#cdd6f4"
     readonly property color cursor: colors ? colors.special.cursor : "#f5e0dc"
 
+    readonly property color borderColor: Qt.alpha(AppTheme.fg, 0.3)
+
     // Colores base (0-7)
     readonly property color color0: colors ? colors.colors.color0 : "#11111b"
     readonly property color color1: colors ? colors.colors.color1 : "#f38ba8"

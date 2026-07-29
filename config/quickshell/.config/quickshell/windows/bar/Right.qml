@@ -2,6 +2,7 @@
 import QtQuick
 import QtQuick.Layouts
 import qs.widgets.battery
+import qs.widgets.powermenu
 
 RowLayout {
     anchors {
@@ -13,4 +14,5 @@ RowLayout {
     spacing: 8
 
     Battery {}
+    PowerButton {}
 }
