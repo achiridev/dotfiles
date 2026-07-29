@@ -1,3 +1,4 @@
+// windows/visualizer/VisualizerWindow.qml
 import QtQuick
 import Quickshell
 import Quickshell.Wayland

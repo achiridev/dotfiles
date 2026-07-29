@@ -1,3 +1,4 @@
+// widgets/visualizer/Visualizer.qml
 import QtQuick
 import Quickshell
 import Qt5Compat.GraphicalEffects

@@ -1,3 +1,4 @@
+// widgets/workspaces/Workspaces.qml
 import QtQuick
 
 import qs.services
