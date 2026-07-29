@@ -7,8 +7,6 @@ import qs.globals
 
 Singleton
 {
-    readonly property int workspaceCount: 9
-
     function workspace(id) {
         return Hyprland.workspaces.values.find(ws => ws.id === id)
     }
@@ -22,26 +20,22 @@ Singleton
     }
 
     function switchTo(id) {
-        Hyprland.dispatch("workspace " + id)
+        Hyprland.dispatch(`hl.dsp.focus({workspace = ${id}})`);
+    }
+
+    function toggleSpecial() {
+        Hyprland.dispatch(`hl.dsp.workspace.toggle_special("special")`);
     }
 
     function textColor(id) {
-
-        if (isActive(id))
-            return AppTheme.fg
-
-        if (exists(id))
-            return Qt.alpha(AppTheme.fg, 0.55)
-
+        if (isActive(id)) return AppTheme.fg
+        if (exists(id)) return Qt.alpha(AppTheme.fg, 0.55)
         return Qt.alpha(AppTheme.fg, 0.35)
     }
 
     function background(id) {
-
-        if (isActive(id))
-            return AppTheme.color4
-        if (exists(id))
-            return Qt.alpha(AppTheme.color4, 0.35)
+        if (isActive(id)) return AppTheme.color4
+        if (exists(id)) return Qt.alpha(AppTheme.color4, 0.35)
         return "transparent"
     }
 

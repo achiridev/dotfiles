@@ -20,6 +20,9 @@ rofi.target = '~/.config/rofi/themes/colors.rasi'
 waybar.template = 'colors-waybar.css'
 waybar.target = '~/.config/waybar/colors.css'
 
+hyprLua.template = 'colors-hyprland.lua'
+hyprLua.target = '~/.config/hypr/modules/colors.lua'
+
 hypr.template = 'colors-hyprland.conf'
 hypr.target = '~/.config/hypr/conf/colors.conf'
 
