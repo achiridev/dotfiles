@@ -5,57 +5,62 @@ import qs.services
 import qs.globals
 
 Rectangle {
+    property var workspaceId
 
-    property int workspaceId
+    readonly property bool activeState: workspaceId === "special"
+        ? WorkspacesService.isSpecialActive
+        : WorkspacesService.activeWorkspaceId === workspaceId
 
-    width: 34
+    readonly property bool existsState: WorkspacesService.exists(workspaceId)
+    readonly property bool hovered: mouseArea.containsMouse
+
+    width: activeState ? 48 : 34
     height: AppTheme.heightBar - 4
-
     radius: 8
 
-    property bool hovered: false
+    // Lógica de color de fondo movida aquí para ser reactiva
     color: hovered
         ? WorkspacesService.backgroundHover
-        : WorkspacesService.background(workspaceId)
+        : (activeState ? AppTheme.color4 : (existsState ? Qt.alpha(AppTheme.color4, 0.45) : "transparent"))
+
+    Behavior on width {
+        NumberAnimation { duration: 250; easing.type: Easing.OutExpo }
+    }
 
     Behavior on color {
-        ColorAnimation {
-            duration: 180
-        }
+        ColorAnimation { duration: 180 }
     }
 
     Text {
-
         anchors.centerIn: parent
-
-        text: workspaceId
-
+        text: workspaceId === "special" ? "S" : workspaceId
         font.pixelSize: 14
-        font.bold: true
+        font.bold: activeState
 
-        color: WorkspacesService.textColor(workspaceId)
+
+        color: activeState
+            ? Qt.alpha(AppTheme.fg, 0.9)
+            : (existsState ? Qt.alpha(AppTheme.fg, 0.8) : Qt.alpha(AppTheme.fg, 0.4))
 
         Behavior on color {
-            ColorAnimation {
-                duration: 180
-            }
+            ColorAnimation { duration: 180 }
         }
-
     }
 
     MouseArea {
-
+        id: mouseArea
         anchors.fill: parent
-
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
 
-        onEntered: parent.hovered = true
-        onExited: parent.hovered = false
+        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
 
-        onClicked:
-            WorkspacesService.switchTo(workspaceId)
-
+        onClicked: (mouse) => {
+            if (mouse.button === Qt.LeftButton) {
+                WorkspacesService.switchTo(workspaceId)
+            } else if (mouse.button === Qt.RightButton || mouse.button === Qt.MiddleButton) {
+                WorkspacesService.toggleSpecial()
+            }
+        }
     }
-
 }
