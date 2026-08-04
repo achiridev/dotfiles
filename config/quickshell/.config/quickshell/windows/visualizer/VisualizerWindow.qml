@@ -8,8 +8,13 @@ import qs.widgets.visualizer
 PanelWindow {
     id: root
 
+    property bool visualizerOnTop: false
+
     // capa: encima del wallpaper (Background), debajo de las ventanas normales
-    WlrLayershell.layer: WlrLayer.Bottom
+    WlrLayershell.layer: visualizerOnTop
+        ? WlrLayer.Top
+        : WlrLayer.Bottom
+
     WlrLayershell.namespace: "quickshell-visualizer"
 
     // no reservar espacio: las ventanas pueden ocupar toda la pantalla igual

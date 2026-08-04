@@ -70,4 +70,5 @@ QtObject {
 
     // Bar  (waybar es de 35 pero no ocupa todo asi que xd)
     readonly property int heightBar: 30
+    readonly property color bgModule: Qt.alpha(AppTheme.bg, 0.85)
 }

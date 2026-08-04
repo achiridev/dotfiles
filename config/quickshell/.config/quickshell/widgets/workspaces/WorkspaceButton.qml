@@ -33,7 +33,7 @@ Rectangle {
 
     Text {
         anchors.centerIn: parent
-        text: workspaceId === "special" ? "S" : workspaceId
+        text: workspaceId === "special" ? String.fromCodePoint(0xf04ce) : workspaceId
         font.pixelSize: 14
         font.bold: activeState
 
