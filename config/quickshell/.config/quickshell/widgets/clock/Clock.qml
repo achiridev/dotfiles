@@ -5,20 +5,44 @@ import qs.globals
 import qs.services
 
 Rectangle {
-    width: 80
+    id: root
+    property color hoverBg: AppTheme.surface
+
+    width: 94
     height: AppTheme.heightBar
-    color: AppTheme.bgModule
+    color: mouseArea.containsMouse ? hoverBg : AppTheme.bgModule
 
     radius: AppTheme.radius
     border.width: 1
     border.color: AppTheme.borderColor
 
+    Behavior on color {
+        ColorAnimation { duration: 150 }
+    }
 
-    Text {
+    Row {
+        id: row
         anchors.centerIn: parent
-        text: TimeService.currentTime
-        color: AppTheme.fg
-        font.pixelSize: AppTheme.fontBase
-        Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+        spacing: 6
+        readonly property color textColor: AppTheme.color5
+
+        Text {
+            text: TimeService.currentTime
+            color: row.textColor
+            font.pixelSize: AppTheme.fontBase
+            font.weight: Font.Medium // Font.Bold
+        }
+        Text {
+            text: TimeService.timeIcon
+            color: row.textColor
+            font.pixelSize: AppTheme.fontBase + 1
+            font.family: AppTheme.fontMono
+        }
+    }
+    MouseArea {
+        id: mouseArea
+        anchors.fill: parent
+        hoverEnabled: true
+        // cursorShape: Qt.PointingHandCursor
     }
 }

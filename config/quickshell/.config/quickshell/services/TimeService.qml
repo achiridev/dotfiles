@@ -5,6 +5,7 @@ import Quickshell
 pragma Singleton
 
 Item {
+    readonly property string timeIcon: String.fromCodePoint(0xf0954) || "󰥔"
     property string currentTime: ""
 
     Timer {

@@ -6,7 +6,7 @@ import qs.services
 import qs.globals
 
 Rectangle {
-    width: 80
+    width: 70
     height: AppTheme.heightBar
     radius: AppTheme.radius
     border.width: 1
@@ -40,19 +40,18 @@ Rectangle {
         spacing: 6
 
         Text {
-            text: BatteryService.batteryIcon
-            font.family: AppTheme.fontMono
-            font.pixelSize: AppTheme.fontLarge
-            color: AppTheme.fg
-        }
-
-        Text {
             text: BatteryService.percentage + "%"
             font.family: AppTheme.fontLayout
             font.pixelSize: AppTheme.fontBase
             color: AppTheme.fg
         }
 
+        Text {
+            text: BatteryService.batteryIcon
+            font.family: AppTheme.fontMono
+            font.pixelSize: AppTheme.fontBase + 1
+            color: AppTheme.fg
+        }
     }
 }
 

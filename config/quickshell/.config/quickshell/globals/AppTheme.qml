@@ -17,14 +17,20 @@ QtObject {
         onFileChanged: reload()
     }
     // 2. Parseamos el JSON para extraer los colores
-    property var colors: JSON.parse(wallustFile.text())
+    property var colors: {
+        try {
+            return JSON.parse(wallustFile.text())
+        } catch (e) {
+            return null
+        }
+    }
 
     // 3. Paleta de Colores Dinámica (Con Fallbacks estilo Catppuccin Mocha)
     readonly property color bg: colors ? colors.special.background : "#1e1e2e"
     readonly property color fg: colors ? colors.special.foreground : "#cdd6f4"
     readonly property color cursor: colors ? colors.special.cursor : "#f5e0dc"
 
-    readonly property color borderColor: Qt.alpha(AppTheme.fg, 0.3)
+    readonly property color borderColor: Qt.alpha(root.fg, 0.3)
 
     // Colores base (0-7)
     readonly property color color0: colors ? colors.colors.color0 : "#11111b"
@@ -52,10 +58,21 @@ QtObject {
     readonly property color warning: color3
     readonly property color success: color2
 
+    // Texto y superficies derivados (usar estos y no hardcodear alphas)
+    readonly property color textSecondary: Qt.alpha(root.fg, 0.6)
+    readonly property color textTertiary: Qt.alpha(root.fg, 0.4)
+    // Overlay para estados hover sobre superficies.
+    readonly property color surface: Qt.alpha(root.fg, 0.08)
+    // Fondo sólido para superficies elevadas (popups, tarjetas).
+    readonly property color bgPopup: Qt.alpha(root.bg, 0.92)
+
     // 4. Sistema de Diseño (Métricas fijas de UI)
-    readonly property string fontLayout: "Inter"
+    // Inter no estaba instalada (fc-match caía a Noto Sans); usamos una fuente
+    // presente para que el diseño renderice como se espera en todos los widgets.
+    readonly property string fontLayout: "Noto Sans"
     readonly property string fontMono: "JetBrainsMono Nerd Font"
 
+    readonly property int fontTiny: 10
     readonly property int fontSmall: 11
     readonly property int fontBase: 14
     readonly property int fontLarge: 18
@@ -70,5 +87,5 @@ QtObject {
 
     // Bar  (waybar es de 35 pero no ocupa todo asi que xd)
     readonly property int heightBar: 30
-    readonly property color bgModule: Qt.alpha(AppTheme.bg, 0.85)
+    readonly property color bgModule: Qt.alpha(root.bg, 0.85)
 }

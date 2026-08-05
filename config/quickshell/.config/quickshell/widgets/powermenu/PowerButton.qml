@@ -14,7 +14,7 @@ Rectangle {
     property var onClicked: () => PowerService.openPowerMenu()
 
     // Dimensiones dinámicas
-    Layout.fillHeight: true
+    height: AppTheme.heightBar
     implicitWidth: 48
 
     border.color: AppTheme.borderColor

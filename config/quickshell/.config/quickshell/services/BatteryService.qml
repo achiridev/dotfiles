@@ -1,4 +1,4 @@
-// service/battery/BatteryService.qml
+// service/BatteryService.qml
 pragma Singleton
 import Quickshell
 import Quickshell.Services.UPower
