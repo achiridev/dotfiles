@@ -5,16 +5,25 @@ import qs.services
 import qs.globals
 
 Rectangle {
-    color: AppTheme.bg
-    radius: 12
+    id: root
 
-    implicitWidth: row.implicitWidth + 8 // +8 para un ligero padding interno
-    implicitHeight: row.implicitHeight
+    implicitWidth: row.implicitWidth + AppTheme.paddingBase * 2
+    implicitHeight: AppTheme.heightBar
+
+    radius: AppTheme.radius
+    border.width: 1
+    border.color: AppTheme.borderColor
+
+    color: mouseArea.containsMouse ? AppTheme.bgModuleHover : AppTheme.bgModule
+
+    Behavior on color {
+        ColorAnimation { duration: 150; easing.type: Easing.OutCubic }
+    }
 
     Row {
         id: row
         anchors.centerIn: parent
-        spacing: 4 // Un poco más de espacio luce mejor con el efecto píldora
+        spacing: 4
 
         Repeater {
             model: WorkspacesService.visibleWorkspaces
@@ -25,6 +34,7 @@ Rectangle {
     }
 
     MouseArea {
+        id: mouseArea
         anchors.fill: parent
         acceptedButtons: Qt.NoButton
 

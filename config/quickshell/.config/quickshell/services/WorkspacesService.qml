@@ -1,5 +1,6 @@
 // services/WorkspacesService.qml
 pragma Singleton
+import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 
@@ -9,13 +10,41 @@ Singleton
 {
     readonly property int activeWorkspaceId: Hyprland.focusedWorkspace?.id ?? -1
 
-    // Obtenemos el workspace especial del monitor actual enfocado
-    readonly property var specialWorkspace: Hyprland.focusedMonitor?.specialWorkspace
+    // Hyprland 0.56 no emite eventos de socket al abrir un special workspace
+    // y Quickshell v0.3.0 no expone specialWorkspace como propiedad del monitor,
+    // así que leemos el IPC crudo (lastIpcObject) y forzamos refreshMonitors().
+    readonly property var specialWorkspaceInfo: Hyprland.focusedMonitor?.lastIpcObject?.specialWorkspace
     // Limpiamos el nombre quitando "special:" (ej. "special:magic" -> "magic").
-    // Si es null o indefinido, devolvemos un string vacío.
-    readonly property string specialWorkspaceName: specialWorkspace?.name ? specialWorkspace.name.replace("special:", "") : ""
+    readonly property string specialWorkspaceName: specialWorkspaceInfo?.name
+        ? specialWorkspaceInfo.name.replace("special:", "") : ""
     // Si el nombre resultante no está vacío, el workspace especial está activo en pantalla
     readonly property bool isSpecialActive: specialWorkspaceName !== ""
+
+    readonly property var refreshEvents: [
+        "workspacev2", "activewindowv2", "focusedmon",
+        "openwindow", "closewindow", "movewindowv2",
+        "activespecial", "activespecialv2", "fullscreen",
+        "createworkspacev2", "destroyworkspacev2", "configreloaded"
+    ]
+
+    Connections {
+        target: Hyprland
+
+        function onRawEvent(event) {
+            if (WorkspacesService.refreshEvents.includes(event.name))
+                Hyprland.refreshMonitors()
+        }
+    }
+
+    // La apertura de un special vacío no dispara ningún evento de socket;
+    // este timer de respaldo garantiza que el estado activo siempre se actualice.
+    Timer {
+        interval: 2000
+        running: true
+        repeat: true
+
+        onTriggered: Hyprland.refreshMonitors()
+    }
 
     function exists(id) {
         if (id === "special") {
@@ -26,6 +55,10 @@ Singleton
         return Hyprland.workspaces.values.some(ws => ws.id === id);
     }
 
+    // Nota: Quickshell v0.3.0 calcula usingLua a partir de `hyprctl j/status`,
+    // endpoint que no existe en Hyprland 0.56 (devuelve "unknown request"), así
+    // que usingLua siempre es false aunque Hyprland corra en modo Lua. Los
+    // dispatchers se escriben en sintaxis Lua, que es la que funciona.
     function switchTo(id) {
         if (id === "special") {
             toggleSpecial()
@@ -39,14 +72,9 @@ Singleton
     }
 
     function scroll(direction) {
-        if (direction > 0) {
-            Hyprland.dispatch(`hl.dsp.focus({workspace = "r-1"})`);
-        } else if (direction < 0) {
-            Hyprland.dispatch(`hl.dsp.focus({workspace = "r+1"})`);
-        }
+        const target = direction > 0 ? "r-1" : "r+1";
+        Hyprland.dispatch(`hl.dsp.focus({workspace = "${target}"})`);
     }
-
-    readonly property string backgroundHover: Qt.alpha(AppTheme.color5, 0.3)
 
     readonly property var visibleWorkspaces: {
         let ids = [];
