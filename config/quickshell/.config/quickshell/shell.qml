@@ -5,6 +5,7 @@ import Quickshell.Wayland
 
 import qs.windows.bar
 import qs.windows.visualizer
+import qs.windows.overview
 
 ShellRoot {
     Bar {}
@@ -18,4 +19,6 @@ ShellRoot {
             }
         }
     }
+
+    Overview {}
 }

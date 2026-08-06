@@ -91,4 +91,32 @@ QtObject {
     // Hover para módulos de barra: mismo alfa que bgModule para que la
     // ColorAnimation no atraviese valores casi transparentes (evita el flash).
     readonly property color bgModuleHover: Qt.lighter(root.bgModule, 1.2)
+
+    // 5. Workspace Overview (SUPER+TAB)
+    // Efectos
+    readonly property bool overviewBlur: true
+    readonly property bool overviewBackdrop: true
+    readonly property real overviewBackdropOpacity: 0.35
+    readonly property bool overviewCloseOnFocusLoss: true
+    // Timing
+    readonly property int overviewEventDebounceMs: 40
+    readonly property int overviewRaceConditionDelay: 150
+    // Grid
+    readonly property int overviewRows: 2
+    readonly property int overviewColumns: 5
+    readonly property real overviewScale: 0.16
+    readonly property real overviewSpacing: 5
+    readonly property real overviewPanelPadding: 10
+    readonly property real overviewPanelOpacity: 0.92
+    readonly property real overviewWorkspaceOpacity: 0.86
+    readonly property real overviewWorkspaceNumberBaseSize: 250
+    readonly property bool overviewHideEmptyRows: true
+    // Previews
+    readonly property bool overviewPreviewsEnabled: true
+    readonly property string overviewPreviewMode: "live"
+    readonly property int overviewPreviewRecaptureDelayMs: 60
+    readonly property real overviewIconToWindowRatio: 0.25
+    // Special workspaces
+    readonly property bool overviewShowSpecialWorkspaces: true
+    readonly property int overviewSpecialColumns: 5
 }

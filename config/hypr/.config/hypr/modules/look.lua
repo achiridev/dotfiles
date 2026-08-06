@@ -63,3 +63,15 @@ hl.config({
 		new_status = "master",
 	},
 })
+
+---------------------------------------------------------------------------
+-- LAYER RULES — Blur detrás del workspace overview (namespace de la capa
+-- "quickshell:overview-blur" definido en windows/overview/Overview.qml).
+-- https://wiki.hypr.land/Configuring/Decorations/#blur
+---------------------------------------------------------------------------
+hl.layer_rule({
+	name = "overview-blur",
+	match = { namespace = "^quickshell:overview-blur$" },
+	blur = true,
+	ignore_alpha = 0.2,
+})
