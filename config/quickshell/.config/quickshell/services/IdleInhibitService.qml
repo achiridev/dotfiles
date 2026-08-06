@@ -4,20 +4,19 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Inhibidor de inactividad vía D-Bus (org.freedesktop.ScreenSaver).
-// hypridle respeta esta interfaz (ignore_dbus_inhibit = false), mientras
-// que el protocolo wayland zwp_idle_inhibit_v1 no frena su dpms/lock.
+// Inhibidor de inactividad. Mantiene un proceso persistente
+// (systemd-inhibit --what=idle) que sostiene un inhibidor de logind;
+// hypridle lo respeta vía ignore_systemd_inhibit = false.
+//
+// No se usa gdbus/org.freedesktop.ScreenSaver porque el cookie de Inhibit
+// muere con la conexión del proceso que llama (NameOwnerChanged en hypridle);
+// un proceso de corta vida se auto-desinhibe al instante.
 Singleton {
     id: root
 
-    readonly property string dbusService: "org.freedesktop.ScreenSaver"
-    readonly property string dbusPath: "/org/freedesktop/ScreenSaver"
-    readonly property string dbusMethod: "org.freedesktop.ScreenSaver"
+    property bool active: false
 
-    property int cookie: -1
-    property string pendingCall: ""
-
-    readonly property bool enabled: root.cookie >= 0
+    readonly property bool enabled: root.active
 
     function toggle() {
         if (root.enabled) root.disable()
@@ -26,51 +25,29 @@ Singleton {
 
     function enable() {
         if (root.enabled) return
-        root.pendingCall = "inhibit"
+        root.active = true
         process.command = [
-            "gdbus", "call", "--session",
-            "--dest", root.dbusService,
-            "--object-path", root.dbusPath,
-            "--method", root.dbusMethod + ".Inhibit",
-            "quickshell", "idle-inhibitor"
+            "/usr/sbin/systemd-inhibit",
+            "--what=idle",
+            "--mode=block",
+            "--who=quickshell",
+            "--why=Idle inhibitor (bar widget)",
+            "/usr/bin/sleep", "infinity"
         ]
         process.running = true
     }
 
     function disable() {
         if (!root.enabled) return
-        root.pendingCall = "uninhibit"
-        process.command = [
-            "gdbus", "call", "--session",
-            "--dest", root.dbusService,
-            "--object-path", root.dbusPath,
-            "--method", root.dbusMethod + ".UnInhibit",
-            String(root.cookie)
-        ]
-        process.running = true
+        root.active = false
+        process.signal(15) // SIGTERM
     }
 
     Process {
         id: process
 
-        stdout: SplitParser {
-            splitMarker: "\n"
-            onRead: (data) => {
-                if (!data) return
-
-                if (root.pendingCall === "inhibit") {
-                    const match = data.match(/uint32\s+(\d+)/)
-                    if (match) root.cookie = parseInt(match[1], 10)
-                } else if (root.pendingCall === "uninhibit") {
-                    root.cookie = -1
-                }
-
-                root.pendingCall = ""
-            }
-        }
-
         onExited: (code, status) => {
-            if (root.pendingCall !== "") root.pendingCall = ""
+            if (root.active) root.active = false
         }
     }
 }
