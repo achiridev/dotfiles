@@ -35,6 +35,16 @@ Rectangle {
         }
     }
 
+    Rectangle {
+        anchors.fill: parent
+        radius: parent.radius
+        color: mouseArea.containsMouse ? Qt.alpha(AppTheme.fg, 0.12) : "transparent"
+
+        Behavior on color {
+            ColorAnimation { duration: 150; easing.type: Easing.OutCubic }
+        }
+    }
+
     Row {
         anchors.centerIn: parent
         spacing: 6
@@ -52,6 +62,13 @@ Rectangle {
             font.pixelSize: AppTheme.fontBase + 1
             color: AppTheme.fg
         }
+    }
+
+    MouseArea {
+        id: mouseArea
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
     }
 }
 

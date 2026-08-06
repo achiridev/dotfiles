@@ -9,8 +9,7 @@ Rectangle {
 
     // Propiedades personalizables para reutilizar en cualquier panel
     property string icon: String.fromCodePoint(0xf011) || "⏻"
-    property color iconColor: AppTheme.colors.red || "#f36b88"
-    property color hoverBg: Qt.alpha(AppTheme.colors.surface || "#313244", 0.6)
+    property color iconColor: AppTheme.critical
     property var onClicked: () => PowerService.openPowerMenu()
 
     // Dimensiones dinámicas
@@ -20,18 +19,19 @@ Rectangle {
     border.color: AppTheme.borderColor
     border.width: 1
 
-    radius: AppTheme.radius || 6
-    color: mouseArea.containsMouse ? hoverBg : AppTheme.bgModule
+    radius: AppTheme.radius
+    color: mouseArea.containsMouse ? AppTheme.bgModuleHover : AppTheme.bgModule
 
     // Animación suave al hacer hover
     Behavior on color {
-        ColorAnimation { duration: 150 }
+        ColorAnimation { duration: 150; easing.type: Easing.OutCubic }
     }
 
     Text {
         anchors.centerIn: parent
         text: root.icon
         color: root.iconColor
+        font.family: AppTheme.fontMono
         font.pixelSize: AppTheme.fontLarge
     }
 

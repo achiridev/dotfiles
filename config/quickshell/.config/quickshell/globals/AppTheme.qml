@@ -88,4 +88,7 @@ QtObject {
     // Bar  (waybar es de 35 pero no ocupa todo asi que xd)
     readonly property int heightBar: 30
     readonly property color bgModule: Qt.alpha(root.bg, 0.85)
+    // Hover para módulos de barra: mismo alfa que bgModule para que la
+    // ColorAnimation no atraviese valores casi transparentes (evita el flash).
+    readonly property color bgModuleHover: Qt.lighter(root.bgModule, 1.2)
 }

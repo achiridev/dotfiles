@@ -46,7 +46,7 @@ Singleton
         }
     }
 
-    readonly property string backgroundHover: Qt.alpha(AppTheme.color5, 0.9)
+    readonly property string backgroundHover: Qt.alpha(AppTheme.color5, 0.3)
 
     readonly property var visibleWorkspaces: {
         let ids = [];

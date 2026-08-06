@@ -40,17 +40,15 @@ Item {
     Rectangle {
         id: box
 
-        property color hoverBg: AppTheme.surface
-
         anchors.fill: parent
         implicitWidth: content.implicitWidth + AppTheme.paddingBase * 2
         radius: AppTheme.radius
         border.width: 1
         border.color: AppTheme.borderColor
-        color: root.hovered ? hoverBg : AppTheme.bgModule
+        color: root.hovered ? AppTheme.bgModuleHover : AppTheme.bgModule
 
         Behavior on color {
-            ColorAnimation { duration: 150 }
+            ColorAnimation { duration: 150; easing.type: Easing.OutCubic }
         }
 
         RowLayout {

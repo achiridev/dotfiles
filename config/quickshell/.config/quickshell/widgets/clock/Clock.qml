@@ -6,18 +6,17 @@ import qs.services
 
 Rectangle {
     id: root
-    property color hoverBg: AppTheme.surface
 
     width: 94
     height: AppTheme.heightBar
-    color: mouseArea.containsMouse ? hoverBg : AppTheme.bgModule
+    color: mouseArea.containsMouse ? AppTheme.bgModuleHover : AppTheme.bgModule
 
     radius: AppTheme.radius
     border.width: 1
     border.color: AppTheme.borderColor
 
     Behavior on color {
-        ColorAnimation { duration: 150 }
+        ColorAnimation { duration: 150; easing.type: Easing.OutCubic }
     }
 
     Row {
@@ -43,6 +42,6 @@ Rectangle {
         id: mouseArea
         anchors.fill: parent
         hoverEnabled: true
-        // cursorShape: Qt.PointingHandCursor
+        cursorShape: Qt.PointingHandCursor
     }
 }

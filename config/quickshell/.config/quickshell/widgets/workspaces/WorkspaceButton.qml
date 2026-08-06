@@ -28,7 +28,7 @@ Rectangle {
     }
 
     Behavior on color {
-        ColorAnimation { duration: 180 }
+        ColorAnimation { duration: 150; easing.type: Easing.OutCubic }
     }
 
     Text {
@@ -43,7 +43,7 @@ Rectangle {
             : (existsState ? Qt.alpha(AppTheme.fg, 0.8) : Qt.alpha(AppTheme.fg, 0.4))
 
         Behavior on color {
-            ColorAnimation { duration: 180 }
+            ColorAnimation { duration: 150; easing.type: Easing.OutCubic }
         }
     }
 
