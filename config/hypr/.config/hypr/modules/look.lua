@@ -75,3 +75,10 @@ hl.layer_rule({
 	blur = true,
 	ignore_alpha = 0.2,
 })
+
+-- wayfreeze (captura): sin animación de entrada/salida de la capa
+hl.layer_rule({
+	name = "wayfreeze-noanim",
+	match = { namespace = "^wayfreeze$" },
+	no_anim = true,
+})

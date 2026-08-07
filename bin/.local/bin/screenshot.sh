@@ -8,6 +8,18 @@ mkdir -p "$DIR"
 TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
 FILE="$DIR/captura-$TIMESTAMP.png"
 
+wayfreeze --hide-cursor &
+FREEZE_PID=$!
+
+cleanup() {
+    kill "$FREEZE_PID" 2>/dev/null || true
+    wait "$FREEZE_PID" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+# Dar tiempo a que wayfreeze capture el frame
+sleep 0.15
+
 # ─────────────────────────────────────────────
 # 1. Selección de región (mejor control de error)
 # ─────────────────────────────────────────────
@@ -26,7 +38,12 @@ if ! grim -g "$GEOM" - | tee "$FILE" | wl-copy --type image/png; then
 fi
 
 # ─────────────────────────────────────────────
-# 3. Notificación con acciones
+# 3. Descongelar la pantalla antes de notificar
+# ─────────────────────────────────────────────
+cleanup
+
+# ─────────────────────────────────────────────
+# 4. Notificación con acciones
 # ─────────────────────────────────────────────
 ACTION=$(notify-send \
     -a "captura" \
@@ -37,7 +54,7 @@ ACTION=$(notify-send \
     "Captura guardada" "$FILE" || true)
 
 # ─────────────────────────────────────────────
-# 4. Acciones
+# 5. Acciones
 # ─────────────────────────────────────────────
 case "$ACTION" in
     open)
