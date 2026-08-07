@@ -20,6 +20,14 @@ Item {
 
     implicitHeight: 22
 
+    // -1 = no arrastrando. Durante el drag mostramos el valor local sin pisar
+    // el binding `value:` (escribirlo rompía el enlace de forma permanente).
+    property real dragRatio: -1
+
+    readonly property real displayedValue: root.dragRatio >= 0
+        ? root.valueForX(root.dragRatio * root.width)
+        : root.value
+
     function ratioFor(v) {
         if (to === from) return 0
         return Math.max(0, Math.min(1, (v - from) / (to - from)))
@@ -44,7 +52,7 @@ Item {
         color: root.trackColor
 
         Rectangle {
-            width: track.width * root.ratioFor(root.value)
+            width: track.width * root.ratioFor(root.displayedValue)
             height: track.height
             radius: height / 2
             color: root.fillColor
@@ -64,7 +72,7 @@ Item {
         border.width: 1
         border.color: Qt.alpha(AppTheme.bg, 0.6)
         anchors.verticalCenter: parent.verticalCenter
-        x: Math.max(0, Math.min(root.width - width, track.width * root.ratioFor(root.value) - width / 2))
+        x: Math.max(0, Math.min(root.width - width, track.width * root.ratioFor(root.displayedValue) - width / 2))
 
         scale: (hover.hovered || drag.pressed) ? 1.25 : 1.0
         Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
@@ -81,15 +89,18 @@ Item {
         id: drag
         anchors.fill: parent
         enabled: root.enabled
-        onPressed: (mouse) => {
-            root.value = root.valueForX(mouse.x)
-            root.moved(root.value)
+
+        function updateFromX(x) {
+            const r = Math.max(0, Math.min(1, x / root.width));
+            root.dragRatio = r;
+            root.moved(root.valueForX(x));
         }
+
+        onPressed: (mouse) => drag.updateFromX(mouse.x)
         onPositionChanged: (mouse) => {
-            if (pressed) {
-                root.value = root.valueForX(mouse.x)
-                root.moved(root.value)
-            }
+            if (pressed) drag.updateFromX(mouse.x);
         }
+        onReleased: root.dragRatio = -1
+        onCanceled: root.dragRatio = -1
     }
 }

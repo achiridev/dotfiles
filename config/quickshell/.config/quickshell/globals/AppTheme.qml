@@ -92,6 +92,13 @@ QtObject {
     // ColorAnimation no atraviese valores casi transparentes (evita el flash).
     readonly property color bgModuleHover: Qt.lighter(root.bgModule, 1.2)
 
+    // 5.5 Música (YouTube Music)
+    readonly property color musicAccent: root.color11
+    readonly property color musicAccentBright: root.color14
+    readonly property color musicAccentDim: Qt.alpha(root.color11, 0.35)
+    readonly property color musicSurface: Qt.alpha(root.bg, 0.5)
+    readonly property int musicArtRadius: root.radiusLarge
+
     // 5. Workspace Overview (SUPER+TAB)
     // Efectos
     readonly property bool overviewBlur: true
