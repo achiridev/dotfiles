@@ -1,7 +1,8 @@
 {
   "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/master/doc/json_schema.json",
   "logo": {
-    "source": "~/.config/fastfetch/images/anko-4-2.png",
+    "type": "kitty-icat",
+    "source": "~/.config/fastfetch/logos/*.png",
     "width": 40,
     "padding": {
       "top": 2

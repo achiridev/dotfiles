@@ -82,3 +82,9 @@ hl.layer_rule({
 	match = { namespace = "^wayfreeze$" },
 	no_anim = true,
 })
+
+hl.layer_rule({
+	name = "wlogout",
+	match = { namespace = "^wlogout$" },
+	no_anim = true,
+})
