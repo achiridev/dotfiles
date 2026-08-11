@@ -38,6 +38,16 @@ QtObject {
     property int musicAnimBase: 180
     property int musicAnimSlow: 260
 
+    // ==========================================
+    // BRILLO (pantalla + teclado Acer RGB)
+    // ==========================================
+    // Dispositivo de retroiluminación principal (ver `brightnessctl -l`).
+    property string brightnessDevice: "intel_backlight"
+
+    // Script del módulo Acer Predator (brillo + RGB del teclado).
+    // Repo: JafarAkhondali/acer-predator-turbo-and-rgb-keyboard-linux-module
+    property string keyboardRgbScriptPath: "~/Descargas/acer-predator-turbo-and-rgb-keyboard-linux-module/facer_rgb.py"
+
 //    // ==========================================
 //    // 2. SISTEMA DE RED (CONNECTIVITY)
 //    // ==========================================

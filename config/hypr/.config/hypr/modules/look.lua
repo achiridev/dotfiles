@@ -72,7 +72,7 @@ hl.config({
 hl.layer_rule({
 	name = "overview-blur",
 	match = { namespace = "^quickshell:overview-blur$" },
-	blur = true,
+	blur = false,
 	ignore_alpha = 0.2,
 })
 

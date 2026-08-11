@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.widgets.volume
 import qs.widgets.music
+import qs.widgets.brightness
 
 RowLayout {
     anchors.centerIn: parent
@@ -10,4 +11,5 @@ RowLayout {
 
     Volume {}
     Music {}
+    Brightness {}
 }
