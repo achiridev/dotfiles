@@ -45,8 +45,23 @@ Singleton {
     property int screenMax: parseInt(maxFile.text()) || 0
     property int screenCurrent: parseInt(actualFile.text()) || 0
 
+    // Trigger instantáneo: los binds de hyprland tocan este archivo tras cada
+    // brightnessctl (sysfs no emite inotify, así que es el puente para que la
+    // barra se entere al momento de Fn+→ / Fn+←). En /tmp inotify sí funciona.
+    property FileView triggerFile: FileView {
+        path: Qt.resolvedUrl("file:///tmp/qs-brightness-changed")
+        blockLoading: true
+        watchChanges: true
+        onFileChanged: {
+            root.maxFile.reload()
+            root.actualFile.reload()
+        }
+    }
+
+    // Poll como red de seguridad para cambios hechos fuera de los binds
+    // (ej. slider del popup lo hace por onExited; otras apps caen aquí).
     Timer {
-        interval: 700
+        interval: 250
         repeat: true
         running: true
         onTriggered: {
@@ -80,9 +95,9 @@ Singleton {
     }
 
     function screenGlyph() {
-        if (root.screenPercent < 30) return "󰃟"
-        if (root.screenPercent < 70) return "󰃞"
-        return "󰃝"
+        if (root.screenPercent < 30) return "󰃞"
+        if (root.screenPercent < 70) return "󰃟"
+        return "󰃠"
     }
 
     // ======================= OTROS DISPOSITIVOS ============================
@@ -136,6 +151,20 @@ Singleton {
     property int keyboardGreen: 150
     property int keyboardBlue: 255
 
+    // En modo estático cada zona conserva su propio color (el módulo solo
+    // escribe la zona indicada con -z). keyed por índice 0..3 = zonas 1..4.
+    property var keyboardZoneColors: [
+        { r: 120, g: 150, b: 255 },
+        { r: 120, g: 150, b: 255 },
+        { r: 120, g: 150, b: 255 },
+        { r: 120, g: 150, b: 255 },
+    ]
+
+    readonly property var keyboardModeNames: [
+        "Estático", "Respiración", "Neón", "Ola", "Shifting", "Zoom"
+    ]
+    readonly property string keyboardModeName: root.keyboardModeNames[Math.min(root.keyboardMode, root.keyboardModeNames.length - 1)]
+
     property Process probeProcess: Process {
         id: probeProcess
         onExited: (code, status) => {
@@ -143,7 +172,20 @@ Singleton {
         }
     }
 
-    property Process keyboardProcess: Process { running: false }
+    property Process keyboardProcess: Process {
+        running: false
+        onExited: (code, status) => {
+            // Solo descarta la entrada que realmente terminó (por si se canceló
+            // en marcha y la cola ya fue sustituida por un apply más reciente).
+            if (root.__kbdQueue.length > 0 && root.__kbdQueue[0] === root.__lastKbdCommand) {
+                root.__kbdQueue.shift()
+            }
+            if (root.__kbdQueue.length > 0) root.__runKbdCommand()
+        }
+    }
+
+    property var __kbdQueue: []
+    property var __lastKbdCommand: null
 
     // Debounce: durante un drag continuo del slider se cancela el spawn previo
     // y solo se aplica el último valor.
@@ -151,7 +193,32 @@ Singleton {
         id: kbdApplyTimer
         interval: 40
         repeat: false
-        onTriggered: root.__doApplyKeyboard()
+        onTriggered: {
+            root.__kbdQueue = [root.__kbdCommandArgs()]
+            root.__runKbdCommand()
+        }
+    }
+
+    function __kbdCommandArgs(zone) {
+        return [
+            "python3",
+            root.__expand(root.rgbScript),
+            "-m", String(root.keyboardMode),
+            "-s", String(root.keyboardSpeed),
+            "-b", String(root.keyboardBrightness),
+            "-z", String(zone !== undefined ? zone : root.keyboardZone),
+            "-cR", String(root.keyboardRed),
+            "-cG", String(root.keyboardGreen),
+            "-cB", String(root.keyboardBlue),
+        ]
+    }
+
+    function __runKbdCommand() {
+        if (!root.keyboardAvailable || root.__kbdQueue.length === 0) return
+        root.keyboardProcess.running = false
+        root.__lastKbdCommand = root.__kbdQueue[0]
+        root.keyboardProcess.command = root.__kbdQueue[0]
+        root.keyboardProcess.running = true
     }
 
     Component.onCompleted: {
@@ -176,20 +243,12 @@ Singleton {
         kbdApplyTimer.restart()
     }
 
-    function __doApplyKeyboard() {
-        root.keyboardProcess.running = false
-        root.keyboardProcess.command = [
-            "python3",
-            root.__expand(root.rgbScript),
-            "-m", String(root.keyboardMode),
-            "-s", String(root.keyboardSpeed),
-            "-b", String(root.keyboardBrightness),
-            "-z", String(root.keyboardZone),
-            "-cR", String(root.keyboardRed),
-            "-cG", String(root.keyboardGreen),
-            "-cB", String(root.keyboardBlue),
-        ]
-        root.keyboardProcess.running = true
+    function applyKeyboardAllZones() {
+        if (!root.keyboardAvailable) return
+        // Aplica el color actual a las 4 zonas de izquierda a derecha.
+        const zones = [1, 2, 3, 4].map(z => root.__kbdCommandArgs(z))
+        root.__kbdQueue = zones
+        root.__runKbdCommand()
     }
 
     function setKeyboardBrightness(v) {
@@ -209,11 +268,26 @@ Singleton {
         root.keyboardRed = Math.max(0, Math.min(255, Math.round(r)))
         root.keyboardGreen = Math.max(0, Math.min(255, Math.round(g)))
         root.keyboardBlue = Math.max(0, Math.min(255, Math.round(b)))
+        if (root.keyboardMode === 0) {
+            // Estático: el color editado pertenece a la zona activa.
+            root.__storeActiveZoneColor()
+        }
         root.applyKeyboard()
+    }
+
+    function __storeActiveZoneColor() {
+        const idx = Math.max(0, Math.min(3, root.keyboardZone - 1))
+        const colors = root.keyboardZoneColors.map((c, i) =>
+            i === idx ? { r: root.keyboardRed, g: root.keyboardGreen, b: root.keyboardBlue } : c)
+        root.keyboardZoneColors = colors
     }
 
     function setKeyboardMode(m) {
         root.keyboardMode = m
+        if (m === 0) {
+            // Al entrar en estático, el color editado pasa a ser el de la zona activa.
+            root.__storeActiveZoneColor()
+        }
         root.applyKeyboard()
     }
 
@@ -223,7 +297,22 @@ Singleton {
     }
 
     function setKeyboardZone(z) {
-        root.keyboardZone = Math.max(1, Math.min(4, Math.round(z)))
-        root.applyKeyboard()
+        z = Math.max(1, Math.min(4, Math.round(z)))
+        if (root.keyboardMode === 0) {
+            // Guarda el color editado en la zona que se abandona...
+            root.__storeActiveZoneColor()
+            // ...y carga el color de la zona seleccionada.
+            const c = root.keyboardZoneColors[z - 1]
+            root.keyboardRed = c.r
+            root.keyboardGreen = c.g
+            root.keyboardBlue = c.b
+        }
+        root.keyboardZone = z
+    }
+
+    function keyboardZoneColor(z) {
+        const idx = Math.max(0, Math.min(3, z - 1))
+        const c = root.keyboardZoneColors[idx]
+        return Qt.rgba(c.r / 255, c.g / 255, c.b / 255, 1)
     }
 }

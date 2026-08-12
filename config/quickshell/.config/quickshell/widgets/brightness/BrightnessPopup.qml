@@ -163,7 +163,9 @@ PopupWindow {
                         }
                         Text {
                             Layout.fillWidth: true
-                            text: "Brillo y RGB"
+                            text: BrightnessService.keyboardMode === 0
+                                ? "Estático · Zona " + BrightnessService.keyboardZone
+                                : BrightnessService.keyboardModeName
                             font.family: AppTheme.fontLayout
                             font.pixelSize: AppTheme.fontSmall
                             color: AppTheme.textSecondary
@@ -179,6 +181,8 @@ PopupWindow {
                     }
                 }
 
+                // ---- Brillo ----
+                SectionHeader { text: "Brillo" }
                 VolumeSliderBar {
                     Layout.fillWidth: true
                     from: 0; to: 100
@@ -188,7 +192,8 @@ PopupWindow {
                     onMoved: (v) => BrightnessService.setKeyboardBrightness(v)
                 }
 
-                // Modos de efecto (facer_rgb.py -m)
+                // ---- Modo ----
+                SectionHeader { text: "Modo" }
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: AppTheme.paddingSmall
@@ -211,132 +216,282 @@ PopupWindow {
                     }
                 }
 
-                // Colores RGB: sliders + swatches rápidos.
-                RowLayout {
+                // ---- Color (se atenúa en Neón/Ola, que ignoran el color) ----
+                ColumnLayout {
                     Layout.fillWidth: true
                     spacing: AppTheme.paddingSmall
+                    opacity: colorEnabled ? 1.0 : 0.4
+                    Behavior on opacity { NumberAnimation { duration: 150 } }
 
-                    VolumeSliderBar {
-                        Layout.fillWidth: true
-                        from: 0; to: 255
-                        value: BrightnessService.keyboardRed
-                        fillColor: AppTheme.color9
-                        handleColor: AppTheme.color9
-                        onMoved: (v) => BrightnessService.setKeyboardColor(v, BrightnessService.keyboardGreen, BrightnessService.keyboardBlue)
-                    }
-                    VolumeSliderBar {
-                        Layout.fillWidth: true
-                        from: 0; to: 255
-                        value: BrightnessService.keyboardGreen
-                        fillColor: AppTheme.color10
-                        handleColor: AppTheme.color10
-                        onMoved: (v) => BrightnessService.setKeyboardColor(BrightnessService.keyboardRed, v, BrightnessService.keyboardBlue)
-                    }
-                    VolumeSliderBar {
-                        Layout.fillWidth: true
-                        from: 0; to: 255
-                        value: BrightnessService.keyboardBlue
-                        fillColor: AppTheme.color12
-                        handleColor: AppTheme.color12
-                        onMoved: (v) => BrightnessService.setKeyboardColor(BrightnessService.keyboardRed, BrightnessService.keyboardGreen, v)
-                    }
-                }
+                    readonly property bool colorEnabled: BrightnessService.keyboardMode !== 2 && BrightnessService.keyboardMode !== 3
 
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: AppTheme.paddingBase
-                    Repeater {
-                        model: [AppTheme.accent, AppTheme.color9, AppTheme.color10, AppTheme.color11, AppTheme.color12, AppTheme.color13, AppTheme.color14, AppTheme.color7]
-                        delegate: Rectangle {
-                            required property color modelData
-                            readonly property color swColor: modelData
-                            width: 22
-                            height: 22
-                            radius: 11
+                    SectionHeader { text: "Color" }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: AppTheme.paddingBase
+
+                        // Preview en vivo del color actual.
+                        Rectangle {
+                            readonly property color currentColor: Qt.rgba(
+                                BrightnessService.keyboardRed / 255,
+                                BrightnessService.keyboardGreen / 255,
+                                BrightnessService.keyboardBlue / 255)
+                            Layout.preferredWidth: 34
+                            Layout.preferredHeight: 34
+                            radius: AppTheme.radius
+                            color: currentColor
                             border.width: 1
-                            border.color: AppTheme.borderColor
-                            color: swColor
-                            scale: swHover.containsMouse ? 1.2 : 1.0
-                            Behavior on scale { NumberAnimation { duration: 120 } }
-                            MouseArea {
-                                id: swHover
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: BrightnessService.setKeyboardColor(swColor.r * 255, swColor.g * 255, swColor.b * 255)
+                            border.color: Qt.alpha(AppTheme.fg, 0.25)
+                            Behavior on color { ColorAnimation { duration: 120 } }
+                        }
+
+                        // Sliders R/G/B con etiqueta y valor.
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: AppTheme.paddingSmall
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: AppTheme.paddingBase
+                                Text {
+                                    Layout.preferredWidth: 12
+                                    text: "R"
+                                    font.family: AppTheme.fontLayout
+                                    font.pixelSize: AppTheme.fontSmall
+                                    font.weight: Font.Bold
+                                    color: AppTheme.color9
+                                }
+                                VolumeSliderBar {
+                                    Layout.fillWidth: true
+                                    from: 0; to: 255
+                                    value: BrightnessService.keyboardRed
+                                    fillColor: AppTheme.color9
+                                    handleColor: AppTheme.color9
+                                    onMoved: (v) => BrightnessService.setKeyboardColor(v, BrightnessService.keyboardGreen, BrightnessService.keyboardBlue)
+                                }
+                                Text {
+                                    Layout.preferredWidth: 30
+                                    horizontalAlignment: Text.AlignRight
+                                    text: BrightnessService.keyboardRed
+                                    font.family: AppTheme.fontLayout
+                                    font.pixelSize: AppTheme.fontSmall
+                                    font.weight: Font.Bold
+                                    color: AppTheme.textSecondary
+                                }
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: AppTheme.paddingBase
+                                Text {
+                                    Layout.preferredWidth: 12
+                                    text: "G"
+                                    font.family: AppTheme.fontLayout
+                                    font.pixelSize: AppTheme.fontSmall
+                                    font.weight: Font.Bold
+                                    color: AppTheme.color10
+                                }
+                                VolumeSliderBar {
+                                    Layout.fillWidth: true
+                                    from: 0; to: 255
+                                    value: BrightnessService.keyboardGreen
+                                    fillColor: AppTheme.color10
+                                    handleColor: AppTheme.color10
+                                    onMoved: (v) => BrightnessService.setKeyboardColor(BrightnessService.keyboardRed, v, BrightnessService.keyboardBlue)
+                                }
+                                Text {
+                                    Layout.preferredWidth: 30
+                                    horizontalAlignment: Text.AlignRight
+                                    text: BrightnessService.keyboardGreen
+                                    font.family: AppTheme.fontLayout
+                                    font.pixelSize: AppTheme.fontSmall
+                                    font.weight: Font.Bold
+                                    color: AppTheme.textSecondary
+                                }
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: AppTheme.paddingBase
+                                Text {
+                                    Layout.preferredWidth: 12
+                                    text: "B"
+                                    font.family: AppTheme.fontLayout
+                                    font.pixelSize: AppTheme.fontSmall
+                                    font.weight: Font.Bold
+                                    color: AppTheme.color12
+                                }
+                                VolumeSliderBar {
+                                    Layout.fillWidth: true
+                                    from: 0; to: 255
+                                    value: BrightnessService.keyboardBlue
+                                    fillColor: AppTheme.color12
+                                    handleColor: AppTheme.color12
+                                    onMoved: (v) => BrightnessService.setKeyboardColor(BrightnessService.keyboardRed, BrightnessService.keyboardGreen, v)
+                                }
+                                Text {
+                                    Layout.preferredWidth: 30
+                                    horizontalAlignment: Text.AlignRight
+                                    text: BrightnessService.keyboardBlue
+                                    font.family: AppTheme.fontLayout
+                                    font.pixelSize: AppTheme.fontSmall
+                                    font.weight: Font.Bold
+                                    color: AppTheme.textSecondary
+                                }
                             }
                         }
                     }
-                    Item { Layout.fillWidth: true }
-                }
 
-                // Velocidad de animación.
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: AppTheme.paddingBase
-
-                    Text {
-                        text: "Velocidad"
-                        font.family: AppTheme.fontLayout
-                        font.pixelSize: AppTheme.fontSmall
-                        color: AppTheme.textSecondary
-                    }
-
-                    VolumeSliderBar {
+                    // Swatches rápidos.
+                    RowLayout {
                         Layout.fillWidth: true
-                        from: 0; to: 9
-                        value: BrightnessService.keyboardSpeed
-                        fillColor: AppTheme.accent
-                        handleColor: AppTheme.accent
-                        onMoved: (v) => BrightnessService.setKeyboardSpeed(v)
+                        spacing: AppTheme.paddingBase
+                        Repeater {
+                            model: [AppTheme.accent, AppTheme.color9, AppTheme.color10, AppTheme.color11, AppTheme.color12, AppTheme.color13, AppTheme.color14, AppTheme.color7]
+                            delegate: Rectangle {
+                                required property color modelData
+                                readonly property color swColor: modelData
+                                width: 22
+                                height: 22
+                                radius: 11
+                                border.width: 1
+                                border.color: AppTheme.borderColor
+                                color: swColor
+                                scale: swHover.containsMouse ? 1.2 : 1.0
+                                Behavior on scale { NumberAnimation { duration: 120 } }
+                                MouseArea {
+                                    id: swHover
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: BrightnessService.setKeyboardColor(swColor.r * 255, swColor.g * 255, swColor.b * 255)
+                                }
+                            }
+                        }
+                        Item { Layout.fillWidth: true }
                     }
                 }
 
-                // Zonas (solo modo estático).
-                RowLayout {
+                // ---- Velocidad (solo modos animados) ----
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    visible: BrightnessService.keyboardMode !== 0
+                    spacing: AppTheme.paddingSmall
+
+                    SectionHeader { text: "Velocidad" }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: AppTheme.paddingBase
+                        VolumeSliderBar {
+                            Layout.fillWidth: true
+                            from: 0; to: 9
+                            value: BrightnessService.keyboardSpeed
+                            fillColor: AppTheme.accent
+                            handleColor: AppTheme.accent
+                            onMoved: (v) => BrightnessService.setKeyboardSpeed(v)
+                        }
+                        Text {
+                            Layout.preferredWidth: 24
+                            horizontalAlignment: Text.AlignRight
+                            text: BrightnessService.keyboardSpeed
+                            font.family: AppTheme.fontLayout
+                            font.pixelSize: AppTheme.fontSmall
+                            font.weight: Font.Bold
+                            color: AppTheme.fg
+                        }
+                    }
+                }
+
+                // ---- Zonas (solo modo estático) ----
+                ColumnLayout {
                     Layout.fillWidth: true
                     visible: BrightnessService.keyboardMode === 0
-                    spacing: AppTheme.paddingBase
+                    spacing: AppTheme.paddingSmall
 
-                    Text {
-                        text: "Zona"
-                        font.family: AppTheme.fontLayout
-                        font.pixelSize: AppTheme.fontSmall
-                        color: AppTheme.textSecondary
+                    SectionHeader { text: "Zonas" }
+
+                    // Tira tipo teclado: cada segmento se tiñe con su color.
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 36
+                        spacing: AppTheme.paddingSmall
+                        Repeater {
+                            model: [1, 2, 3, 4]
+                            delegate: Rectangle {
+                                required property int modelData
+                                readonly property int zoneIndex: modelData
+                                readonly property bool active: BrightnessService.keyboardZone === zoneIndex
+                                readonly property color zoneColor: BrightnessService.keyboardZoneColor(zoneIndex)
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                radius: AppTheme.radiusSmall
+                                color: {
+                                    if (active) return Qt.rgba(zoneColor.r, zoneColor.g, zoneColor.b, 0.55)
+                                    if (zoneHover.containsMouse) return Qt.rgba(zoneColor.r, zoneColor.g, zoneColor.b, 0.30)
+                                    return Qt.rgba(zoneColor.r, zoneColor.g, zoneColor.b, 0.18)
+                                }
+                                border.width: active ? 2 : 1
+                                border.color: active ? Qt.lighter(zoneColor, 1.4) : Qt.alpha(AppTheme.fg, 0.2)
+                                Behavior on color { ColorAnimation { duration: 150 } }
+                                Behavior on border.color { ColorAnimation { duration: 150 } }
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: zoneIndex
+                                    font.family: AppTheme.fontLayout
+                                    font.pixelSize: AppTheme.fontBase
+                                    font.weight: Font.Bold
+                                    color: active ? AppTheme.bg : AppTheme.fg
+                                }
+                                MouseArea {
+                                    id: zoneHover
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: BrightnessService.setKeyboardZone(zoneIndex)
+                                }
+                            }
+                        }
                     }
 
-                    Repeater {
-                        model: [1, 2, 3, 4]
-                        delegate: Rectangle {
-                            required property int modelData
-                            readonly property int zoneIndex: modelData
-                            readonly property bool active: BrightnessService.keyboardZone === zoneIndex
-                            width: 30
-                            height: 30
-                            radius: 15
-                            color: active ? AppTheme.accent : (zoneHover.containsMouse ? AppTheme.surface : "transparent")
-                            border.width: active ? 0 : 1
-                            border.color: active ? "transparent" : Qt.alpha(AppTheme.fg, 0.15)
-                            Behavior on color { ColorAnimation { duration: 150 } }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.topMargin: AppTheme.paddingSmall
+                        spacing: AppTheme.paddingBase
+
+                        Text {
+                            Layout.fillWidth: true
+                            text: "Cada zona conserva su color"
+                            font.family: AppTheme.fontLayout
+                            font.pixelSize: AppTheme.fontTiny
+                            color: AppTheme.textTertiary
+                        }
+
+                        Rectangle {
+                            Layout.preferredWidth: applyAllLabel.implicitWidth + AppTheme.paddingLarge * 2
+                            Layout.preferredHeight: 28
+                            radius: 14
+                            color: applyAllHover.containsMouse ? Qt.lighter(AppTheme.accent, 1.15) : AppTheme.accent
+                            Behavior on color { ColorAnimation { duration: 120 } }
                             Text {
+                                id: applyAllLabel
                                 anchors.centerIn: parent
-                                text: zoneIndex
+                                text: "Aplicar a todo"
                                 font.family: AppTheme.fontLayout
                                 font.pixelSize: AppTheme.fontSmall
                                 font.weight: Font.Bold
-                                color: active ? AppTheme.bg : AppTheme.fg
+                                color: AppTheme.bg
                             }
                             MouseArea {
-                                id: zoneHover
+                                id: applyAllHover
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: BrightnessService.setKeyboardZone(zoneIndex)
+                                onClicked: BrightnessService.applyKeyboardAllZones()
                             }
                         }
                     }
-
-                    Item { Layout.fillWidth: true }
                 }
             }
 
@@ -408,20 +563,37 @@ PopupWindow {
         id: modeBtn
         Rectangle {
             required property var modelData
-            readonly property int modeIndex: modelData[1]
+            readonly property int modeIndex: modelData ? modelData[1] : -1
             readonly property bool active: BrightnessService.keyboardMode === modeIndex
             Layout.fillWidth: true
             Layout.preferredHeight: 30
             radius: AppTheme.radius
             color: active ? AppTheme.accent : (modeHover.containsMouse ? AppTheme.surface : "transparent")
             Behavior on color { ColorAnimation { duration: 150 } }
-            Text {
+            RowLayout {
                 anchors.centerIn: parent
-                text: modelData[0]
-                font.family: AppTheme.fontLayout
-                font.pixelSize: AppTheme.fontSmall
-                font.weight: Font.Bold
-                color: active ? AppTheme.bg : AppTheme.fg
+                spacing: AppTheme.paddingSmall
+                Rectangle {
+                    width: 8
+                    height: 8
+                    radius: 4
+                    // Autocontenido: durante la construcción del delegate, leer
+                    // propiedades readonly de la raíz devuelve undefined. Se usa
+                    // solo modelData con guarda (siempre definido).
+                    color: {
+                        const idx = modelData ? modelData[1] : -1
+                        if (idx === BrightnessService.keyboardMode) return AppTheme.bg
+                        return [AppTheme.color5, AppTheme.color10, AppTheme.color9,
+                                AppTheme.color12, AppTheme.color13, AppTheme.color11][Math.max(0, idx)]
+                    }
+                }
+                Text {
+                    text: modelData ? modelData[0] : ""
+                    font.family: AppTheme.fontLayout
+                    font.pixelSize: AppTheme.fontSmall
+                    font.weight: Font.Bold
+                    color: modeBtn.active ? AppTheme.bg : AppTheme.fg
+                }
             }
             MouseArea {
                 id: modeHover
