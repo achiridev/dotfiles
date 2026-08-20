@@ -120,7 +120,9 @@ QtObject {
     readonly property bool overviewHideEmptyRows: true
     // Previews
     readonly property bool overviewPreviewsEnabled: true
-    readonly property string overviewPreviewMode: "live"
+    // "event": recaptura solo cuando cambia una ventana (mucho más liviano que
+    // "live", que mantiene ScreencopyView capturando todas las ventanas a vsync).
+    readonly property string overviewPreviewMode: "event"
     readonly property int overviewPreviewRecaptureDelayMs: 60
     readonly property real overviewIconToWindowRatio: 0.25
     // Special workspaces

@@ -7,6 +7,11 @@
 bars = 60
 framerate = 60
 
+# Segundos sin input antes de que cava duerma (no hace FFT ni dibuja).
+# Red de seguridad: con el gate por MPRIS en quickshell no debería activarse,
+# pero evita quemar CPU si cava queda huérfano en silencio.
+sleep_timer = 2
+
 # Auto reload config if the configuration file has changed. 1 = on, 0 = off.
 ; live-config = 0
 

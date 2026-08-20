@@ -3,12 +3,17 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 
+import qs.services
 import qs.widgets.visualizer
 
 PanelWindow {
     id: root
 
     property bool visualizerOnTop: false
+
+    // Solo existe mientras hay música (CavaService.active): sin audio la
+    // superficie se desmapea y Hyprland deja de componerla por completo.
+    visible: CavaService.active
 
     // capa: encima del wallpaper (Background), debajo de las ventanas normales
     WlrLayershell.layer: visualizerOnTop
