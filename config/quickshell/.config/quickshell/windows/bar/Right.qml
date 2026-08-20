@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import qs.widgets.battery
 import qs.widgets.idleinhibitor
 import qs.widgets.powermenu
+import qs.widgets.systemstats
 
 RowLayout {
     anchors {
@@ -15,6 +16,7 @@ RowLayout {
     spacing: 8
 
     IdleInhibitor {}
+    SystemStats {}
     Battery {}
     PowerButton {}
 }
