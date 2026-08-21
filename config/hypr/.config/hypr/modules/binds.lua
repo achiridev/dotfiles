@@ -13,6 +13,7 @@ local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
 hl.bind(mainMod .. " + K", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
+hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ action = "toggle" }))
 -- Workspace Overview (Quickshell) — reemplaza a hyprexpo
 hl.bind(mainMod .. " + TAB", hl.dsp.exec_cmd("quickshell ipc call overview toggle"))
 

@@ -6,10 +6,44 @@ import qs.services
 import qs.globals
 
 // Módulo compacto de la barra: uso de CPU y RAM. Hover abre el panel SYSTEM.
+// El ancho es FIJO (calculado con el peor caso "100%") y cada texto de %
+// tiene celda propia centrada: pasar de 9% a 10% no mueve ni redimensiona nada.
 Item {
     id: root
 
-    implicitWidth: box.implicitWidth
+    readonly property int spacing: AppTheme.paddingSmall
+    readonly property int sepWidth: 1
+
+    // Métricas para el ancho fijo: peor caso "100%" en ambas fuentes.
+    TextMetrics {
+        id: pctMetrics
+        font.family: AppTheme.fontLayout
+        font.pixelSize: AppTheme.fontBase
+        font.weight: Font.Bold
+        text: "100%"
+    }
+
+    TextMetrics {
+        id: cpuIconMetrics
+        font.family: AppTheme.fontMono
+        font.pixelSize: AppTheme.fontBase
+        text: String.fromCodePoint(0xf2db) //  microchip
+    }
+
+    TextMetrics {
+        id: ramIconMetrics
+        font.family: AppTheme.fontMono
+        font.pixelSize: AppTheme.fontBase
+        text: String.fromCodePoint(0xf035b) // 󰍛 memory
+    }
+
+    readonly property int fixedWidth: AppTheme.paddingBase * 2
+        + cpuIconMetrics.width + pctMetrics.width
+        + sepWidth
+        + ramIconMetrics.width + pctMetrics.width
+        + root.spacing * 4
+
+    implicitWidth: root.fixedWidth
     implicitHeight: AppTheme.heightBar
 
     property bool popupOpen: false
@@ -48,7 +82,6 @@ Item {
         id: box
 
         anchors.fill: parent
-        implicitWidth: content.implicitWidth + AppTheme.paddingBase * 2
         radius: AppTheme.radius
         border.width: 1
         border.color: AppTheme.borderColor
@@ -61,18 +94,20 @@ Item {
         RowLayout {
             id: content
             anchors.centerIn: parent
-            spacing: AppTheme.paddingSmall
+            spacing: root.spacing
 
             Text {
                 text: String.fromCodePoint(0xf2db) //  microchip
                 font.family: AppTheme.fontMono
                 font.pixelSize: AppTheme.fontBase
-                color: SystemStatsService.statusColor(SystemStatsService.cpuTemp)
+                color: SystemStatsService.cpuColor(SystemStatsService.cpuTemp)
 
                 Behavior on color { ColorAnimation { duration: 300 } }
             }
 
             Text {
+                Layout.preferredWidth: pctMetrics.width
+                horizontalAlignment: Text.AlignHCenter
                 text: SystemStatsService.cpuUsage + "%"
                 font.family: AppTheme.fontLayout
                 font.pixelSize: AppTheme.fontBase
@@ -81,7 +116,7 @@ Item {
             }
 
             Rectangle {
-                Layout.preferredWidth: 1
+                Layout.preferredWidth: root.sepWidth
                 Layout.preferredHeight: 14
                 color: AppTheme.borderColor
             }
@@ -90,12 +125,14 @@ Item {
                 text: String.fromCodePoint(0xf035b) // 󰍛 memory
                 font.family: AppTheme.fontMono
                 font.pixelSize: AppTheme.fontBase
-                color: SystemStatsService.usageColor(SystemStatsService.memPercent)
+                color: SystemStatsService.memColor(SystemStatsService.memPercent)
 
                 Behavior on color { ColorAnimation { duration: 300 } }
             }
 
             Text {
+                Layout.preferredWidth: pctMetrics.width
+                horizontalAlignment: Text.AlignHCenter
                 text: SystemStatsService.memUsage + "%"
                 font.family: AppTheme.fontLayout
                 font.pixelSize: AppTheme.fontBase

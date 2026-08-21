@@ -95,6 +95,26 @@ Singleton {
         return AppTheme.accent
     }
 
+    // Color base por métrica: cada una toma un tono distinto de la paleta
+    // wallust; warning/critical pisan al superar los umbrales.
+    function cpuColor(t) {
+        if (t >= root.tempCritAt) return AppTheme.critical
+        if (t >= root.tempWarnAt) return AppTheme.warning
+        return AppTheme.color4 // azul
+    }
+
+    function gpuColor(t) {
+        if (t >= root.tempCritAt) return AppTheme.critical
+        if (t >= root.tempWarnAt) return AppTheme.warning
+        return AppTheme.color13 // magenta
+    }
+
+    function memColor(pct) {
+        if (pct >= 90) return AppTheme.critical
+        if (pct >= 80) return AppTheme.warning
+        return AppTheme.color2 // verde
+    }
+
     // ======================= POLLING ADAPTATIVO ======================
     // detailMode lo activa el widget cuando su popup está abierto.
     property bool detailMode: false

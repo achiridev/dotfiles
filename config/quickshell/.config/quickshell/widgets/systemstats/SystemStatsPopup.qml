@@ -165,14 +165,14 @@ PopupWindow {
                     usage: SystemStatsService.cpuUsage
                     temp: SystemStatsService.cpuTemp
                     showTemp: SystemStatsService.hasCpuTemp
-                    accentColor: SystemStatsService.statusColor(SystemStatsService.cpuTemp)
+                    accentColor: SystemStatsService.cpuColor(SystemStatsService.cpuTemp)
                 }
 
                 StatCard {
                     Layout.fillWidth: true
                     title: "RAM"
                     usage: SystemStatsService.memUsage
-                    accentColor: SystemStatsService.usageColor(SystemStatsService.memPercent)
+                    accentColor: SystemStatsService.memColor(SystemStatsService.memPercent)
                 }
 
                 StatCard {
@@ -182,7 +182,7 @@ PopupWindow {
                     usage: SystemStatsService.gpuUsage
                     temp: SystemStatsService.gpuTemp
                     showTemp: true
-                    accentColor: SystemStatsService.statusColor(SystemStatsService.gpuTemp)
+                    accentColor: SystemStatsService.gpuColor(SystemStatsService.gpuTemp)
                 }
             }
 
@@ -204,7 +204,7 @@ PopupWindow {
                     fraction: SystemStatsService.memPercent / 100
                     valueText: SystemStatsService.memUsedGb.toFixed(1) + " / " + SystemStatsService.memTotalGb.toFixed(1) + " GiB"
                     detailText: "Libre: " + SystemStatsService.memFreeGb.toFixed(1) + " GiB · Cache: " + SystemStatsService.memCachedGb.toFixed(1) + " GiB"
-                    fillColor: SystemStatsService.usageColor(SystemStatsService.memPercent)
+                    fillColor: SystemStatsService.memColor(SystemStatsService.memPercent)
                 }
 
                 UsageBar {
