@@ -9,7 +9,7 @@ Rectangle {
 
     // Propiedades personalizables para reutilizar en cualquier panel
     property string icon: String.fromCodePoint(0xf011) || "⏻"
-    property color iconColor: AppTheme.critical
+    property color iconColor: AppTheme.powerColor
     property var onClicked: () => PowerService.openPowerMenu()
 
     // Dimensiones dinámicas

@@ -83,6 +83,13 @@ hl.layer_rule({
 	no_anim = true,
 })
 
+-- slurp (selección de área): sin animación de entrada/salida
+hl.layer_rule({
+	name = "slurp-noanim",
+	match = { namespace = "^selection$" },
+	no_anim = true,
+})
+
 hl.layer_rule({
 	name = "wlogout",
 	match = { namespace = "^wlogout$" },

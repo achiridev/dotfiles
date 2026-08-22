@@ -58,6 +58,8 @@ QtObject {
     readonly property color warning: color3
     readonly property color success: color2
 
+    readonly property color powerColor: "#f38ba8"
+
     // Texto y superficies derivados (usar estos y no hardcodear alphas)
     readonly property color textSecondary: Qt.alpha(root.fg, 0.6)
     readonly property color textTertiary: Qt.alpha(root.fg, 0.4)

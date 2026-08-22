@@ -42,6 +42,19 @@ hl.window_rule({
 	float = true,
 })
 
+-- ───────── QUICKSHELL · CAMBIO DE MODO DE ENERGÍA (battery-mode) ─────────
+-- Kitty que lanza battery-mode desde el panel de batería: ahí pide la
+-- contraseña de sudo y se cierra sola al terminar (o al pulsar una tecla si
+-- el script falló).
+hl.window_rule({
+	name  = "qs-battery-mode",
+	match = { class = "^qs-battery-mode$" },
+
+	size   = "520 240",
+	center = true,
+	float  = true,
+})
+
 --[[
 -- ───────── JETBRAINS INTELLIJ IDEA (SIN TRANSPARENCIA / OPACIDAD TOTAL) ─────────
 hl.window_rule({
