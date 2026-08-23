@@ -15,10 +15,10 @@ Rectangle {
     border.color: AppTheme.borderColor
 
     property color displayColor: BatteryService.color
-    property bool popupOpen: false
+    property bool panelOpen: false
 
     // El panel solo lee el estado de modos mientras está abierto.
-    onPopupOpenChanged: BatteryService.detailMode = popupOpen
+    onPanelOpenChanged: BatteryService.detailMode = panelOpen
 
     color: displayColor
 
@@ -75,14 +75,13 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.popupOpen = !root.popupOpen
+        onClicked: root.panelOpen = !root.panelOpen
     }
 
-    BatteryPopup {
-        id: popup
-        anchorItem: root
-        requestOpen: root.popupOpen
-        onCloseRequested: root.popupOpen = false
+    BatteryPanel {
+        id: panel
+        requestOpen: root.panelOpen
+        onCloseRequested: root.panelOpen = false
     }
 }
 

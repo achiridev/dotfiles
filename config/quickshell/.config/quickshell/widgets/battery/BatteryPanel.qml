@@ -1,16 +1,20 @@
-// widgets/battery/BatteryPopup.qml
+// widgets/battery/BatteryPanel.qml
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell._Window
 import qs.services
 import qs.globals
 
-// Panel de batería: se abre por click en el módulo de la barra y SOLO se
-// cierra con su botón ✕ (ignora clicks externos). Muestra % grande, tiempo
-// restante, barra de carga animada, potencia/salud/energía y selector de los
-// 4 modos del script ~/.local/bin/battery-mode.
-PopupWindow {
-    id: popup
+// Panel de batería: ventana REAL (xdg toplevel) flotante que Hyprland gestiona
+// como cualquier otra: se abre centrada (regla "qs-battery-panel"), se mueve
+// con Super+drag y convive normalmente con el resto de ventanas (la terminal
+// de battery-mode abre encima). Se abre por click en el módulo de la barra y
+// SOLO se cierra con su botón ✕. Muestra % grande, tiempo restante, barra de
+// carga animada, potencia/salud/energía y selector de los 4 modos del script
+// ~/.local/bin/battery-mode.
+FloatingWindow {
+    id: panel
 
     // ============================ SUB-COMPONENTES ============================
     component StatTile: Rectangle {
@@ -49,7 +53,7 @@ PopupWindow {
                 horizontalAlignment: Text.AlignHCenter
                 text: tile.value
                 font.family: AppTheme.fontMono
-                font.pixelSize: AppTheme.fontBase
+                font.pixelSize: AppTheme.fontLarge
                 font.weight: Font.Bold
                 color: tile.accent
 
@@ -62,7 +66,7 @@ PopupWindow {
                 visible: tile.sub !== ""
                 text: tile.sub
                 font.family: AppTheme.fontLayout
-                font.pixelSize: AppTheme.fontTiny
+                font.pixelSize: AppTheme.fontSmall
                 color: AppTheme.textTertiary
             }
         }
@@ -78,7 +82,7 @@ PopupWindow {
         readonly property bool isActive: BatteryService.activeMode === mode
 
         Layout.fillWidth: true
-        implicitHeight: btnRow.implicitHeight + AppTheme.paddingBase * 2
+        implicitHeight: btnRow.implicitHeight + AppTheme.paddingLarge * 2
         radius: AppTheme.radiusSmall
         color: isActive ? Qt.alpha(AppTheme.accent, 0.16)
              : mouse.containsMouse ? AppTheme.surface
@@ -98,7 +102,7 @@ PopupWindow {
             Text {
                 text: btn.icon
                 font.family: AppTheme.fontMono
-                font.pixelSize: 18
+                font.pixelSize: 24
                 color: btn.isActive ? AppTheme.accent : AppTheme.textSecondary
 
                 Behavior on color { ColorAnimation { duration: 150 } }
@@ -106,12 +110,12 @@ PopupWindow {
 
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 1
+                spacing: 2
 
                 Text {
                     text: btn.title
                     font.family: AppTheme.fontLayout
-                    font.pixelSize: AppTheme.fontSmall
+                    font.pixelSize: AppTheme.fontBase
                     font.weight: Font.Bold
                     color: btn.isActive ? AppTheme.accent : AppTheme.fg
 
@@ -121,7 +125,7 @@ PopupWindow {
                 Text {
                     text: btn.desc
                     font.family: AppTheme.fontLayout
-                    font.pixelSize: AppTheme.fontTiny
+                    font.pixelSize: AppTheme.fontSmall
                     color: AppTheme.textTertiary
                 }
             }
@@ -130,7 +134,7 @@ PopupWindow {
                 visible: btn.isActive
                 text: String.fromCodePoint(0xf00c) // ✓ check
                 font.family: AppTheme.fontMono
-                font.pixelSize: AppTheme.fontSmall
+                font.pixelSize: AppTheme.fontBase
                 font.weight: Font.Bold
                 color: AppTheme.accent
             }
@@ -152,8 +156,8 @@ PopupWindow {
         property string value: ""
         property color c: AppTheme.accent
 
-        implicitWidth: pillRow.implicitWidth + 18
-        implicitHeight: 24
+        implicitWidth: pillRow.implicitWidth + 22
+        implicitHeight: 30
         radius: height / 2
         color: Qt.alpha(c, 0.10)
         border.width: 1
@@ -165,12 +169,12 @@ PopupWindow {
         RowLayout {
             id: pillRow
             anchors.centerIn: parent
-            spacing: 6
+            spacing: 7
 
             Text {
                 text: pill.icon
                 font.family: AppTheme.fontMono
-                font.pixelSize: AppTheme.fontTiny
+                font.pixelSize: AppTheme.fontSmall
                 color: pill.c
 
                 Behavior on color { ColorAnimation { duration: 300 } }
@@ -179,14 +183,14 @@ PopupWindow {
             Text {
                 text: pill.label
                 font.family: AppTheme.fontLayout
-                font.pixelSize: AppTheme.fontTiny
+                font.pixelSize: AppTheme.fontSmall
                 color: AppTheme.textSecondary
             }
 
             Text {
                 text: pill.value
                 font.family: AppTheme.fontMono
-                font.pixelSize: AppTheme.fontTiny
+                font.pixelSize: AppTheme.fontSmall
                 font.weight: Font.Bold
                 color: pill.c
 
@@ -196,17 +200,25 @@ PopupWindow {
     }
 
     // ================================ ESTADO =================================
-    property Item anchorItem
     // Lo maneja el padre (click en el módulo). La ventana se oculta con
     // `shown` para poder reproducir la animación de salida.
     property bool requestOpen: false
     property bool shown: false
     signal closeRequested()
 
+    readonly property int cardWidth: 700
+
     readonly property bool charging: BatteryService.isCharging
     readonly property color levelColor: charging ? BatteryService.colorCharning : BatteryService.levelColor(BatteryService.percentage)
 
+    // Identificador para la windowrule de Hyprland (float + center).
+    title: "qs-battery-panel"
+
     visible: shown
+    color: "transparent"
+
+    implicitWidth: cardWidth
+    implicitHeight: layout.implicitHeight + (AppTheme.paddingLarge + AppTheme.paddingBase) * 2
 
     onRequestOpenChanged: {
         if (requestOpen) {
@@ -233,27 +245,18 @@ PopupWindow {
     function __resetCard() {
         card.opacity = 0
         card.scale = 0.92
-        card.y = 8
+        card.y = 10
     }
-
-    anchor.item: anchorItem
-    anchor.rect.x: anchorItem ? (anchorItem.width / 2 - implicitWidth / 2) : 0
-    anchor.rect.y: anchorItem ? anchorItem.height : 0
-    anchor.adjustment: PopupAdjustment.Slide
-
-    implicitWidth: 420
-    implicitHeight: card.implicitHeight
-    color: "transparent"
 
     Rectangle {
         id: card
-        width: popup.implicitWidth
-        implicitHeight: layout.implicitHeight + (AppTheme.paddingLarge + AppTheme.paddingBase) * 2
+        width: panel.width
+        height: panel.height
         radius: AppTheme.radiusLarge
         color: AppTheme.bgPopup
         border.width: 1
         border.color: AppTheme.borderColor
-        transformOrigin: Item.Top
+        transformOrigin: Item.Center
 
         ColumnLayout {
             id: layout
@@ -267,12 +270,12 @@ PopupWindow {
                 spacing: AppTheme.paddingBase
 
                 Rectangle {
-                    Layout.preferredWidth: 38
-                    Layout.preferredHeight: 38
+                    Layout.preferredWidth: 46
+                    Layout.preferredHeight: 46
                     radius: AppTheme.radiusSmall
-                    color: Qt.alpha(popup.levelColor, 0.14)
+                    color: Qt.alpha(panel.levelColor, 0.14)
                     border.width: 1
-                    border.color: Qt.alpha(popup.levelColor, 0.32)
+                    border.color: Qt.alpha(panel.levelColor, 0.32)
 
                     Behavior on color { ColorAnimation { duration: 300 } }
                     Behavior on border.color { ColorAnimation { duration: 300 } }
@@ -281,8 +284,8 @@ PopupWindow {
                         anchors.centerIn: parent
                         text: BatteryService.batteryIcon
                         font.family: AppTheme.fontMono
-                        font.pixelSize: 20
-                        color: popup.levelColor
+                        font.pixelSize: 26
+                        color: panel.levelColor
 
                         Behavior on color { ColorAnimation { duration: 300 } }
                     }
@@ -296,7 +299,7 @@ PopupWindow {
                         Layout.fillWidth: true
                         text: "BATERÍA"
                         font.family: AppTheme.fontLayout
-                        font.pixelSize: AppTheme.fontBase
+                        font.pixelSize: AppTheme.fontLarge
                         font.weight: Font.Bold
                         font.letterSpacing: 2
                         color: AppTheme.fg
@@ -307,15 +310,15 @@ PopupWindow {
                         text: BatteryService.batteryInfo.model || BatteryService.batteryInfo.vendor || "Batería interna"
                         elide: Text.ElideRight
                         font.family: AppTheme.fontLayout
-                        font.pixelSize: AppTheme.fontSmall
+                        font.pixelSize: AppTheme.fontBase
                         color: AppTheme.textSecondary
                     }
                 }
 
                 Rectangle {
                     id: closeButton
-                    Layout.preferredWidth: 26
-                    Layout.preferredHeight: 26
+                    Layout.preferredWidth: 32
+                    Layout.preferredHeight: 32
                     radius: AppTheme.radiusSmall
                     color: closeMa.containsMouse ? AppTheme.surface : "transparent"
 
@@ -323,7 +326,7 @@ PopupWindow {
                         anchors.centerIn: parent
                         text: "✕"
                         font.family: AppTheme.fontLayout
-                        font.pixelSize: AppTheme.fontSmall
+                        font.pixelSize: AppTheme.fontBase
                         font.weight: Font.Bold
                         color: closeMa.containsMouse ? AppTheme.fg : AppTheme.textSecondary
                     }
@@ -333,7 +336,7 @@ PopupWindow {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: popup.closeRequested()
+                        onClicked: panel.closeRequested()
                     }
                 }
             }
@@ -341,7 +344,7 @@ PopupWindow {
             // ============================== HERO =============================
             Rectangle {
                 Layout.fillWidth: true
-                implicitHeight: heroRow.implicitHeight + AppTheme.paddingBase * 2
+                implicitHeight: heroRow.implicitHeight + AppTheme.paddingLarge * 2
                 radius: AppTheme.radius
                 color: Qt.alpha(AppTheme.fg, 0.04)
                 border.width: 1
@@ -350,30 +353,30 @@ PopupWindow {
                 RowLayout {
                     id: heroRow
                     anchors.fill: parent
-                    anchors.margins: AppTheme.paddingBase
+                    anchors.margins: AppTheme.paddingLarge
                     spacing: AppTheme.paddingLarge
 
                     Text {
                         text: BatteryService.percentage + "%"
                         font.family: AppTheme.fontLayout
-                        font.pixelSize: 42
+                        font.pixelSize: 56
                         font.weight: Font.Bold
-                        color: popup.levelColor
+                        color: panel.levelColor
 
                         Behavior on color { ColorAnimation { duration: 300 } }
                     }
 
                     ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: 5
+                        spacing: 6
 
                         Text {
                             text: BatteryService.statusText
                             font.family: AppTheme.fontLayout
-                            font.pixelSize: AppTheme.fontSmall
+                            font.pixelSize: AppTheme.fontBase
                             font.weight: Font.Bold
                             font.letterSpacing: 1
-                            color: popup.levelColor
+                            color: panel.levelColor
 
                             Behavior on color { ColorAnimation { duration: 300 } }
                         }
@@ -384,7 +387,7 @@ PopupWindow {
                             Text {
                                 text: String.fromCodePoint(0xf0954) // reloj
                                 font.family: AppTheme.fontMono
-                                font.pixelSize: AppTheme.fontSmall
+                                font.pixelSize: AppTheme.fontBase
                                 color: AppTheme.textSecondary
                             }
 
@@ -396,7 +399,7 @@ PopupWindow {
                                     return t + (BatteryService.isCharging ? " para completar" : " restantes")
                                 }
                                 font.family: AppTheme.fontMono
-                                font.pixelSize: AppTheme.fontBase
+                                font.pixelSize: AppTheme.fontLarge
                                 font.weight: Font.Bold
                                 color: AppTheme.fg
                             }
@@ -406,8 +409,8 @@ PopupWindow {
                     Text {
                         text: BatteryService.batteryIcon
                         font.family: AppTheme.fontMono
-                        font.pixelSize: 34
-                        color: popup.levelColor
+                        font.pixelSize: 44
+                        color: panel.levelColor
 
                         Behavior on color { ColorAnimation { duration: 300 } }
                     }
@@ -418,7 +421,7 @@ PopupWindow {
             Rectangle {
                 id: chargeTrack
                 Layout.fillWidth: true
-                implicitHeight: 12
+                implicitHeight: 14
                 radius: height / 2
                 color: Qt.alpha(AppTheme.fg, 0.10)
 
@@ -436,8 +439,8 @@ PopupWindow {
 
                     gradient: Gradient {
                         orientation: Gradient.Horizontal
-                        GradientStop { position: 0; color: popup.levelColor }
-                        GradientStop { position: 1; color: Qt.lighter(popup.levelColor, 1.3) }
+                        GradientStop { position: 0; color: panel.levelColor }
+                        GradientStop { position: 1; color: Qt.lighter(panel.levelColor, 1.3) }
                     }
 
                     Behavior on width { NumberAnimation { duration: 600; easing.type: Easing.OutCubic } }
@@ -450,7 +453,7 @@ PopupWindow {
                         opacity: 0
 
                         SequentialAnimation on opacity {
-                            running: popup.shown && BatteryService.isCharging
+                            running: panel.shown && BatteryService.isCharging
                             loops: Animation.Infinite
 
                             NumberAnimation { to: 0.22; duration: 700; easing.type: Easing.InOutQuad }
@@ -469,7 +472,7 @@ PopupWindow {
                     label: "POTENCIA"
                     value: BatteryService.formatPower()
                     sub: BatteryService.charging ? "entrando" : "consumiéndose"
-                    accent: popup.levelColor
+                    accent: panel.levelColor
                 }
 
                 StatTile {
@@ -504,7 +507,7 @@ PopupWindow {
                 Text {
                     text: "MODO DE ENERGÍA"
                     font.family: AppTheme.fontLayout
-                    font.pixelSize: AppTheme.fontTiny
+                    font.pixelSize: AppTheme.fontSmall
                     font.weight: Font.Bold
                     font.letterSpacing: 1.5
                     color: AppTheme.textSecondary
@@ -515,7 +518,7 @@ PopupWindow {
                 Text {
                     text: "requiere sudo"
                     font.family: AppTheme.fontLayout
-                    font.pixelSize: AppTheme.fontTiny
+                    font.pixelSize: AppTheme.fontSmall
                     color: AppTheme.textTertiary
                 }
             }
@@ -603,7 +606,7 @@ PopupWindow {
         }
     }
 
-    // Apertura: fade + escala + slide desde la barra (crece hacia abajo).
+    // Apertura: fade + escala + slide sutil hacia el centro.
     ParallelAnimation {
         id: openAnim
         NumberAnimation { target: card; property: "opacity"; to: 1; duration: 180; easing.type: Easing.OutCubic }
@@ -617,6 +620,6 @@ PopupWindow {
         NumberAnimation { target: card; property: "opacity"; to: 0; duration: 140; easing.type: Easing.InCubic }
         NumberAnimation { target: card; property: "scale"; to: 0.95; duration: 140; easing.type: Easing.InCubic }
         NumberAnimation { target: card; property: "y"; to: 6; duration: 140; easing.type: Easing.InCubic }
-        onFinished: popup.shown = false
+        onFinished: panel.shown = false
     }
 }

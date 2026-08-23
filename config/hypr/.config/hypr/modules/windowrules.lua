@@ -55,6 +55,17 @@ hl.window_rule({
 	float  = true,
 })
 
+-- ───────── QUICKSHELL · PANEL FLOTANTE DE BATERÍA ─────────
+-- Ventana real (xdg) del panel de batería de quickshell: flota y centrada al
+-- abrirse; movible con Super+drag como cualquier ventana.
+hl.window_rule({
+	name  = "qs-battery-panel",
+	match = { title = "^qs-battery-panel$" },
+
+	float  = true,
+	center = true,
+})
+
 --[[
 -- ───────── JETBRAINS INTELLIJ IDEA (SIN TRANSPARENCIA / OPACIDAD TOTAL) ─────────
 hl.window_rule({
