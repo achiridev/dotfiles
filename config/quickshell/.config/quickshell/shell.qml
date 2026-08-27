@@ -6,6 +6,7 @@ import Quickshell.Wayland
 import qs.windows.bar
 import qs.windows.visualizer
 import qs.windows.overview
+import qs.windows.wallpapers
 
 ShellRoot {
     Bar {}
@@ -21,4 +22,5 @@ ShellRoot {
     }
 
     Overview {}
+    WallpapersWindow {}
 }

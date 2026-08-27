@@ -76,6 +76,14 @@ hl.layer_rule({
 	ignore_alpha = 0.2,
 })
 
+-- Pickeer de fondos (Quickshell): blur detrás de la ventana wallpapers.
+hl.layer_rule({
+	name = "wallpapers-blur",
+	match = { namespace = "^quickshell:wallpapers-blur$" },
+	blur = false,
+	ignore_alpha = 0.2,
+})
+
 -- wayfreeze (captura): sin animación de entrada/salida de la capa
 hl.layer_rule({
 	name = "wayfreeze-noanim",

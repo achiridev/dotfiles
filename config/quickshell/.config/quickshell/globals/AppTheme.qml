@@ -130,4 +130,24 @@ QtObject {
     // Special workspaces
     readonly property bool overviewShowSpecialWorkspaces: true
     readonly property int overviewSpecialColumns: 5
+
+    // 6. Wallpapers picker (Quickshell)
+    readonly property int wpWindowWidth: 1280
+    readonly property int wpWindowHeight: 680
+    readonly property int wpSidebarWidth: 260
+    readonly property int wpHeaderHeight: 104
+    readonly property int wpTileW: 232
+    readonly property int wpTileH: 168
+    readonly property int wpCellW: 236
+    readonly property int wpCellH: 176
+    readonly property int wpThumbW: 384
+    readonly property int wpThumbH: 216
+    readonly property color wpCurrentRing: root.accent
+    readonly property bool wpBackdrop: true
+    readonly property real wpBackdropOpacity: 0.5
+    readonly property bool wpBlur: true
+    readonly property bool wpCloseOnFocusLoss: true
+    readonly property int wpAnimFast: 120
+    readonly property int wpAnimBase: 200
+    readonly property int wpAnimSlow: 280
 }

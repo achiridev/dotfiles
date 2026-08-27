@@ -52,8 +52,8 @@ hl.bind(mainMod .. " + SHIFT + O", hl.dsp.window.move({ workspace = "-1" }))
 
 -- ───────── SCRIPTS DEL SISTEMA ───────────
 hl.bind(" Print ", hl.dsp.exec_cmd("~/.local/bin/screenshot.sh"))
-hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("~/.local/bin/wallpaper-picker.sh"))
-hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("~/.local/bin/wallpaper.sh"))
+hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("quickshell ipc call wallpapers toggle"))
+hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("~/.local/bin/wallpaper.sh next"))
 
 
 ----------------------------------------------------------------------------
