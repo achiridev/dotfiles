@@ -1,50 +1,59 @@
 #!/usr/bin/env bash
 
 # ===== CONFIG =====
-WALL_DIR="$HOME/dotfiles/wallpapers"
+DB="$HOME/.local/share/waywallen/waywallen-v2.db"
 ROFI_THEME="$HOME/dotfiles/config/rofi/.config/rofi/themes/wallpaper.rasi"
+WALLPAPER_SCRIPT="$HOME/.local/bin/wallpaper.sh"
 
-# ===== ROFI =====
-rofi="rofi -i -dmenu -config $ROFI_THEME"
-rofi_cmd="rofi -x11 -dmenu -theme ${ROFI_THEME} -theme-str ${rofi_override}"
-# el -x11 hace que no que fije el hover sobre rofi
-
-# ===== CACHE (opcional pero recomendado) =====
 CACHE_DIR="$HOME/.cache/wallpaper_previews"
-if [ ! -d "${CACHE_DIR}" ] ; then
-        mkdir -p "${CACHE_DIR}"
-    fi
+mkdir -p "$CACHE_DIR"
 
-# ===== GENERAR MENU =====
+# ===== OBTENER ITEMS DE WAYWALLEN (wallpaper-engine / workshop) =====
+# Cada línea: nombre<TAB>id<TAB>preview_completo
+list_items() {
+    sqlite3 -readonly -separator $'\t' "$DB" "
+        SELECT i.display_name, i.id, l.path || '/' || i.preview_path
+          FROM item i JOIN library l ON l.id = i.library_id
+         WHERE i.plugin_id = 4
+         ORDER BY lower(i.display_name) COLLATE NOCASE;"
+}
+
+# ===== GENERAR MENU DE ROFI =====
+# Cada línea: "<id>\0display\x1f<nombre>\x1fmeta\x1f<nombre>\x1ficon\x1f<preview>"
+# - El texto de la fila es el id: rofi lo devuelve al seleccionar (determinista,
+#   no depende del nombre -> resuelve wallpapers con el mismo display_name).
+# - display/meta: muestran el nombre y permiten filtrar por él.
+# - icon: preview de la imagen.
 menu() {
-    while IFS= read -r -d '' file; do
-        name=$(basename "$file")
+    local name id preview ext cached
+    while IFS=$'\t' read -r name id preview; do
+        [[ -z "$name" ]] && continue
 
-        # cache preview (opcional: mejora rendimiento con muchas imágenes)
-        preview="$CACHE_DIR/$name"
-
-        if [[ ! -f "$preview" ]]; then
-            cp "$file" "$preview"
+        # cache de preview (mejora rendimiento y maneja rutas de Steam)
+        ext="${preview##*.}"
+        cached="$CACHE_DIR/${id}.${ext,,}"
+        if [[ ! -f "$cached" ]] || [[ "$preview" -nt "$cached" ]]; then
+            cp "$preview" "$cached" 2>/dev/null || continue
         fi
 
-        printf "%s\x00icon\x1f%s\n" "$name" "$preview"
-
-    done < <(find "$WALL_DIR" -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.jpeg" -o -iname "*.webp" \) -print0)
+        printf '%s\x00display\x1f%s\x1fmeta\x1f%s\x1ficon\x1f%s\n' \
+            "$id" "$name" "$name" "$cached"
+    done < <(list_items)
 }
 
 # ===== MAIN =====
 main() {
-    choice=$(menu | $rofi_cmd)
+    local choice
+
+    # rofi devuelve directamente el id del item (texto de la fila)
+    choice=$(menu | rofi -i -dmenu -config "$ROFI_THEME" \
+        -theme-str 'configuration { hover-select: false; }')
 
     [[ -z "$choice" ]] && exit 0
 
-    # Buscar archivo real
-    selected=$(find "$WALL_DIR" -type f -iname "$choice" -print -quit)
+    [[ "$choice" =~ ^[0-9]+$ ]] || { echo "Selección inválida: $choice" >&2; exit 1; }
 
-    [[ -z "$selected" ]] && exit 1
-
-    # Ejecutar tu script real
-    ~/.local/bin/wallpaper.sh "$selected"
+    "$WALLPAPER_SCRIPT" "$choice"
 }
 
 # Evitar duplicados de rofi
