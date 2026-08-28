@@ -7,6 +7,7 @@ import qs.windows.bar
 import qs.windows.visualizer
 import qs.windows.overview
 import qs.windows.wallpapers
+import qs.windows.activate
 
 ShellRoot {
     Bar {}
@@ -23,4 +24,5 @@ ShellRoot {
 
     Overview {}
     WallpapersWindow {}
+    ActivateWindow {}
 }

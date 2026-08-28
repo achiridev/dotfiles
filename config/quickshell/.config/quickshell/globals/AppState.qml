@@ -39,6 +39,17 @@ QtObject {
     property int musicAnimSlow: 260
 
     // ==========================================
+    // MARCA DE AGUA "ACTIVAR LINUX" (estilo Windows)
+    // ==========================================
+    // 0 = desactivada, 1 = sobre el fondo (detrás de ventanas), 2 = delante de todo
+    property int activateMode: 2
+
+    // Ajustes de la marca (opcionales)
+    property int activateMargin: 26
+    property int activateTextSize: 24
+    property int activateSubTextSize: 14
+
+    // ==========================================
     // BRILLO (pantalla + teclado Acer RGB)
     // ==========================================
     // Dispositivo de retroiluminación principal (ver `brightnessctl -l`).
