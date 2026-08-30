@@ -10,9 +10,9 @@ hl.on("hyprland.start", function ()
 
 	-- Bar, wallpaper, notificaciones
 	hl.exec_cmd("quickshell")
-	hl.exec_cmd("awww-daemon")
 	hl.exec_cmd("swaync")
-	hl.exec_cmd("waywallen")
+	hl.exec_cmd("waywallen --no-ui")
+	-- hl.exec_cmd("awww-daemon")
 	-- hl.exec_cmd("waybar")
 
 	-- Portapapeles y gestor de archivos
@@ -21,9 +21,5 @@ hl.on("hyprland.start", function ()
 
 	-- Hypr
 	hl.exec_cmd("hypridle")
-	hl.exec_cmd("hyprpm reload -n")
-
-	-- Script de portales (XDG)
-	hl.exec_cmd("~/.config/hyprland/start-portals.sh")
 
 end)
