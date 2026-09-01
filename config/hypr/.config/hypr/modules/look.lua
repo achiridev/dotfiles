@@ -84,6 +84,14 @@ hl.layer_rule({
 	ignore_alpha = 0.2,
 })
 
+-- Launcher Gear (Quickshell): blur detrás de la ventana del launcher.
+hl.layer_rule({
+	name = "launcher-blur",
+	match = { namespace = "^quickshell:launcher-blur$" },
+	blur = false,
+	ignore_alpha = 0.2,
+})
+
 -- wayfreeze (captura): sin animación de entrada/salida de la capa
 hl.layer_rule({
 	name = "wayfreeze-noanim",

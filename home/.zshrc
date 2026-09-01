@@ -18,6 +18,7 @@ source $ZSH/oh-my-zsh.sh
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 alias ls='eza --icons --group-directories-first --color=always --group'
+alias cat='bat'
 
 [ -f ~/.config/zsh/private.zsh ] && source ~/.config/zsh/private.zsh
 
@@ -26,3 +27,4 @@ if [[ "$TERM" == "xterm-kitty" && -z "$FASTFETCH_SHOWN" ]]; then
     clear
     fastfetch
 fi
+
