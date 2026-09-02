@@ -60,7 +60,7 @@ Rectangle {
                     id: todosRow
                     label: "Todos"
                     folder: "all"
-                    count: WallpaperService.items.length
+                    count: WallpaperService.totalCount
                     onClickedFolder: WallpaperService.activeFolder = "all"
                 }
 
@@ -76,10 +76,11 @@ Rectangle {
                     model: WallpaperService.folders
                     delegate: FolderNavRow {
                         required property var modelData
+                        visible: WallpaperService.showHidden || (modelData && modelData.name !== WallpaperService.hiddenFolder)
                         label: modelData ? modelData.name : ""
                         folder: modelData ? modelData.name : ""
                         count: WallpaperService.folderCount(modelData ? modelData.name : "")
-                        deletable: true
+                        deletable: modelData ? modelData.name !== WallpaperService.hiddenFolder : false
 
                         onClickedFolder: WallpaperService.activeFolder = folder
                         onDeleteRequested: WallpaperService.deleteFolder(folder)

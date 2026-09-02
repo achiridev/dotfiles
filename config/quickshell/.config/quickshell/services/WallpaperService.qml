@@ -44,6 +44,11 @@ QtObject {
     property string activeTag: ""
     property string searchText: ""
 
+    // Carpeta tratada como oculta ("hidden"): su entrada en el sidebar y sus
+    // wallpapers quedan visibles solo con `showHidden` activado (atajo H).
+    readonly property string hiddenFolder: "hidden"
+    property bool showHidden: false
+
     // ============================================================
     // ESTADO: acciones
     // ============================================================
@@ -69,6 +74,8 @@ QtObject {
         const out = []
         for (let i = 0; i < root.items.length; ++i) {
             const it = root.items[i]
+            if (!root.showHidden && root.itemIsHidden(it.id))
+                continue
             if (root.activeType !== "all" && it.type !== root.activeType)
                 continue
             if (root.activeTag && (!it.tags || it.tags.indexOf(root.activeTag) < 0))
@@ -104,6 +111,13 @@ QtObject {
         }
         return false
     }
+
+    function itemIsHidden(id) {
+        return root.itemInFolder(id, root.hiddenFolder)
+    }
+
+    // Total de items visibles en "Todos" (excluye la carpeta hidden cuando está off).
+    readonly property int totalCount: root.showHidden ? root.items.length : root.items.filter(it => !root.itemIsHidden(it.id)).length
 
     function folderCount(folderName) {
         if (folderName === "unfiled") {

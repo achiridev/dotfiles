@@ -335,6 +335,10 @@ Item {
             wallpaperGrid.moveCurrentIndexRight()
             event.accepted = true
             break
+        case Qt.Key_H:
+            WallpaperService.showHidden = !WallpaperService.showHidden
+            event.accepted = true
+            break
         }
     }
 

@@ -1,15 +1,15 @@
 // widgets/launcher/Gear.qml
-// Engranaje principal del launcher: la SILUETA (Canvas) es la única pieza que
-// gira; las celdas de apps viven en posiciones fijas de pantalla, así el
-// diente superior (index 0) es SIEMPRE la app seleccionada — la rueda nunca
-// arrastra la selección fuera del tope.
+// Engranaje principal del launcher: la SILUETA (Canvas) gira junto con los
+// 8 cuadros de apps, soldados a la rueda (rueda real). El cuadro que asienta
+// en el tope —(offset % 8)— es el FOCO y muestra la app seleccionada.
 //   - reposo: rot = -(offset % N) * step  (retargetable, easing OutCubic);
 //     cada paso = un "clic de trinquete"; → gira ANTIHORARIO.
 //   - búsqueda: "spin" de +360° (InOutCubic); al terminar se normaliza al
 //     instante (la pose es idéntica mod 360).
-// Mapeo del anillo: diente fijo index i (posición de pantalla, 0 = top) ->
-// AppModel.appAt(i) == ringApps[offset + i]; por construcción el top siempre
-// muestra la app seleccionada.
+// Mapeo del anillo: cuadro físico index i -> AppModel.wheelAt(i) ==
+// ringApps[8*floor(offset/8) + i]; el cuadro (offset % 8) queda arriba y es
+// el foco (muestra ringApps[offset]). El rebase a página nueva (offset += 8)
+// hace snap del dial a orientación 0 con los datos de la página siguiente.
 import QtQuick
 import Quickshell
 import Quickshell.Widgets
@@ -182,8 +182,9 @@ Item {
     }
 
     // ============================================================
-    // CORONA: 8 dientes en posiciones FIJAS de pantalla; el diente
-    // superior (index 0) es siempre la selección del anillo.
+    // CORONA: 8 cuadros soldados a la rueda que rotan con el dial en
+    // bloque; el cuadro que asienta arriba ((offset % 8)) es el foco y
+    // muestra ringApps[offset].
     // ============================================================
     Repeater {
         model: LauncherState.toothCount
@@ -198,14 +199,15 @@ Item {
             height: 0
 
             GearSlot {
-                angleDeg: -90 + index * LauncherState.step
+                angleDeg: -90 + index * LauncherState.step + disc.rotation
                 orbitRadius: root.radius
                 cellW: AppTheme.launcherSlotW
                 cellH: AppTheme.launcherSlotH
                 iconPx: AppTheme.launcherIconPx
-                // index 0 es siempre el diente superior = foco del anillo.
-                isFocus: index === 0
-                app: AppModel.appAt(index)
+                // Foco = cuadro (offset % 8): gira con la rueda y llega arriba
+                // mostrando la app seleccionada ringApps[offset].
+                isFocus: index === AppModel.mod(AppModel.offset, 8)
+                app: AppModel.wheelAt(index)
                 onClicked: (app) => {
                     return root.clickedSlot(app);
                 }

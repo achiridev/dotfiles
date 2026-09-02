@@ -20,9 +20,10 @@ Item {
     readonly property real satGap: AppTheme.launcherSatGap
     readonly property real mainRadius: AppTheme.launcherGearRadius
     readonly property real cx: root.mainRadius + root.satGap + root.satRadius
+    readonly property real satOuter: AppTheme.launcherSatRadius + AppTheme.launcherSatToothH
 
-    implicitWidth: (root.cx + root.satRadius) * 2
-    implicitHeight: root.satRadius * 2
+    implicitWidth: (root.cx + root.satOuter) * 2
+    implicitHeight: root.satOuter * 2
 
     // ============================================================
     // SATÉLITE IZQUIERDO (antecesores del foco)
@@ -30,10 +31,10 @@ Item {
     Item {
         id: satLeft
 
-        x: -root.cx - root.satRadius
-        y: -root.satRadius
-        width: root.satRadius * 2
-        height: root.satRadius * 2
+        x: 0
+        y: 0
+        width: root.satOuter * 2
+        height: root.satOuter * 2
 
         Canvas {
             id: satLeftBody
@@ -108,10 +109,10 @@ Item {
     Item {
         id: satRight
 
-        x: root.cx - root.satRadius
-        y: -root.satRadius
-        width: root.satRadius * 2
-        height: root.satRadius * 2
+        x: root.cx * 2
+        y: 0
+        width: root.satOuter * 2
+        height: root.satOuter * 2
 
         Canvas {
             id: satRightBody

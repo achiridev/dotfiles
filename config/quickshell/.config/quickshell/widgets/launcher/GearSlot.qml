@@ -44,10 +44,10 @@ Rectangle {
     x: Math.cos(root.angleDeg * Math.PI / 180) * root.orbitRadius - root.width / 2
     y: Math.sin(root.angleDeg * Math.PI / 180) * root.orbitRadius - root.height / 2
     z: root.hovered ? 10 : (root.isFocus ? 5 : 1)
-    scale: root.hovered ? 1.08 : (root.isFocus ? 1.04 : 1)
-    color: root.isFocus ? Qt.alpha(AppTheme.color4, 0.16) : root.hovered ? AppTheme.surface : Qt.alpha(AppTheme.fg, 0.04)
+    scale: root.isFocus ? 1.12 : (root.hovered ? 1.08 : 1)
+    color: root.isFocus ? Qt.alpha(AppTheme.accent, 0.4) : root.hovered ? AppTheme.surface : Qt.alpha(AppTheme.fg, 0.04)
     border.width: root.isFocus ? 2 : 1
-    border.color: root.isFocus ? Qt.alpha(AppTheme.color4, 1) : root.hovered ? Qt.alpha(AppTheme.accent, 0.9) : Qt.alpha(AppTheme.borderColor, 0.35)
+    border.color: root.isFocus ? Qt.alpha(AppTheme.accent, 1) : root.hovered ? Qt.alpha(AppTheme.accent, 0.9) : Qt.alpha(AppTheme.borderColor, 0.35)
 
     Item {
         anchors.centerIn: parent

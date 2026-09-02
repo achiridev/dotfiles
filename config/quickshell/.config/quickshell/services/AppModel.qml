@@ -113,6 +113,17 @@ Singleton {
         return root.mod(root.offset + k, root.ringCount);
     }
 
+    // App del cuadro físico `box` de la rueda (rueda real): el cuadro muestra
+    // ringApps[page + box] con page = 8*floor(offset/8); el cuadro que queda
+    // arriba al asentarse es (offset % 8) → muestra ringApps[offset].
+    function wheelAt(box) {
+        if (root.ringCount === 0)
+            return null;
+
+        const page = 8 * Math.floor(root.offset / 8);
+        return root.ringApps[root.mod(page + box, root.ringCount)];
+    }
+
     // Reorienta el anillo para que la app en el índice `idx` (de `apps`, como
     // lo entrega la búsqueda) quede en el hub.
     function alignToIndex(idx) {

@@ -77,6 +77,7 @@ Item {
                     readonly property string folderName: modelData ? modelData.name : ""
                     readonly property bool inFolder: root.item ? WallpaperService.itemInFolder(root.item.id, folderName) : false
 
+                    visible: WallpaperService.showHidden || folderName !== WallpaperService.hiddenFolder
                     Layout.fillWidth: true
                     Layout.preferredHeight: 26
                     radius: AppTheme.radiusSmall
