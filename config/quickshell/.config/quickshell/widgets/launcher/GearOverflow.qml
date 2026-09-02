@@ -81,7 +81,6 @@ Item {
                     height: 0
 
                     GearSlot {
-                        toothIndex: -LauncherState.satelliteCount + index
                         angleDeg: -90 - index * LauncherState.step
                         orbitRadius: root.satRadius
                         cellW: 56
@@ -158,7 +157,6 @@ Item {
                     height: 0
 
                     GearSlot {
-                        toothIndex: LauncherState.gearSize + index
                         angleDeg: -90 + index * LauncherState.step
                         orbitRadius: root.satRadius
                         cellW: 56

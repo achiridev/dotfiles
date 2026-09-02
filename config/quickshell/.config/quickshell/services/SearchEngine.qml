@@ -11,14 +11,12 @@ import qs.services
 Singleton {
     id: root
 
-    property string query: ""
     property var results: []          // apps rankeadas (top result primero)
     property bool searching: false    // query no vacía
     property bool empty: false        // searching && sin coincidencias
 
     function setQuery(text) {
         const t = (text || "").trim()
-        root.query = t
         const qlow = t.toLowerCase()
 
         if (!t) {
@@ -84,9 +82,5 @@ Singleton {
         if (idx < 0) return false
         AppModel.alignToIndex(idx)
         return true
-    }
-
-    function launchSelected() {
-        AppModel.launchFocused()
     }
 }

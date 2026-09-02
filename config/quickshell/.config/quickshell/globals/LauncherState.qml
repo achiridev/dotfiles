@@ -16,12 +16,9 @@ Singleton {
     property bool open: false
     // ============================================================
     // BÚSQUEDA (estado visual)
-    // `spinToken` se incrementa al empezar a buscar → los engranajes hacen el
-    // "spin" de arrastre; `microToken` se incrementa en cada re-ajuste.
+    // `searching` true mientras se escribe; dispara el "spin" de arrastre.
     // ============================================================
     property bool searching: false
-    property int spinToken: 0
-    property int microToken: 0
     // ============================================================
     // GEOMETRÍA DEL ENGRANAJE (tunables)
     // gearSize: estaciones de la corona; el DIENTE SUPERIOR (index 0, ángulo
@@ -36,7 +33,6 @@ Singleton {
     // ============================================================
     // NAVEGACIÓN (delega en AppModel)
     // ============================================================
-    property int hoverTooth: -1
 
     function toggle() {
         root.open = !root.open;
@@ -48,12 +44,6 @@ Singleton {
 
     function beginSearch() {
         root.searching = true;
-        root.spinToken = (root.spinToken + 1) % 100000;
-    }
-
-    // Micro re-ajuste tras cada tecla (resultado cambia de posición).
-    function touchSearch() {
-        root.microToken = (root.microToken + 1) % 100000;
     }
 
     function endSearch() {
@@ -62,12 +52,10 @@ Singleton {
 
     function rotate(delta) {
         AppModel.navigate(delta);
-        root.hoverTooth = -1;
     }
 
     function page(delta) {
         AppModel.jump(delta * root.gearSize);
-        root.hoverTooth = -1;
     }
 
     // ============================================================
@@ -76,8 +64,6 @@ Singleton {
     onSearchingChanged: {
         if (!root.searching) {
             SearchEngine.clear();
-            root.spinToken = 0;
-            root.microToken = 0;
         }
     }
 }

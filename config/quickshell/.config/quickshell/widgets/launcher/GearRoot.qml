@@ -45,7 +45,7 @@ Item {
         }
     }
 
-    // Satélites laterales (contra-rotación al leer gear.rot en vivo).
+    // Satélites laterales (estáticos, muestran el overflow del anillo).
     GearOverflow {
         id: overflow
 

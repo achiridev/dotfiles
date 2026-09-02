@@ -12,7 +12,6 @@ Rectangle {
     id: root
 
     required property var app
-    property int toothIndex: 0
     property real angleDeg: -90
     property real orbitRadius: 300
     property real cellW: 96
@@ -27,6 +26,16 @@ Rectangle {
     property real counterRot: 0
 
     signal clicked(var app)
+
+    // Icono resuelto del diente: si el nombre del .desktop no existe en el
+    // tema activo de Qt, cae a un genérico en vez del cuadro morado y el
+    // "Could not load icon" de Quickshell.
+    readonly property string resolvedIcon: {
+        const name = root.app && root.app.icon ? String(root.app.icon).trim() : "";
+        if (name !== "" && Quickshell.hasThemeIcon(name))
+            return Quickshell.iconPath(name);
+        return Quickshell.iconPath("application-x-executable");
+    }
 
     width: root.cellW
     height: root.cellH
@@ -57,7 +66,7 @@ Rectangle {
                 height: root.iconPx
                 anchors.horizontalCenter: parent.horizontalCenter
                 visible: root.app !== null
-                source: root.app && root.app.icon !== "" ? Quickshell.iconPath(root.app.icon) : ""
+                source: root.resolvedIcon
             }
 
             Text {

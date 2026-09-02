@@ -29,16 +29,14 @@ Rectangle {
     // ============================================================
     // NAVEGACIÓN POR TECLADO (browse vs búsqueda)
     // ============================================================
+    // Left/Right solo orbitan el anillo en modo browse. En búsqueda NO se
+    // aceptan: dejan que el TextInput maneje el cursor (editar la query).
     function arrowLeft() {
-        if (!root.hubSearching)
-            LauncherState.rotate(-1);
-
+        LauncherState.rotate(-1);
     }
 
     function arrowRight() {
-        if (!root.hubSearching)
-            LauncherState.rotate(1);
-
+        LauncherState.rotate(1);
     }
 
     function arrowUp() {
@@ -68,6 +66,11 @@ Rectangle {
     }
 
     function confirm() {
+        // Con búsqueda activa pero sin coincidencias, Enter no debe lanzar la
+        // app que quedó alineada (invisible): no hacer nada.
+        if (root.hubSearching && SearchEngine.results.length === 0)
+            return;
+
         const app = root.hubSearching && SearchEngine.results.length > 0 ? SearchEngine.results[root.resultIndex] : AppModel.focusApp();
         AppModel.launch(app);
         LauncherState.close();
@@ -254,12 +257,18 @@ Rectangle {
         Keys.onPressed: (event) => {
             switch (event.key) {
             case Qt.Key_Left:
-                root.arrowLeft();
-                event.accepted = true;
+                // En búsqueda NO se acepta: el cursor del TextInput lo maneja el
+                // propio TextInput (editar en medio de la query).
+                if (!root.hubSearching) {
+                    root.arrowLeft();
+                    event.accepted = true;
+                }
                 break;
             case Qt.Key_Right:
-                root.arrowRight();
-                event.accepted = true;
+                if (!root.hubSearching) {
+                    root.arrowRight();
+                    event.accepted = true;
+                }
                 break;
             case Qt.Key_Up:
                 root.arrowUp();

@@ -28,8 +28,6 @@ Item {
     // === API (consumida por GearRoot / satélites) ===
     property int restOffset: AppModel.offset
     property bool spinActive: false
-    // Espejo de la pose del dial (contra-rotación de los satélites).
-    readonly property real rot: disc.rotation
     property real radius: AppTheme.launcherGearRadius
     property real toothH: AppTheme.launcherGearToothH
     property real durationRest: AppTheme.launcherAnimRest
@@ -82,10 +80,6 @@ Item {
         poseAnim.stop();
         root.spinActive = false;
         disc.rotation = root.restPose();
-    }
-
-    function navigateBy(delta) {
-        LauncherState.rotate(delta);
     }
 
     // ============================================================
@@ -204,7 +198,6 @@ Item {
             height: 0
 
             GearSlot {
-                toothIndex: (index + 1)
                 angleDeg: -90 + index * LauncherState.step
                 orbitRadius: root.radius
                 cellW: AppTheme.launcherSlotW

@@ -70,11 +70,8 @@ Singleton {
                 "terminal": p[5] === "1"
             });
         }
-        out.sort((a, b) => {
-            return a.name.localeCompare(b.name, undefined, {
-                "sensitivity": "base"
-            });
-        });
+        // NO re-ordenar: `list-apps.sh` ya entrega el orden definitivo
+        // (uso desc → nombre asc). Un sort aquí anularía el orden por uso.
         return out;
     }
 
@@ -146,20 +143,20 @@ Singleton {
         launchProcess.running = true;
     }
 
-    function launchFocused() {
-        root.launch(root.focusApp());
-    }
-
     // Registra el lanzamiento para el orden por uso (fire-and-forget).
     function recordUsage(path) {
         if (!path || path.length === 0)
+            return ;
+        // Un único Process: si la escritura previa aún corre, descartar la
+        // actualización en vez de machacar un proceso en marcha.
+        if (usageProcess.running)
             return ;
 
         usageProcess.command = ["bash", root.scriptsDir + "/launcher-usage.sh", "add", path];
         usageProcess.running = true;
     }
 
-    scanProcess: Process {
+scanProcess: Process {
 
         stdout: StdioCollector {
             id: scanCollector
@@ -171,10 +168,18 @@ Singleton {
                     root.apps = parsed;
                     if (root.ringCount > 0)
                         root.offset = root.mod(root.offset, root.ringCount);
-
                 }
                 root.loaded = true;
             }
+        }
+
+        onExited: {
+            // Red de seguridad: si el stdout no llegó a emitir onStreamFinished,
+            // libera igualmente el flag para no quedarnos en "Cargando apps…".
+            if (root.loading)
+                root.loading = false;
+            if (!root.loaded)
+                root.loaded = true;
         }
 
     }
