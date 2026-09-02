@@ -25,6 +25,7 @@ alias cat='bat'
 if [[ "$TERM" == "xterm-kitty" && -z "$FASTFETCH_SHOWN" ]]; then
     export FASTFETCH_SHOWN=1
     clear
-    fastfetch
+    # fastfetch
+    fastfetch --logo none
 fi
 

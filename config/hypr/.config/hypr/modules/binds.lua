@@ -56,6 +56,9 @@ hl.bind(" Print ", hl.dsp.exec_cmd("~/.local/bin/screenshot.sh"))
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("quickshell ipc call wallpapers toggle"))
 hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("~/.local/bin/wallpaper.sh next"))
 
+-- Panel de control de componentes de Quickshell (abrir/cerrar)
+hl.bind(mainMod .. " + CTRL + SPACE", hl.dsp.exec_cmd("quickshell ipc call control toggle"))
+
 
 ----------------------------------------------------------------------------
 -- ATAJOS DE MOUSE (BINDM)

@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.widgets.workspaces
 import qs.widgets.clock
+import qs.widgets.control
 
 RowLayout {
     anchors {
@@ -13,6 +14,7 @@ RowLayout {
     }
     spacing: 8
 
+    ControlButton {}
     Clock {}
     Workspaces {}
 }

@@ -66,6 +66,17 @@ hl.window_rule({
 	center = true,
 })
 
+-- ───────── QUICKSHELL · PANEL DE CONTROL DE COMPONENTES ─────────
+-- Ventana real (xdg) del panel de control: flota y centrada al abrirse;
+-- movible con Super+drag como cualquier ventana.
+hl.window_rule({
+	name  = "qs-control-panel",
+	match = { title = "^qs-control-panel$" },
+
+	float  = true,
+	center = true,
+})
+
 --[[
 -- ───────── JETBRAINS INTELLIJ IDEA (SIN TRANSPARENCIA / OPACIDAD TOTAL) ─────────
 hl.window_rule({
