@@ -45,15 +45,12 @@ Item {
         }
     }
 
-    // Satélites laterales (estáticos, muestran el overflow del anillo).
+    // Satélites laterales (decorativos, giran con el dial principal).
     GearOverflow {
         id: overflow
 
         anchors.centerIn: root
         gearRef: gear
-        enabled: AppModel.ringCount > LauncherState.gearSize
-        opacity: AppModel.ringCount > LauncherState.gearSize ? 1 : 0
-        visible: AppModel.ringCount > LauncherState.gearSize
     }
 
     // Hub central (buscador + app enfocada) flotando sobre el engranaje.

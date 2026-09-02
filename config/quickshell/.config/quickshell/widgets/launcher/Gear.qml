@@ -33,6 +33,7 @@ Item {
     property real durationRest: AppTheme.launcherAnimRest
     property real durationSpin: AppTheme.launcherAnimSpin
     readonly property real outerR: root.radius + root.toothH // la silueta define el bounding
+    readonly property real dialRotation: disc.rotation // rotación del dial (la comparten los satélites)
 
     signal clickedSlot(var app)
 

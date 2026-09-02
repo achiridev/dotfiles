@@ -24,7 +24,13 @@ Rectangle {
     readonly property string currentDisplayName: AppModel.count === 0 ? (AppModel.loading ? "Cargando…" : "Sin aplicaciones") : (displayApp ? displayApp.name : "")
     readonly property string statusHint: root.hubSearching ? (root.showingSearch ? (SearchEngine.results.length > 1 ? (root.resultIndex + 1) + " de " + SearchEngine.results.length + " resultados" : "1 resultado") : "sin resultados") : ""
     readonly property color statusHintColor: root.hubSearching && !root.showingSearch ? AppTheme.critical : AppTheme.textTertiary
-    readonly property string hintBar: root.hubSearching ? "↵ Lanzar · ↑↓ Resultado · Esc Cerrar" : "↵ Lanzar · ←→ Orbitar · ↑↓ Página · Esc Cerrar"
+    // Icono resuelto de la app enfocada / resultado (fallback genérico).
+    readonly property string displayIcon: {
+        const name = root.displayApp && root.displayApp.icon ? String(root.displayApp.icon).trim() : "";
+        if (name !== "" && Quickshell.hasThemeIcon(name))
+            return Quickshell.iconPath(name);
+        return Quickshell.iconPath("application-x-executable");
+    }
 
     // ============================================================
     // NAVEGACIÓN POR TECLADO (browse vs búsqueda)
@@ -144,8 +150,8 @@ Rectangle {
             spacing: AppTheme.paddingBase
 
             IconImage {
-                width: 15
-                height: 15
+                width: 16
+                height: 16
                 anchors.verticalCenter: parent.verticalCenter
                 source: Quickshell.iconPath("system-search", true)
                 opacity: 0.8
@@ -154,7 +160,7 @@ Rectangle {
             // Wrapper para el placeholder (TextInput plano no tiene
             // placeholderText): un Text encima visible solo sin texto.
             Item {
-                width: parent.width - 26
+                width: parent.width - 28
                 height: searchInput.implicitHeight + 4
                 anchors.verticalCenter: parent.verticalCenter
 
@@ -165,7 +171,7 @@ Rectangle {
                     visible: searchInput.text.length === 0
                     color: AppTheme.textTertiary
                     font.family: AppTheme.fontMono
-                    font.pixelSize: 10
+                    font.pixelSize: 12
                     font.weight: Font.DemiBold
                     elide: Text.ElideRight
                     text: root.countHint
@@ -181,7 +187,7 @@ Rectangle {
                     selectionColor: Qt.alpha(AppTheme.accent, 0.4)
                     selectedTextColor: AppTheme.fg
                     font.family: AppTheme.fontMono
-                    font.pixelSize: 10
+                    font.pixelSize: 12
                     font.weight: Font.DemiBold
                     clip: true
                     cursorVisible: true
@@ -199,50 +205,45 @@ Rectangle {
             color: Qt.alpha(AppTheme.borderColor, 0.35)
         }
 
-        // --- Insignia de la selección (el foco está en el diente superior) ---
-        Item {
+        // --- Insignia de la selección (icono + nombre del foco/resultado) ---
+        Column {
             width: parent.width
-            height: 44
+            spacing: 6
+
+            IconImage {
+                width: 30
+                height: 30
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: root.displayApp !== null
+                source: root.displayIcon
+            }
 
             Text {
                 id: focusName
 
-                anchors.centerIn: parent
                 width: parent.width
                 visible: !root.showingSearch && root.currentDisplayName !== ""
                 text: root.currentDisplayName
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideMiddle
                 font.family: AppTheme.fontMono
-                font.pixelSize: 12
+                font.pixelSize: 14
                 font.weight: Font.Bold
                 color: AppTheme.fg
             }
 
             Text {
-                anchors.centerIn: parent
                 width: parent.width
                 visible: root.showingSearch
                 text: root.statusHint
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
                 font.family: AppTheme.fontMono
-                font.pixelSize: 12
+                font.pixelSize: 13
                 font.weight: Font.DemiBold
                 color: root.statusHintColor
             }
 
-        }
-
-        // --- Barra de teclas ---
-        Text {
-            width: parent.width
-            text: root.hintBar
-            horizontalAlignment: Text.AlignHCenter
-            wrapMode: Text.WordWrap
-            font.family: AppTheme.fontMono
-            font.pixelSize: 8
-            color: AppTheme.textTertiary
         }
 
     }
