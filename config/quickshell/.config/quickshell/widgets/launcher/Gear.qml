@@ -180,6 +180,69 @@ Item {
 
         }
 
+        // ============================================================
+        // MARCA DE FOCO: rombo radial sobre el diente, SIEMPRE visible
+        // mientras el launcher está abierto. Es hija del dial (disc) y
+        // ROTA EN BLOQUE CON EL ENGRANAJE, orbitando con el diente al
+        // que está adherida (no se queda fija en el tope de pantalla).
+        // Se sitúa en la franja intermedia entre el hub central y la
+        // corona. Color accent, con borde del mismo color más oscuro.
+        // ============================================================
+        Item {
+            visible: LauncherState.open
+
+            anchors.centerIn: parent
+            width: 0
+            height: 0
+
+            Canvas {
+                id: markBody
+
+                width: 400
+                height: 400
+                anchors.centerIn: parent
+                antialiasing: true
+                opacity: 1.0
+
+                onPaint: {
+                    const ctx = markBody.getContext("2d");
+                    ctx.reset();
+                    const cx = markBody.width / 2;
+                    const cy = markBody.height / 2;
+                    const mid = 160; // franja entre hub (~86) y corona de slots (~193)
+                    const len = 52; // largo radial del rombo
+                    const w = 30; // ancho del rombo
+                    // Rombo/diamante alargado radialmente, centrado en (cy-mid),
+                    // apuntando hacia la punta del diente.
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy - mid - len / 2);
+                    ctx.lineTo(cx - w / 2, cy - mid);
+                    ctx.lineTo(cx, cy - mid + len / 2);
+                    ctx.lineTo(cx + w / 2, cy - mid);
+                    ctx.closePath();
+                    // Relleno accent casi opaco.
+                    ctx.fillStyle = Qt.alpha(AppTheme.accent, 0.9);
+                    ctx.fill();
+                    // Borde del mismo color pero una tonalidad más oscura.
+                    ctx.strokeStyle = Qt.darker(AppTheme.accent, 1.4);
+                    ctx.lineWidth = 4;
+                    ctx.lineJoin = "round";
+                    ctx.stroke();
+                }
+
+                Component.onCompleted: requestPaint()
+                Connections {
+                    function onColorsChanged() {
+                        markBody.requestPaint();
+                    }
+
+                    target: AppTheme
+                }
+
+            }
+
+        }
+
     }
 
     // ============================================================

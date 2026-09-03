@@ -319,6 +319,7 @@ Rectangle {
                 searchInput.text = "";
                 SearchEngine.clear();
                 root.resultIndex = 0;
+                AppModel.resetOffset();
                 AppModel.refresh();
             } else {
                 root.hubSearching = false;

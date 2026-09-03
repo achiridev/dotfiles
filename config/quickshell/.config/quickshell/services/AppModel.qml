@@ -52,6 +52,12 @@ Singleton {
         scanProcess.running = true;
     }
 
+    // Vuelve al inicio del anillo (índice 0): se invoca cada vez que se abre
+    // el launcher para que no arranque donde lo dejó la última apertura.
+    function resetOffset() {
+        root.offset = 0;
+    }
+
     function parseApps(text) {
         const rows = text.split("\n");
         const out = [];

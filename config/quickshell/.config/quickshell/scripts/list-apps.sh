@@ -62,13 +62,12 @@ USAGE_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/quickshell/launcher-usage.tsv"
 {
     for dir in "${dirs[@]}"; do
         [[ -d "$dir" ]] || continue
-        while IFS= read -r -d '' desk; do
-            case "$desk" in
-                *.desktop) ;;
-                *) continue ;;
-            esac
+        for desk in "$dir"/*.desktop; do
+            # El glob sigue symlinks (los .desktop de Flatpak son symlinks al
+            # archivo real dentro del sandbox); descartamos rotos con -f.
+            [[ -f "$desk" ]] || continue
             parse_desktop "$desk"
-        done < <(find "$dir" -maxdepth 1 -type f -name '*.desktop' -print0 2>/dev/null)
+        done
     done
 } | awk -F "$SEP" '
     { key = tolower($2); line[key] = $0; order[++n] = key }
