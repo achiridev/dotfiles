@@ -1,16 +1,17 @@
 // widgets/launcher/GearRoot.qml
-// Coordinador del launcher Gear: monta TRES engranajes (activo central, entrante
-// derecho, decorativo izquierdo) y el hub central; orquesta la transición de
-// cambio de página (rotación de roles entre izquierda/centro/derecha) y el
-// "spin" de búsqueda contra la rotación de reposo del anillo.
+// Coordinador del launcher Gear: monta CUATRO engranajes (activo central,
+// entrante derecho, decorativo izquierdo y un "entrante" de reserva) y el hub
+// central; orquesta la transición de cambio de página (rotación de roles entre
+// los slots) y el "spin" de búsqueda contra la rotación de reposo del anillo.
 //
-// Modelo de transición (cambio de página, hacia delante):
-//   1) El engranaje central se encoge y viaja a la izquierda (reemplaza al
-//      satélite izquierdo, que queda como silueta sin corona).
+// Modelo de transición (cambio de página, hacia delante), TODO en la misma
+// ventana de 600ms y de forma simultánea:
+//   1) El engranaje central se encoge y viaja a la izquierda (nuevo satélite).
 //   2) El engranaje de la derecha (ya cargado con la corona de la NUEVA página)
 //      crece y pasa al centro, convirtiéndose en el nuevo engranaje principal.
-//   3) El satélite izquierdo sale del plano por la izquierda; y el engranaje
-//      que salió se recoloca (invisible) por la derecha como nuevo decorativo.
+//   3) El satélite izquierdo sale del plano por la izquierda.
+//   4) El engranaje de reserva entra por la derecha como nuevo satélite y el
+//      hub acompaña al central saliente y vuelve al centro — todo a la vez.
 // Hacia atrás es el espejo.
 import QtQuick
 import qs.globals
@@ -51,6 +52,7 @@ Item {
     property var cGear: gA // central (activo, corona + hub)
     property var rGear: gB // entrante derecho
     property var lGear: gC // decorativo izquierdo
+    property var eGear: gD // reserva parqueada (próximo satélite que entrará)
     property bool transitioning: false
     property int lastPage: 0
     property int lastDir: 1
@@ -103,6 +105,12 @@ Item {
         root.lGear.opacity = 1;
         root.lGear.poseTo(root.lGear.restPose(), false);
 
+        // El engranaje de reserva se aparca fuera de plano, invisible, listo
+        // para ser el próximo satélite entrante.
+        root.eGear.opacity = 0;
+        root.eGear.gearScale = root.satScale;
+        root.eGear.snap(root.enterOff, root.slotY, root.satScale);
+
         hub.hubX = root.centerX;
         hub.hubY = root.slotY;
         hub.hubScale = 1.0;
@@ -140,6 +148,8 @@ Item {
         outgoing.crownVisible = true;
         outgoing.poseTo(outgoing.restPose(), true);
 
+        // Todo esto arranca a la vez (misma ventana de 600ms):
+        const entering = root.eGear;
         if (forward) {
             // Central → izquierda, encogiendo (satélite de la página anterior).
             root.cGear.slotX = root.leftX;
@@ -151,7 +161,15 @@ Item {
             root.lGear.slotX = root.exitOff;
             root.lGear.gearScale = root.satScale;
             root.lGear.opacity = 0;
-            // El hub viaja con el central saliente hacia la izquierda.
+            // Nuevo satélite derecho entra desde el borde derecho,
+            // CONCURRENTE con todo lo anterior.
+            root.setGearPage(entering, toPage + 1);
+            entering.crownVisible = true;
+            entering.poseTo(entering.restPose(), false);
+            entering.snap(root.enterOff, root.slotY, root.satScale);
+            entering.slotX = root.rightX; // desliza derecha→izquierda
+            entering.opacity = 1;
+            // El hub acompaña al central saliente hacia la izquierda.
             hub.hubX = root.leftX;
             hub.hubScale = root.satScale;
         } else {
@@ -165,76 +183,53 @@ Item {
             root.rGear.slotX = root.enterOff;
             root.rGear.gearScale = root.satScale;
             root.rGear.opacity = 0;
-            // El hub viaja con el central saliente hacia la derecha.
+            // Nuevo satélite izquierdo entra desde el borde izquierdo,
+            // CONCURRENTE con todo lo anterior.
+            root.setGearPage(entering, toPage - 1);
+            entering.crownVisible = true;
+            entering.poseTo(entering.restPose(), false);
+            entering.snap(root.exitOff, root.slotY, root.satScale);
+            entering.slotX = root.leftX; // desliza izquierda→derecha
+            entering.opacity = 1;
+            // El hub acompaña al central saliente hacia la derecha.
             hub.hubX = root.rightX;
             hub.hubScale = root.satScale;
         }
 
+        // endTimer primero: libera `transitioning` aunque algo falle después.
         endTimer.start();
+        returnTimer.restart();
     }
 
     function finishTransition(forward) {
+        root.transitioning = false;
+
         const oldC = root.cGear;
         const oldR = root.rGear;
         const oldL = root.lGear;
+        const oldE = root.eGear;
         if (forward) {
-            root.cGear = oldR; // entrante → central
-            root.rGear = oldL; // salido por izq → decorativo derecho
-            root.lGear = oldC; // antiguo central → decorativo izquierdo
+            // Entrante (ya en el centro) → central; antiguo central → izquierda;
+            // el que entró por la derecha → derecha; el que salió → reserva.
+            root.cGear = oldR;
+            root.lGear = oldC;
+            root.rGear = oldE;
+            root.eGear = oldL;
         } else {
-            root.cGear = oldL; // entrante izq → central
-            root.lGear = oldR; // salido por der → decorativo izquierdo
-            root.rGear = oldC; // antiguo central → decorativo derecho
+            // Entrante izquierdo → central; antiguo central → derecha;
+            // el que entró por la izquierda → izquierda; el que salió → reserva.
+            root.cGear = oldL;
+            root.rGear = oldC;
+            root.lGear = oldE;
+            root.eGear = oldR;
         }
 
         root.cGear.pageBase = -1; // vuelve a seguir el offset global
         root.cGear.poseTo(root.cGear.restPose(), true);
-        root.transitioning = false;
 
-        // Reacomodar satélites en sus slots (el que entró sigue invisible hasta
-        // su fade-in), con sus páginas contiguas y dial re-posicionado.
-        //
-        // El satélite ENTRANTE se posiciona (instantáneo, invisible) en el
-        // borde de la pantalla de SU lado y luego el Behavior lo desliza hacia
-        // adentro (derecha→izquierda o izquierda→derecha) mientras se desvanece:
-        // así nunca cruza de lado a lado. El satélite que NO entra (el antiguo
-        // central instalado en su slot) se coloca directamente.
-        const pg = root.currentPage();
-        if (forward) {
-            // Nuevo satélite derecho entra desde el borde derecho.
-            root.setGearPage(root.rGear, pg + 1);
-            root.rGear.crownVisible = true;
-            root.rGear.poseTo(root.rGear.restPose(), false);
-            root.rGear.snap(root.enterOff, root.slotY, root.satScale);
-            root.rGear.slotX = root.rightX; // desliza derecha→izquierda
-            root.setGearPage(root.lGear, pg - 1);
-            root.lGear.snap(root.leftX, root.slotY, root.satScale);
-            root.lGear.crownVisible = true;
-            root.lGear.poseTo(root.lGear.restPose(), false);
-        } else {
-            // Nuevo satélite izquierdo entra desde el borde izquierdo.
-            root.setGearPage(root.lGear, pg - 1);
-            root.lGear.crownVisible = true;
-            root.lGear.poseTo(root.lGear.restPose(), false);
-            root.lGear.snap(root.exitOff, root.slotY, root.satScale);
-            root.lGear.slotX = root.leftX; // desliza izquierda→derecha
-            root.setGearPage(root.rGear, pg + 1);
-            root.rGear.snap(root.rightX, root.slotY, root.satScale);
-            root.rGear.crownVisible = true;
-            root.rGear.poseTo(root.rGear.restPose(), false);
-        }
-
-        hub.hubX = root.centerX;
-        hub.hubScale = 1.0;
-
-        // Fade-in del decorativo que entró (el que quedó con opacity 0).
-        if (!forward) {
-            if (root.lGear.opacity === 0)
-                root.lGear.opacity = 1;
-        } else {
-            if (root.rGear.opacity === 0)
-                root.rGear.opacity = 1;
-        }
+        // Aparcar la reserva fuera de plano para la próxima transición.
+        root.eGear.opacity = 0;
+        root.eGear.snap(root.enterOff, root.slotY, root.satScale);
     }
 
     Timer {
@@ -242,6 +237,19 @@ Item {
         interval: root.ms + 40
         repeat: false
         onTriggered: root.finishTransition(root.lastDir > 0)
+    }
+
+    // Devuelve el hub al centro a mitad de la ventana de transición: así el hub
+    // acompaña al central saliente durante la primera mitad y vuelve al centro
+    // con el nuevo central durante la segunda, todo dentro de los 600ms.
+    Timer {
+        id: returnTimer
+        interval: root.ms / 2
+        repeat: false
+        onTriggered: {
+            hub.hubX = root.centerX;
+            hub.hubScale = 1.0;
+        }
     }
 
     // ============================================================
@@ -275,7 +283,7 @@ Item {
         }
     }
 
-    // Engranajes (activo central, entrante derecho, decorativo izquierdo).
+    // Engranajes (activo central, entrante derecho, decorativo izquierdo, reserva).
     Gear {
         id: gA
         onClickedSlot: (app) => { return root.handleSlot(app); }
@@ -286,6 +294,10 @@ Item {
     }
     Gear {
         id: gC
+        onClickedSlot: (app) => { return root.handleSlot(app); }
+    }
+    Gear {
+        id: gD
         onClickedSlot: (app) => { return root.handleSlot(app); }
     }
 
