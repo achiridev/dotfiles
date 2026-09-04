@@ -145,6 +145,7 @@ QtObject {
     readonly property real launcherIconPx: 34
     readonly property int launcherAnimRest: 240 // reasentamiento del anillo
     readonly property int launcherAnimSpin: 600 // spin de arrastre al buscar
+    readonly property int launcherGearTransitionMs: 600 // transición de cambio de página (rotación de roles)
     readonly property real launcherPressScale: 0.95 // diente presionado (click)
     readonly property bool launcherBlur: true
     readonly property bool launcherBackdrop: false

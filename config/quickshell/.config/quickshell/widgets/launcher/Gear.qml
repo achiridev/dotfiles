@@ -27,6 +27,10 @@ Item {
 
     // === API (consumida por GearRoot / satélites) ===
     property int restOffset: AppModel.offset
+    // El dial rota respecto a la posición dentro de la página. Para un gear
+    // con página propia (pageBase), usa pageBase (múltiplo de 8 → %8==0 →
+    // orientación 0 / primera app). Para el central, el offset global.
+    readonly property int internalOffset: root.pageBase >= 0 ? root.pageBase : AppModel.offset
     property bool spinActive: false
     property real radius: AppTheme.launcherGearRadius
     property real toothH: AppTheme.launcherGearToothH
@@ -34,13 +38,34 @@ Item {
     property real durationSpin: AppTheme.launcherAnimSpin
     readonly property real outerR: root.radius + root.toothH // la silueta define el bounding
     readonly property real dialRotation: disc.rotation // rotación del dial (la comparten los satélites)
+    // Parametrización de posición/escala gestionada por GearRoot (transición
+    // de cambio de página). `slotX/slotY` son las coordenadas del CENTRO del
+    // gear en el plano del GearRoot; el root Item se desplaza a partir de ellas.
+    // `gearScale` permite encoger/agrandar (1.0 central, ~0.33 lateral).
+    // `crownVisible` oculta la corona de apps y la marca para rol de satélite.
+    property real slotX: 0
+    property real slotY: 0
+    property real gearScale: 1.0
+    property bool crownVisible: true
+    // Página a mostrar en la corona (en múltiplos de 8). -1 = usar el offset
+    // global (engranaje central). Permite que cada gear muestre una página
+    // distinta durante la transición de cambio de página.
+    property int pageBase: -1
+    readonly property int crownPage: root.pageBase >= 0 ? root.pageBase : 8 * Math.floor(AppModel.offset / 8)
 
     signal clickedSlot(var app)
+
+    x: root.slotX - root.width / 2
+    y: root.slotY - root.height / 2
+    scale: root.gearScale
+    Behavior on slotX { NumberAnimation { duration: AppTheme.launcherGearTransitionMs; easing.type: Easing.InOutCubic } }
+    Behavior on slotY { NumberAnimation { duration: AppTheme.launcherGearTransitionMs; easing.type: Easing.InOutCubic } }
+    Behavior on gearScale { NumberAnimation { duration: AppTheme.launcherGearTransitionMs; easing.type: Easing.InOutCubic } }
 
     // Pose de reposo del dial (módulo N: la corona completa cubre 360°).
     // Negativa: *avanzar* (→) hace girar la rueda en sentido ANTIHORARIO.
     function restPose() {
-        return -(root.restOffset % LauncherState.gearSize) * LauncherState.step;
+        return -(root.internalOffset % LauncherState.gearSize) * LauncherState.step;
     }
 
     function poseTo(pose, animated) {
@@ -189,7 +214,7 @@ Item {
         // corona. Color accent, con borde del mismo color más oscuro.
         // ============================================================
         Item {
-            visible: LauncherState.open
+            visible: root.crownVisible && LauncherState.open
 
             anchors.centerIn: parent
             width: 0
@@ -252,6 +277,7 @@ Item {
     // ============================================================
     Repeater {
         model: LauncherState.toothCount
+        visible: root.crownVisible
 
         delegate: Item {
             id: cell
@@ -268,10 +294,9 @@ Item {
                 cellW: AppTheme.launcherSlotW
                 cellH: AppTheme.launcherSlotH
                 iconPx: AppTheme.launcherIconPx
-                // Foco = cuadro (offset % 8): gira con la rueda y llega arriba
-                // mostrando la app seleccionada ringApps[offset].
-                isFocus: index === AppModel.mod(AppModel.offset, 8)
-                app: AppModel.wheelAt(index)
+                // Foco = cuadro de la página mostrada por este gear.
+                isFocus: index === AppModel.mod(root.internalOffset, 8)
+                app: AppModel.ringApps[AppModel.mod(root.crownPage + index, AppModel.ringCount)]
                 onClicked: (app) => {
                     return root.clickedSlot(app);
                 }

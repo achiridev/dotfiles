@@ -15,6 +15,12 @@ Rectangle {
     readonly property var focusApp: AppModel.focusApp()
     property bool hubSearching: false
     property int resultIndex: 0
+    // Posición/escala/visibilidad controladas por GearRoot: el hub viaja con
+    // el engranaje central durante la transición de cambio de página.
+    property real hubX: 0
+    property real hubY: 0
+    property real hubScale: 1.0
+    property bool hubVisible: true
     // Nombre de la app central: autofit (reduce fuente para que quepa en el
     // ancho del hub, permitiendo varias líneas).
     readonly property real baseNameSize: 14
@@ -117,12 +123,19 @@ Rectangle {
         searchInput.forceActiveFocus();
     }
 
+    x: root.hubX - root.hubSize / 2
+    y: root.hubY - root.hubSize / 2
     width: root.hubSize
     height: root.hubSize
     radius: root.hubSize / 2
     color: Qt.alpha(AppTheme.bgPopup, 0.85)
     border.width: 2
     border.color: root.hubSearching ? Qt.alpha(AppTheme.accent, 0.9) : Qt.alpha(AppTheme.color4, 0.7)
+    scale: root.hubScale
+    visible: root.hubVisible
+    Behavior on hubX { NumberAnimation { duration: AppTheme.launcherGearTransitionMs; easing.type: Easing.InOutCubic } }
+    Behavior on hubY { NumberAnimation { duration: AppTheme.launcherGearTransitionMs; easing.type: Easing.InOutCubic } }
+    Behavior on hubScale { NumberAnimation { duration: AppTheme.launcherGearTransitionMs; easing.type: Easing.InOutCubic } }
     onHubSearchingChanged: {
         if (root.hubSearching)
             LauncherState.beginSearch();
