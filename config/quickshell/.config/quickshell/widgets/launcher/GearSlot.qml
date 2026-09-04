@@ -24,6 +24,12 @@ Rectangle {
     // Contra-rotación del contenido (icono + label) para que quede vertical
     // a la pantalla aunque el dial/satélite que lo contiene esté rotado.
     property real counterRot: 0
+    // Tunables del foco: la app seleccionada crece y baja hacia el centro
+    // del engranaje para no sobresalir de la corona.
+    property real focusScale: 1.18
+    property real focusCellGrow: 10
+    property real focusIconGrow: 10
+    property real focusOrbitInset: 24
 
     signal clicked(var app)
 
@@ -36,15 +42,22 @@ Rectangle {
             return Quickshell.iconPath(name);
         return Quickshell.iconPath("application-x-executable");
     }
+    // Tamaños y radio efectivos del foco (se re-evalúan reactivamente al
+    // cambiar isFocus, de modo que el anterior foco revierte y el nuevo lo
+    // adopta automáticamente).
+    readonly property real effW: root.cellW + (root.isFocus ? root.focusCellGrow : 0)
+    readonly property real effH: root.cellH + (root.isFocus ? root.focusCellGrow : 0)
+    readonly property real effIcon: root.iconPx + (root.isFocus ? root.focusIconGrow : 0)
+    readonly property real effOrbit: root.orbitRadius - (root.isFocus ? root.focusOrbitInset : 0)
 
-    width: root.cellW
-    height: root.cellH
+    width: root.effW
+    height: root.effH
     radius: AppTheme.radiusLarge
     // Posición polar respecto al centro del dial (0,0 de su parent dial).
-    x: Math.cos(root.angleDeg * Math.PI / 180) * root.orbitRadius - root.width / 2
-    y: Math.sin(root.angleDeg * Math.PI / 180) * root.orbitRadius - root.height / 2
+    x: Math.cos(root.angleDeg * Math.PI / 180) * root.effOrbit - root.width / 2
+    y: Math.sin(root.angleDeg * Math.PI / 180) * root.effOrbit - root.height / 2
     z: root.hovered ? 10 : (root.isFocus ? 5 : 1)
-    scale: root.isFocus ? 1.12 : (root.hovered ? 1.08 : 1)
+    scale: root.isFocus ? root.focusScale : (root.hovered ? 1.08 : 1)
     color: root.isFocus ? Qt.alpha(AppTheme.accent, 0.4) : root.hovered ? AppTheme.surface : Qt.alpha(AppTheme.fg, 0.04)
     border.width: root.isFocus ? 2 : 1
     border.color: root.isFocus ? Qt.alpha(AppTheme.accent, 1) : root.hovered ? Qt.alpha(AppTheme.accent, 0.9) : Qt.alpha(AppTheme.borderColor, 0.35)
@@ -62,8 +75,8 @@ Rectangle {
             IconImage {
                 id: slotIcon
 
-                width: root.iconPx
-                height: root.iconPx
+                width: root.effIcon
+                height: root.effIcon
                 anchors.horizontalCenter: parent.horizontalCenter
                 visible: root.app !== null
                 source: root.resolvedIcon
@@ -78,7 +91,7 @@ Rectangle {
                 clip: true
                 visible: root.showLabel
                 font.family: AppTheme.fontMono
-                font.pixelSize: 12
+                font.pixelSize: root.isFocus ? 13 : 12
                 font.weight: Font.Bold
                 color: AppTheme.fg
             }
@@ -106,6 +119,22 @@ Rectangle {
     Behavior on scale {
         NumberAnimation {
             duration: 120
+            easing.type: Easing.OutCubic
+        }
+
+    }
+
+    Behavior on width {
+        NumberAnimation {
+            duration: 150
+            easing.type: Easing.OutCubic
+        }
+
+    }
+
+    Behavior on height {
+        NumberAnimation {
+            duration: 150
             easing.type: Easing.OutCubic
         }
 

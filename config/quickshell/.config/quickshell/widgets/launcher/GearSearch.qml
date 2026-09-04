@@ -15,6 +15,11 @@ Rectangle {
     readonly property var focusApp: AppModel.focusApp()
     property bool hubSearching: false
     property int resultIndex: 0
+    // Nombre de la app central: autofit (reduce fuente para que quepa en el
+    // ancho del hub, permitiendo varias líneas).
+    readonly property real baseNameSize: 14
+    readonly property int maxNameLines: 2
+    readonly property real nameAvailW: column.width - 8
     // ============================================================
     // ESTADOS VISUALES DERIVADOS
     // ============================================================
@@ -30,6 +35,15 @@ Rectangle {
         if (name !== "" && Quickshell.hasThemeIcon(name))
             return Quickshell.iconPath(name);
         return Quickshell.iconPath("application-x-executable");
+    }
+    // Líneas estimadas para el nombre (aprox. por ancho total) y tamaño de
+    // fuente resultante: si no cabe en maxNameLines, se reduce.
+    readonly property int nameLines: root.currentDisplayName === "" ? 1 : Math.max(1, Math.ceil(nameMetrics.advanceWidth(root.currentDisplayName) / Math.max(1, root.nameAvailW)))
+    readonly property real focusTextSize: {
+        const l = root.nameLines;
+        if (l <= root.maxNameLines)
+            return root.baseNameSize;
+        return Math.max(9, root.baseNameSize * root.maxNameLines / l);
     }
 
     // ============================================================
@@ -134,6 +148,15 @@ Rectangle {
 
     }
 
+    // Métricas para el autofit del nombre de la app central.
+    FontMetrics {
+        id: nameMetrics
+
+        font.family: AppTheme.fontMono
+        font.weight: Font.Bold
+        font.pixelSize: root.baseNameSize
+    }
+
     // ============================================================
     // UI
     // ============================================================
@@ -150,8 +173,8 @@ Rectangle {
             spacing: AppTheme.paddingBase
 
             IconImage {
-                width: 16
-                height: 16
+                width: 13
+                height: 13
                 anchors.verticalCenter: parent.verticalCenter
                 source: Quickshell.iconPath("system-search", true)
                 opacity: 0.8
@@ -171,7 +194,7 @@ Rectangle {
                     visible: searchInput.text.length === 0
                     color: AppTheme.textTertiary
                     font.family: AppTheme.fontMono
-                    font.pixelSize: 12
+                    font.pixelSize: 11
                     font.weight: Font.DemiBold
                     elide: Text.ElideRight
                     text: root.countHint
@@ -187,7 +210,7 @@ Rectangle {
                     selectionColor: Qt.alpha(AppTheme.accent, 0.4)
                     selectedTextColor: AppTheme.fg
                     font.family: AppTheme.fontMono
-                    font.pixelSize: 12
+                    font.pixelSize: 11
                     font.weight: Font.DemiBold
                     clip: true
                     cursorVisible: true
@@ -225,9 +248,10 @@ Rectangle {
                 visible: !root.showingSearch && root.currentDisplayName !== ""
                 text: root.currentDisplayName
                 horizontalAlignment: Text.AlignHCenter
-                elide: Text.ElideMiddle
+                wrapMode: Text.Wrap
+                elide: Text.ElideNone
                 font.family: AppTheme.fontMono
-                font.pixelSize: 14
+                font.pixelSize: root.focusTextSize
                 font.weight: Font.Bold
                 color: AppTheme.fg
             }
