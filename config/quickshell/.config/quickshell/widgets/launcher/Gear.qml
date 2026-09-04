@@ -26,7 +26,6 @@ Item {
     id: root
 
     // === API (consumida por GearRoot / satélites) ===
-    property int restOffset: AppModel.offset
     // El dial rota respecto a la posición dentro de la página. Para un gear
     // con página propia (pageBase), usa pageBase (múltiplo de 8 → %8==0 →
     // orientación 0 / primera app). Para el central, el offset global.
@@ -58,9 +57,25 @@ Item {
     x: root.slotX - root.width / 2
     y: root.slotY - root.height / 2
     scale: root.gearScale
-    Behavior on slotX { NumberAnimation { duration: AppTheme.launcherGearTransitionMs; easing.type: Easing.InOutCubic } }
-    Behavior on slotY { NumberAnimation { duration: AppTheme.launcherGearTransitionMs; easing.type: Easing.InOutCubic } }
-    Behavior on gearScale { NumberAnimation { duration: AppTheme.launcherGearTransitionMs; easing.type: Easing.InOutCubic } }
+    Behavior on slotX { id: behX; enabled: true; NumberAnimation { duration: AppTheme.launcherGearTransitionMs; easing.type: Easing.InOutCubic } }
+    Behavior on slotY { id: behY; enabled: true; NumberAnimation { duration: AppTheme.launcherGearTransitionMs; easing.type: Easing.InOutCubic } }
+    Behavior on gearScale { id: behScale; enabled: true; NumberAnimation { duration: AppTheme.launcherGearTransitionMs; easing.type: Easing.InOutCubic } }
+
+    // Coloca el gear en una posición/escala de forma INSTANTÁNEA (sin animar)
+    // desactivando temporalmente los Behaviors. Se usa al recolocar un satélite
+    // invisible: primero se lo salta al borde de la pantalla de su lado y luego
+    // el Behavior lo desliza hacia adentro, evitando que cruce de lado a lado.
+    function snap(sx, sy, sc) {
+        behX.enabled = false;
+        behY.enabled = false;
+        behScale.enabled = false;
+        root.slotX = sx;
+        root.slotY = sy;
+        root.gearScale = sc;
+        behX.enabled = true;
+        behY.enabled = true;
+        behScale.enabled = true;
+    }
 
     // Pose de reposo del dial (módulo N: la corona completa cubre 360°).
     // Negativa: *avanzar* (→) hace girar la rueda en sentido ANTIHORARIO.
@@ -142,7 +157,12 @@ Item {
 
     width: root.outerR * 2
     height: root.outerR * 2
-    onRestOffsetChanged: {
+    // El reposo se dispara sobre internalOffset (la misma propiedad que lee
+    // restPose()), no sobre AppModel.offset: así el valor está siempre fresco
+    // cuando corre el handler y el diente focalizado asienta SIEMPRE arriba.
+    // Usar restOffset (AppModel.offset) aquí provocaba leer un internalOffset
+    // obsoleto y dejar el foco un diente a la izquierda/derecha del tope.
+    onInternalOffsetChanged: {
         if (root.spinActive)
             root.retargetSpin();
         else
@@ -273,14 +293,22 @@ Item {
     // ============================================================
     // CORONA: 8 cuadros soldados a la rueda que rotan con el dial en
     // bloque; el cuadro que asienta arriba ((offset % 8)) es el foco y
-    // muestra ringApps[offset].
+    // muestra ringApps[offset]. El wrapper `crownGroup` garantiza que
+    // ocultar la corona (crownVisible=false) oculte de verdad los dientes:
+    // `visible` sobre un Repeater no es fiable porque sus delegates se
+    // re-padrean fuera de él.
     // ============================================================
-    Repeater {
-        model: LauncherState.toothCount
-        visible: root.crownVisible
+    Item {
+        id: crownGroup
 
-        delegate: Item {
-            id: cell
+        visible: root.crownVisible
+        anchors.fill: parent
+
+        Repeater {
+            model: LauncherState.toothCount
+
+            delegate: Item {
+                id: cell
 
             // Origen en el centro del engranaje para coordenadas polares.
             x: disc.width / 2
@@ -302,6 +330,7 @@ Item {
                 }
             }
 
+            }
         }
 
     }

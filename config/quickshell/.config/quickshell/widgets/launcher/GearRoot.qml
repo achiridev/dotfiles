@@ -78,31 +78,36 @@ Item {
     // SETUP INICIAL DE POSICIONES
     // ============================================================
     function layoutSteady() {
+        const pg = root.currentPage();
+
         root.cGear.slotX = root.centerX;
         root.cGear.slotY = root.slotY;
         root.cGear.gearScale = 1.0;
         root.cGear.crownVisible = true;
         root.cGear.pageBase = -1;
+        root.cGear.poseTo(root.cGear.restPose(), false);
 
+        root.setGearPage(root.rGear, pg + 1);
         root.rGear.slotX = root.rightX;
         root.rGear.slotY = root.slotY;
         root.rGear.gearScale = root.satScale;
-        root.rGear.crownVisible = false;
+        root.rGear.crownVisible = true;
         root.rGear.opacity = 1;
-        root.rGear.pageBase = -1;
+        root.rGear.poseTo(root.rGear.restPose(), false);
 
+        root.setGearPage(root.lGear, pg - 1);
         root.lGear.slotX = root.leftX;
         root.lGear.slotY = root.slotY;
         root.lGear.gearScale = root.satScale;
-        root.lGear.crownVisible = false;
+        root.lGear.crownVisible = true;
         root.lGear.opacity = 1;
-        root.lGear.pageBase = -1;
+        root.lGear.poseTo(root.lGear.restPose(), false);
 
         hub.hubX = root.centerX;
         hub.hubY = root.slotY;
         hub.hubScale = 1.0;
 
-        root.lastPage = root.currentPage();
+        root.lastPage = pg;
     }
 
     // Define la corona de un gear para una página destino (múltiplo de 8).
@@ -126,12 +131,17 @@ Item {
         const outgoing = root.cGear;
         root.setGearPage(incoming, toPage);
         incoming.crownVisible = true;
+        incoming.poseTo(incoming.restPose(), true);
 
-        // El antiguo central deja de mostrar corona (se vuelve silueta).
-        outgoing.crownVisible = false;
+        // El antiguo central pasa a ser satélite: muestra la página contigua
+        // según la dirección (el de la izquierda muestra la anterior, el de la
+        // derecha la siguiente) y re-posiciona su dial.
+        root.setGearPage(outgoing, forward ? toPage - 1 : toPage + 1);
+        outgoing.crownVisible = true;
+        outgoing.poseTo(outgoing.restPose(), true);
 
         if (forward) {
-            // Central → izquierda, encogiendo (reemplaza al satélite izq).
+            // Central → izquierda, encogiendo (satélite de la página anterior).
             root.cGear.slotX = root.leftX;
             root.cGear.gearScale = root.satScale;
             // Entrante derecho → centro, creciendo.
@@ -145,7 +155,7 @@ Item {
             hub.hubX = root.leftX;
             hub.hubScale = root.satScale;
         } else {
-            // Central → derecha, encogiendo.
+            // Central → derecha, encogiendo (satélite de la página siguiente).
             root.cGear.slotX = root.rightX;
             root.cGear.gearScale = root.satScale;
             // Decorativo izquierdo → centro, creciendo (nuevo activo).
@@ -178,19 +188,41 @@ Item {
         }
 
         root.cGear.pageBase = -1; // vuelve a seguir el offset global
+        root.cGear.poseTo(root.cGear.restPose(), true);
         root.transitioning = false;
 
-        // Reacomodar decorativos en sus slots (invisibles durante el traslado),
-        // y devolver el hub al nuevo central.
-        root.rGear.slotX = root.rightX;
-        root.rGear.slotY = root.slotY;
-        root.rGear.gearScale = root.satScale;
-        root.rGear.crownVisible = false;
-
-        root.lGear.slotX = root.leftX;
-        root.lGear.slotY = root.slotY;
-        root.lGear.gearScale = root.satScale;
-        root.lGear.crownVisible = false;
+        // Reacomodar satélites en sus slots (el que entró sigue invisible hasta
+        // su fade-in), con sus páginas contiguas y dial re-posicionado.
+        //
+        // El satélite ENTRANTE se posiciona (instantáneo, invisible) en el
+        // borde de la pantalla de SU lado y luego el Behavior lo desliza hacia
+        // adentro (derecha→izquierda o izquierda→derecha) mientras se desvanece:
+        // así nunca cruza de lado a lado. El satélite que NO entra (el antiguo
+        // central instalado en su slot) se coloca directamente.
+        const pg = root.currentPage();
+        if (forward) {
+            // Nuevo satélite derecho entra desde el borde derecho.
+            root.setGearPage(root.rGear, pg + 1);
+            root.rGear.crownVisible = true;
+            root.rGear.poseTo(root.rGear.restPose(), false);
+            root.rGear.snap(root.enterOff, root.slotY, root.satScale);
+            root.rGear.slotX = root.rightX; // desliza derecha→izquierda
+            root.setGearPage(root.lGear, pg - 1);
+            root.lGear.snap(root.leftX, root.slotY, root.satScale);
+            root.lGear.crownVisible = true;
+            root.lGear.poseTo(root.lGear.restPose(), false);
+        } else {
+            // Nuevo satélite izquierdo entra desde el borde izquierdo.
+            root.setGearPage(root.lGear, pg - 1);
+            root.lGear.crownVisible = true;
+            root.lGear.poseTo(root.lGear.restPose(), false);
+            root.lGear.snap(root.exitOff, root.slotY, root.satScale);
+            root.lGear.slotX = root.leftX; // desliza izquierda→derecha
+            root.setGearPage(root.rGear, pg + 1);
+            root.rGear.snap(root.rightX, root.slotY, root.satScale);
+            root.rGear.crownVisible = true;
+            root.rGear.poseTo(root.rGear.restPose(), false);
+        }
 
         hub.hubX = root.centerX;
         hub.hubScale = 1.0;
