@@ -40,7 +40,11 @@ QtObject {
     readonly property color color14: colors ? colors.colors.color14 : "#89dceb"
     readonly property color color15: colors ? colors.colors.color15 : "#a6adc8"
     // Alias semánticos (Para hacer tu UI más fácil de programar)
-    readonly property color accent: color5
+    // `accentOverride`: cuando no es transparente, sustituye a `accent`.
+    // Lo usa el Panel de Control para el ajuste fino del color de acento
+    // en runtime (sin regenerar la paleta de wallust).
+    property color accentOverride: "transparent"
+    readonly property color accent: accentOverride.a > 0 ? accentOverride : color5
     readonly property color critical: color1
     readonly property color warning: color3
     readonly property color success: color2

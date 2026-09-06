@@ -36,6 +36,21 @@ Singleton {
     function openPanel() { root.panelOpen = true }
     function closePanel() { root.panelOpen = false }
 
+    // ============================================================
+    // NAVEGACIÓN DE SECCIONES DEL PANEL DE CONTROL
+    // El panel es un centro de control con varias secciones; solo se
+    // muestra una a la vez (StackLayout en ControlPanel). Índices:
+    //   0 = Componentes  1 = Colores (Wallust)  2 = Energía
+    // ============================================================
+    property int panelSection: 0
+
+    // Abre el panel directamente en una sección concreta.
+    function openSection(index) {
+        root.panelSection = index
+        root.openPanel()
+    }
+    function setSection(index) { root.panelSection = index }
+
     // Modo previo de la marca de agua "Activar Linux": al desactivar Activate
     // se fuerza activateMode=0 y se guarda el anterior para restaurarlo al
     // reactivar (la ventana solo se muestra si activateMode > 0).
