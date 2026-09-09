@@ -34,7 +34,6 @@ Singleton {
     property int offset: 0
     readonly property int count: root.apps.length
     property Process scanProcess
-    property bool launchError: false
     property Process launchProcess
     property Process usageProcess
 
@@ -150,14 +149,20 @@ Singleton {
         if (!entry)
             return ;
 
-        root.launchError = false;
+        // Lanzamiento DESACOPLADO (startDetached). Un Process "tracked"
+        // (running=true) cierra la lectura de stdout/stderr: las apps que
+        // escriben mucha salida (Electron/Chromium: Discord, Obsidian, Brave…)
+        // morían al primer write por SIGPIPE, gio salía con 0 y el launcher se
+        // cerraba sin abrir nada. startDetached lanza con /dev/null y fuera del
+        // ciclo de vida de Quickshell: la app sobrevive.
         if (entry.path && entry.path.length > 0) {
             launchProcess.command = ["gio", "launch", entry.path];
+            launchProcess.startDetached();
             root.recordUsage(entry.path);
         } else {
-            launchProcess.command = ["sh", "-c", entry.exec];
+            launchProcess.command = ["sh", "-c", "exec " + entry.exec];
+            launchProcess.startDetached();
         }
-        launchProcess.running = true;
     }
 
     // Registra el lanzamiento para el orden por uso (fire-and-forget).
@@ -201,10 +206,10 @@ scanProcess: Process {
 
     }
 
+    // Proceso de lanzamiento de apps. Vive en el Singleton (nunca se destruye
+    // con la ventana del launcher). Todos los lanzamientos usan startDetached():
+    // sin trackeo → sin cierre de canales ni kill por parte de Quickshell.
     launchProcess: Process {
-        onExited: (exitCode, exitStatus) => {
-            root.launchError = exitCode !== 0;
-        }
     }
 
     usageProcess: Process {

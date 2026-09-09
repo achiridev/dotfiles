@@ -24,7 +24,7 @@ FloatingWindow {
     property bool requestOpen: false
     property bool shown: false
 
-    readonly property int cardWidth: 460
+    readonly property int cardWidth: 920
     readonly property int railWidth: 60
     readonly property int currentSection: ControlState.panelSection
 
@@ -41,7 +41,7 @@ FloatingWindow {
     color: "transparent"
 
     implicitWidth: cardWidth
-    implicitHeight: 530
+    implicitHeight: 860
 
     // Activa la lectura de modos de BatteryService solo mientras la sección
     // de Energía está visible (polling bajo demanda).

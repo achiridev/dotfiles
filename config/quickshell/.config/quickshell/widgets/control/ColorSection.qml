@@ -2,7 +2,8 @@
 // Sección "Colores" del Panel de Control.
 // - Selector de temas built-in de Wallust (Catppuccin, Nord, Gruvbox...).
 // - Ajuste fino del color de acento en runtime (solo UI Quickshell).
-// - Preview en vivo de la paleta activa (generada por wallust).
+// - Editor de la paleta activa: muestra los colores de Wallust y permite
+//   modificarlos uno por uno re-renderizando templates con `wallust cs`.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -14,9 +15,11 @@ Item {
     id: root
 
     // Altura natural de la sección (para que el panel se ajuste).
-    readonly property int sectionHeight: 430
+    readonly property int sectionHeight: 760
 
     readonly property string wallustDir: Quickshell.env("HOME") + "/dotfiles/config/wallust/.config/wallust"
+    readonly property string schemeDir: root.wallustDir + "/colorschemes"
+    readonly property string schemeFile: root.schemeDir + "/custom.json"
 
     // Temas destacados de Wallust para mostrar como botones.
     readonly property var themes: [
@@ -39,14 +42,80 @@ Item {
         return v ? v : fallback
     }
 
+    // =====================================================================
+    // Editor de colores activos
+    // =====================================================================
+
+    // Entradas editables: [etiqueta, sección, clave].
+    readonly property var editableSpec: [
+        ["bg",  "special", "background"],
+        ["fg",  "special", "foreground"],
+        ["cursor", "special", "cursor"],
+        ["c0",  "colors", "color0"],  ["c1",  "colors", "color1"],
+        ["c2",  "colors", "color2"],  ["c3",  "colors", "color3"],
+        ["c4",  "colors", "color4"],  ["c5",  "colors", "color5"],
+        ["c6",  "colors", "color6"],  ["c7",  "colors", "color7"],
+        ["c8",  "colors", "color8"],  ["c9",  "colors", "color9"],
+        ["c10", "colors", "color10"], ["c11", "colors", "color11"],
+        ["c12", "colors", "color12"], ["c13", "colors", "color13"],
+        ["c14", "colors", "color14"], ["c15", "colors", "color15"]
+    ]
+
+    // Hex actual por índice (inicializado desde la paleta activa).
+    property var customHex: (function () {
+        var out = []
+        for (var i = 0; i < root.editableSpec.length; i++) {
+            var spec = root.editableSpec[i]
+            var v = root.palValue(spec[1], spec[2], i < 3 ? (i === 0 ? "#111111" : "#eeeeee") : "#555555")
+            out.push(root.colorToHex(v))
+        }
+        return out
+    })()
+
+    // Cuando cambia la paleta externamente (tema/aplicado), resincronizar entradas.
+    signal paletteSynced()
+    onPaletteSynced: {
+        for (var i = 0; i < root.editableSpec.length; i++) {
+            var spec = root.editableSpec[i]
+            var v = root.palValue(spec[1], spec[2], "")
+            if (v) root.customHex[i] = root.colorToHex(v)
+        }
+    }
+
+    function colorToHex(c) {
+        if (!c) return "#555555"
+        var s = c.toString()
+        if (s.length >= 7) return s.slice(0, 7)
+        return "#555555"
+    }
+
+    // Hex valido => color (para el swatch); inválido => gris.
+    function hexValid(hex) {
+        return /^#[0-9a-fA-F]{6}$/.test(hex)
+    }
+    function hexColor(hex) {
+        return root.hexValid(hex) ? hex : "#555555"
+    }
+    readonly property bool allValid: (function () {
+        for (var i = 0; i < root.customHex.length; i++) {
+            if (!root.hexValid(root.customHex[i])) return false
+        }
+        return true
+    })()
+
+    property bool customDirty: false
+
     // Estado: tema en aplicación / listo.
     property bool applying: false
     property string lastTheme: ""
+    property bool applyingCustom: false
+    property bool customActive: false
 
     // Aplica un tema built-in de Wallust y recarga apps/teclado.
     function applyTheme(name) {
         if (root.applying) return
         root.lastTheme = name
+        root.customActive = false
         root.applying = true
         root.resetAccent()
         themeProcess.command = [
@@ -62,7 +131,79 @@ Item {
 
     Process {
         id: themeProcess
-        onExited: root.applying = false
+        onExited: {
+            root.applying = false
+            root.paletteSynced()
+        }
+    }
+
+    // Serializa los hex editados al formato de colorscheme de wallust (cache).
+    function buildSchemeJson() {
+        var special = {
+            "background": root.customHex[0],
+            "foreground": root.customHex[1],
+            "cursor": root.customHex[2]
+        }
+        var colors = {}
+        for (var i = 3; i < root.editableSpec.length; i++) {
+            colors["color" + (i - 3)] = root.customHex[i]
+        }
+        return JSON.stringify({ "special": special, "colors": colors })
+    }
+
+    // Escribe colorschemes/custom.json y re-renderiza con `wallust cs custom`.
+    function applyCustom() {
+        if (root.applying || root.applyingCustom) return
+        if (!root.allValid) return
+        root.applyingCustom = true
+        root.customActive = true
+        customApplyProcess.environment = { WALLUST_JSON: root.buildSchemeJson() }
+        customApplyProcess.command = [
+            "sh", "-c",
+            "mkdir -p \"" + root.schemeDir + "\" &&
+             printf '%s' \"$WALLUST_JSON\" > \"" + root.schemeFile + "\" &&
+             wallust --config-dir \"" + root.wallustDir + "\" --skip-sequences cs custom >/dev/null 2>&1 &&
+             \"" + Quickshell.env("HOME") + "/dotfiles/bin/.local/bin/wallust-keyboard.sh\" >/dev/null 2>&1; " +
+            "kitty @ set-colors -a ~/.config/kitty/colors.conf 2>/dev/null || true; " +
+            "hyprctl reload 2>/dev/null || true; " +
+            "pkill -SIGUSR2 swaync 2>/dev/null || true; pkill rofi 2>/dev/null || true; true"
+        ]
+        customApplyProcess.running = true
+    }
+
+    Process {
+        id: customApplyProcess
+        onExited: {
+            root.applyingCustom = false
+            root.customDirty = false
+            root.paletteSynced()
+        }
+    }
+
+    // Borra el esquema custom y vuelve al último tema de la grilla.
+    function resetCustom() {
+        if (root.applying || root.applyingCustom) return
+        root.applyingCustom = true
+        root.customActive = false
+        root.customDirty = false
+        resetProcess.command = [
+            "sh", "-c",
+            "rm -f \"" + root.schemeFile + "\"; " +
+            "if [ -n \"" + root.lastTheme + "\" ]; then " +
+            "wallust --config-dir \"" + root.wallustDir + "\" --skip-sequences theme \"" + root.lastTheme + "\" >/dev/null 2>&1; " +
+            "else " +
+            "\"" + Quickshell.env("HOME") + "/dotfiles/bin/.local/bin/wallust-keyboard.sh\" >/dev/null 2>&1; " +
+            "fi; true"
+        ]
+        resetProcess.running = true
+    }
+
+    Process {
+        id: resetProcess
+        onExited: {
+            root.applyingCustom = false
+            root.paletteSynced()
+        }
     }
 
     // ============================ SUB-COMPONENTES ============================
@@ -79,10 +220,13 @@ Item {
         property string text: ""
         property string icon: ""
         property bool highlighted: false
+        property bool enabled: true
+        property bool busy: false
 
         implicitHeight: btnRow.implicitHeight + AppTheme.paddingBase * 2
         Layout.fillWidth: false
         radius: AppTheme.radiusSmall
+        opacity: btn.enabled ? 1 : 0.5
         color: highlighted ? Qt.alpha(AppTheme.accent, 0.18)
              : ma.containsMouse ? AppTheme.surface
              : Qt.alpha(AppTheme.fg, 0.03)
@@ -99,6 +243,7 @@ Item {
             spacing: AppTheme.paddingSmall
 
             Text {
+                visible: !btn.busy
                 text: btn.icon
                 font.family: AppTheme.fontMono
                 font.pixelSize: AppTheme.fontSmall
@@ -113,11 +258,24 @@ Item {
                 color: highlighted ? AppTheme.accent : AppTheme.fg
                 Behavior on color { ColorAnimation { duration: 150 } }
             }
+            Text {
+                visible: btn.busy
+                text: String.fromCodePoint(0xf021)
+                font.family: AppTheme.fontMono
+                font.pixelSize: AppTheme.fontSmall
+                color: AppTheme.accent
+                RotationAnimation on rotation {
+                    running: btn.busy
+                    from: 0; to: 360
+                    duration: 800; loops: Animation.Infinite
+                }
+            }
         }
 
         MouseArea {
             id: ma
             anchors.fill: parent
+            enabled: btn.enabled
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
             onClicked: btn.clicked()
@@ -195,14 +353,94 @@ Item {
         }
     }
 
-    component Swatch: Rectangle {
-        property string hex: "#000"
+    // Celda editable de la grilla de colores activos.
+    component ColorCell: Rectangle {
+        id: cell
+        property int colorIndex: -1
+
+        implicitHeight: Math.max(AppTheme.paddingBase * 2 + tf.implicitHeight, 34)
         Layout.fillWidth: true
-        Layout.preferredHeight: 22
+        Layout.preferredWidth: 0
         radius: AppTheme.radiusSmall
-        color: hex
+        color: cellStyle.hovered ? AppTheme.surface : Qt.alpha(AppTheme.fg, 0.03)
         border.width: 1
-        border.color: Qt.alpha(AppTheme.fg, 0.15)
+        border.color: cellStyle.hovered || cell.fieldActive ? Qt.alpha(AppTheme.accent, 0.45)
+                    : Qt.alpha(AppTheme.fg, 0.08)
+        clip: true
+
+        Behavior on color { ColorAnimation { duration: 150 } }
+        Behavior on border.color { ColorAnimation { duration: 150 } }
+
+        RowLayout {
+            anchors.fill: parent
+            anchors.margins: AppTheme.paddingBase
+            spacing: AppTheme.paddingSmall
+
+            Text {
+                Layout.preferredWidth: cellCellLabelW
+                property int cellCellLabelW: root.editableSpec[cell.colorIndex] && root.editableSpec[cell.colorIndex][0].length > 2 ? 34 : 20
+                text: root.editableSpec[cell.colorIndex] ? root.editableSpec[cell.colorIndex][0] : ""
+                horizontalAlignment: Text.AlignHCenter
+                font.family: AppTheme.fontMono
+                font.pixelSize: AppTheme.fontSmall
+                font.weight: Font.Bold
+                color: AppTheme.textSecondary
+            }
+
+            Rectangle {
+                Layout.preferredWidth: 22
+                Layout.preferredHeight: 22
+                radius: AppTheme.radiusSmall
+                color: root.hexColor(root.customHex[cell.colorIndex])
+                border.width: 1
+                border.color: Qt.alpha(AppTheme.fg, 0.3)
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: tf.forceActiveFocus()
+                }
+            }
+
+            TextField {
+                id: tf
+                Layout.fillWidth: true
+                property bool fieldActive: false
+                text: root.customHex[cell.colorIndex]
+                selectByMouse: true
+                validator: RegularExpressionValidator {
+                    regularExpression: /(^$)|(^#[0-9a-fA-F]{6}$)/
+                }
+                onTextEdited: {
+                    root.customHex[cell.colorIndex] = tf.text
+                    root.customDirty = true
+                }
+                onActiveFocusChanged: tf.fieldActive = tf.activeFocus
+                onAccepted: root.customHex[cell.colorIndex] = tf.text.length === 7 ? tf.text : (tf.text.length === 6 ? "#" + tf.text : tf.text)
+
+                font.family: AppTheme.fontMono
+                font.pixelSize: AppTheme.fontSmall
+                color: root.hexValid(tf.text) ? AppTheme.fg : AppTheme.critical
+                background: Rectangle {
+                    radius: AppTheme.radiusSmall
+                    color: Qt.alpha(AppTheme.fg, 0.06)
+                    border.width: 1
+                    border.color: tf.fieldActive ? Qt.alpha(root.accent, 0.5) : Qt.alpha(AppTheme.fg, 0.1)
+                }
+            }
+        }
+
+        MouseArea {
+            id: cellStyle
+            property bool hovered: false
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: tf.forceActiveFocus()
+            onEntered: cellStyle.hovered = true
+            onExited: cellStyle.hovered = false
+            z: -1
+        }
     }
 
     ScrollView {
@@ -228,7 +466,7 @@ Item {
                         ThemeChip {
                             anchors.fill: parent
                             name: modelData
-                            active: !root.applying && root.lastTheme === modelData
+                            active: !root.customActive && !root.applying && root.lastTheme === modelData
                         }
                     }
                 }
@@ -328,27 +566,102 @@ Item {
                 color: Qt.alpha(AppTheme.fg, 0.08)
             }
 
-            // ==================== PREVIEW DE PALETA =====================
-            SectionLabel { text: "PALETA ACTIVA" }
-
+            // ==================== COLORES ACTIVOS ========================
             RowLayout {
                 Layout.fillWidth: true
+
+                SectionLabel { text: "COLORES ACTIVOS" }
+
+                Item { Layout.fillWidth: true }
+
+                Text {
+                    visible: root.customDirty
+                    text: String.fromCodePoint(0xf05a) // info
+                    font.family: AppTheme.fontMono
+                    font.pixelSize: AppTheme.fontSmall
+                    color: AppTheme.warning
+                }
+            }
+
+            // Grilla 2 columnas: bg/fg/cursor + color0..15.
+            ColumnLayout {
+                Layout.fillWidth: true
                 spacing: AppTheme.paddingSmall
-                Swatch { hex: root.palValue("special", "background", "#111") }
-                Swatch { hex: root.palValue("special", "foreground", "#fff") }
-                Swatch { hex: root.palValue("special", "cursor", "#fff") }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: AppTheme.paddingSmall
+                    ColorCell { colorIndex: 0 }
+                    ColorCell { colorIndex: 1 }
+                }
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: AppTheme.paddingSmall
+                    ColorCell { colorIndex: 2 }
+                    Item { Layout.fillWidth: true; Layout.preferredHeight: 34 }
+                }
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: AppTheme.paddingSmall
+                    Repeater { model: 4; delegate: ColorCell { colorIndex: 3 + index } }
+                }
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: AppTheme.paddingSmall
+                    Repeater { model: 4; delegate: ColorCell { colorIndex: 7 + index } }
+                }
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: AppTheme.paddingSmall
+                    Repeater { model: 4; delegate: ColorCell { colorIndex: 11 + index } }
+                }
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: AppTheme.paddingSmall
+                    Repeater { model: 4; delegate: ColorCell { colorIndex: 15 + index } }
+                }
             }
 
             RowLayout {
                 Layout.fillWidth: true
                 spacing: AppTheme.paddingSmall
-                Repeater { model: 8; delegate: Swatch { hex: root.colorAtIndex(index) } }
+
+                Item { Layout.fillWidth: true }
+
+                ActionButton {
+                    id: applyCustomBtn
+                    text: root.customDirty ? "Aplicar colores" : "Aplicar"
+                    icon: String.fromCodePoint(0xf00c) // check
+                    highlighted: !root.customDirty
+                    enabled: root.allValid && !root.applying && !root.applyingCustom
+                    busy: root.applyingCustom
+                    onClicked: root.applyCustom()
+                }
+
+                ActionButton {
+                    id: resetCustomBtn
+                    text: "Del wallpaper"
+                    icon: String.fromCodePoint(0xf0e2) // flecha circular
+                    enabled: !root.applying && !root.applyingCustom
+                    busy: false
+                    onClicked: root.resetCustom()
+                }
             }
 
-            RowLayout {
+            Rectangle {
                 Layout.fillWidth: true
-                spacing: AppTheme.paddingSmall
-                Repeater { model: 8; delegate: Swatch { hex: root.colorAtIndex(index + 8) } }
+                Layout.preferredHeight: 1
+                color: Qt.alpha(AppTheme.fg, 0.08)
+            }
+
+            Text {
+                Layout.fillWidth: true
+                Layout.preferredWidth: root.width
+                wrapMode: Text.WordWrap
+                text: "Los cambios se guardan en colorschemes/custom.json y se re-renderizan con wallust cs."
+                font.family: AppTheme.fontLayout
+                font.pixelSize: AppTheme.fontTiny
+                color: AppTheme.textTertiary
             }
 
             Item { Layout.fillHeight: true }

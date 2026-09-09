@@ -27,6 +27,7 @@ config/kitty/.config/kitty/colors.conf
 config/rofi/.config/rofi/themes/colors.rasi
 config/swaync/.config/swaync/colors.css
 config/waybar/.config/waybar/colors.css
+config/wallust/.config/wallust/colorschemes/
 
 # Notas para agentes/LLMs (contexto local, no se comparte)
 AGENTS.md

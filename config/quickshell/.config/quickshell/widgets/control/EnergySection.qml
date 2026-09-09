@@ -172,7 +172,7 @@ Item {
 
             GridLayout {
                 Layout.fillWidth: true
-                columns: 2
+                columns: 4
                 columnSpacing: AppTheme.paddingSmall
                 rowSpacing: AppTheme.paddingSmall
 
