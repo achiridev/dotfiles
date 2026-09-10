@@ -16,29 +16,57 @@ QtObject {
             return null;
         }
     }
+    // 2.5 Preview en runtime de la paleta (Panel de Control): sobrescribe
+    // temporalmente cualquier color de colors.json sin re-renderizar wallust.
+    // La interfaz completa se retinta en vivo mientras el usuario edita.
+    property var palettePreview: ({})
+    function setPalettePreview(key, hex) {
+        if (!root.previewHexValid(hex)) return
+        var copy = {}
+        for (var k in root.palettePreview) copy[k] = root.palettePreview[k]
+        copy[key] = hex
+        root.palettePreview = copy
+    }
+    function syncPalettePreview(map) {
+        var copy = {}
+        for (var k in map) {
+            if (root.previewHexValid(map[k])) copy[k] = map[k]
+        }
+        root.palettePreview = copy
+    }
+    function clearPalettePreview() {
+        root.palettePreview = {}
+    }
+    function previewHexValid(hex) {
+        return /^#[0-9a-fA-F]{6}$/.test(hex)
+    }
+    function prev(key, fallback) {
+        var p = root.palettePreview[key]
+        return p ? p : fallback
+    }
     // 3. Paleta de Colores Dinámica (Con Fallbacks estilo Catppuccin Mocha)
-    readonly property color bg: colors ? colors.special.background : "#1e1e2e"
-    readonly property color fg: colors ? colors.special.foreground : "#cdd6f4"
-    readonly property color cursor: colors ? colors.special.cursor : "#f5e0dc"
+    readonly property color bg: root.prev("background", colors ? colors.special.background : "#1e1e2e")
+    readonly property color fg: root.prev("foreground", colors ? colors.special.foreground : "#cdd6f4")
+    readonly property color cursor: root.prev("cursor", colors ? colors.special.cursor : "#f5e0dc")
     readonly property color borderColor: Qt.alpha(root.fg, 0.3)
     // Colores base (0-7)
-    readonly property color color0: colors ? colors.colors.color0 : "#11111b"
-    readonly property color color1: colors ? colors.colors.color1 : "#f38ba8"
-    readonly property color color2: colors ? colors.colors.color2 : "#a6e3a1"
-    readonly property color color3: colors ? colors.colors.color3 : "#f9e2af"
-    readonly property color color4: colors ? colors.colors.color4 : "#89b4fa"
-    readonly property color color5: colors ? colors.colors.color5 : "#cba6f7"
-    readonly property color color6: colors ? colors.colors.color6 : "#89dceb"
-    readonly property color color7: colors ? colors.colors.color7 : "#bac2de"
+    readonly property color color0: root.prev("color0", colors ? colors.colors.color0 : "#11111b")
+    readonly property color color1: root.prev("color1", colors ? colors.colors.color1 : "#f38ba8")
+    readonly property color color2: root.prev("color2", colors ? colors.colors.color2 : "#a6e3a1")
+    readonly property color color3: root.prev("color3", colors ? colors.colors.color3 : "#f9e2af")
+    readonly property color color4: root.prev("color4", colors ? colors.colors.color4 : "#89b4fa")
+    readonly property color color5: root.prev("color5", colors ? colors.colors.color5 : "#cba6f7")
+    readonly property color color6: root.prev("color6", colors ? colors.colors.color6 : "#89dceb")
+    readonly property color color7: root.prev("color7", colors ? colors.colors.color7 : "#bac2de")
     // Colores brillantes / intensos (8-15)
-    readonly property color color8: colors ? colors.colors.color8 : "#585b70"
-    readonly property color color9: colors ? colors.colors.color9 : "#f38ba8"
-    readonly property color color10: colors ? colors.colors.color10 : "#a6e3a1"
-    readonly property color color11: colors ? colors.colors.color11 : "#f9e2af"
-    readonly property color color12: colors ? colors.colors.color12 : "#89b4fa"
-    readonly property color color13: colors ? colors.colors.color13 : "#cba6f7"
-    readonly property color color14: colors ? colors.colors.color14 : "#89dceb"
-    readonly property color color15: colors ? colors.colors.color15 : "#a6adc8"
+    readonly property color color8: root.prev("color8", colors ? colors.colors.color8 : "#585b70")
+    readonly property color color9: root.prev("color9", colors ? colors.colors.color9 : "#f38ba8")
+    readonly property color color10: root.prev("color10", colors ? colors.colors.color10 : "#a6e3a1")
+    readonly property color color11: root.prev("color11", colors ? colors.colors.color11 : "#f9e2af")
+    readonly property color color12: root.prev("color12", colors ? colors.colors.color12 : "#89b4fa")
+    readonly property color color13: root.prev("color13", colors ? colors.colors.color13 : "#cba6f7")
+    readonly property color color14: root.prev("color14", colors ? colors.colors.color14 : "#89dceb")
+    readonly property color color15: root.prev("color15", colors ? colors.colors.color15 : "#a6adc8")
     // Alias semánticos (Para hacer tu UI más fácil de programar)
     // `accentOverride`: cuando no es transparente, sustituye a `accent`.
     // Lo usa el Panel de Control para el ajuste fino del color de acento
