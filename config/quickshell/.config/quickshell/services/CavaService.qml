@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.globals
 
 QtObject {
     id: root
@@ -15,6 +16,10 @@ QtObject {
     // filtra los players a solo YT Music.
     readonly property bool musicPlaying: MprisService.isPlaying
 
+    // El toggle del panel de control monta/desmonta el visualizador. Cuando
+    // está off, cava no debe correr (ni siquiera en reposo).
+    readonly property bool visualizerEnabled: ControlState.visualizerEnabled
+
     // Estado público: ventana + render activos. Se apaga con histeresis de 3s
     // tras pausar la música para evitar parpadeos en pausas cortas.
     property bool active: false
@@ -24,23 +29,33 @@ QtObject {
     // solo se invalidan 30 veces por segundo.
     property var _pendingBars: null
 
+    function _launch() {
+        // Asignamos el comando para garantizar que $HOME esté resuelto.
+        const configPath = Quickshell.env("HOME") + "/.config/cava/config";
+        cavaProcess.command = ["cava", "-p", configPath];
+        cavaProcess.running = true
+    }
+
     function _start() {
         stopDelay.stop()
         root.active = true
+        // cava se relanza aquí si no está vivo (relanzar al reanudar música
+        // o al re-activar el visualizador desde el panel de control).
+        if (!cavaProcess.running) root._launch()
     }
 
     function _stop() {
         root.active = false
         root._pendingBars = null
         root.bars = new Array(root.barCount).fill(0)
+        // SIN música o con el visualizador desactivado, cerramos cava del
+        // todo: no debe quedar el proceso vivo en segundo plano (visible en
+        // btop). Matarlo destruye su nodo/enlaces de PipeWire, lo que con
+        // quickshell 0.3.0 producía un crash (issue quickshell-mirror#529);
+        // en 0.3.1 se relanza sin problema al volver a haber música.
+        cavaProcess.running = false
     }
 
-    // cava vive durante TODA la sesión (nunca se mata a mitad de sesión):
-    // destruir su nodo/enlaces de PipeWire dispara un crash de quickshell
-    // 0.3.0 (issue quickshell-mirror#529: SEGV en pw_proxy_destroy desde
-    // PwBindableObject::unbind). El costo en reposo es ~0% porque cava duerme
-    // el FFT con sleep_timer=2 (~/.config/cava/config); el costo real (render)
-    // lo gobierna `active`, que sí se apaga sin música.
     property Process cavaProcess: Process {
         id: cavaProcess
         running: false
@@ -88,16 +103,25 @@ QtObject {
     }
 
     onMusicPlayingChanged: {
+        if (!root.visualizerEnabled) return
         if (root.musicPlaying) root._start()
         else stopDelay.restart()
     }
 
+    // El toggle del panel de control es inmediato (sin histeresis): apagarlo
+    // mata cava al instante; encenderlo con música en curso lo relanza.
+    onVisualizerEnabledChanged: {
+        if (root.visualizerEnabled) {
+            if (root.musicPlaying) root._start()
+        } else {
+            stopDelay.stop()
+            root._stop()
+        }
+    }
+
     Component.onCompleted: {
-        // Asignamos el comando para garantizar que $HOME esté resuelto
-        const configPath = Quickshell.env("HOME") + "/.config/cava/config";
-        cavaProcess.command = ["cava", "-p", configPath];
-        cavaProcess.running = true
-        // Si quickshell arranca con música ya sonando, mostramos directo.
-        if (root.musicPlaying) root.active = true
+        // Solo lanzamos cava si ya hay música y el visualizador está activo;
+        // si no, arrancará vía onMusicPlayingChanged cuando entre música.
+        if (root.visualizerEnabled && root.musicPlaying) root._start()
     }
 }
