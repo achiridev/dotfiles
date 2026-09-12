@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# quickshell-respawn
+# Autocurado de la barra/shell: relanza quickshell SOLO si termina por crash
+# (muerte por señal >= 128, p. ej. SIGSEGV/SIGABRT). Un cierre intencionado
+# (kill, SIGTERM/SIGINT/SIGKILL) o un error de carga de config (salida normal
+# <=128) no se reintentan: el proceso muere de verdad y el error sale en el log.
+set -u
+
+while true; do
+    quickshell
+    code=$?
+    if [ $code -ge 128 ]; then
+        # Crash por señal (ej. 139=SIGSEGV como los de este setup): reintentar.
+        sleep 1
+        continue
+    fi
+    # Salida normal o error: no resucitar.
+    exit $code
+done

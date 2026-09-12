@@ -210,9 +210,10 @@ Singleton {
 
     // position no es reactiva por defecto (documentado en quickshell); se
     // emite positionChanged 1 vez por segundo mientras hay player activo.
+    // `running` se enlaza al player: el tick no corre sin MPRIS activo.
     Timer {
         interval: 1000
-        running: true
+        running: root.activePlayer !== null
         repeat: true
         onTriggered: {
             const p = root.activePlayer;

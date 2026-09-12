@@ -60,9 +60,10 @@ Singleton {
 
     // Poll como red de seguridad para cambios hechos fuera de los binds
     // (ej. slider del popup lo hace por onExited; otras apps caen aquí).
-    // 1s basta: la vía rápida es el triggerFile (inotify en /tmp).
+    // La vía rápida es el triggerFile (inotify en /tmp), así que el poll solo
+    // necesita una cadencia baja: 5s en vez de 1s evita re-lecturas sysfs 24/7.
     Timer {
-        interval: 1000
+        interval: 5000
         repeat: true
         running: true
         onTriggered: {

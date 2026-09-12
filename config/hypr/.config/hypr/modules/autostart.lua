@@ -9,7 +9,9 @@
 hl.on("hyprland.start", function ()
 
 	-- Bar, wallpaper, notificaciones
-	hl.exec_cmd("quickshell")
+	-- quickshell-respawn relanza la barra solo si crasheó (señal >= 128);
+	-- un kill/SIGTERM o error de config la deja muerta para diagnosticar.
+	hl.exec_cmd("quickshell-respawn")
 	hl.exec_cmd("swaync")
 	hl.exec_cmd("waywallen --no-ui")
 	-- hl.exec_cmd("awww-daemon")

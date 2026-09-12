@@ -237,15 +237,28 @@ FloatingWindow {
                 }
 
                 // ---- Cuerpo: sección activa ----
+                // Cada sección vive en un Loader con active ligado a la sección
+                // visible: al cambiar de pestaña (o al cerrar el panel) solo la
+                // sección activa queda instanciada, liberando RAM/QML real de
+                // los otros dos paneles. Mismo patrón que shell.qml.
                 StackLayout {
                     id: stack
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     currentIndex: panel.currentSection
 
-                    ToggleSection { id: toggleSection }
-                    ColorSection { id: colorSection }
-                    EnergySection { id: energySection }
+                    Loader {
+                        active: panel.currentSection === 0
+                        sourceComponent: ToggleSection {}
+                    }
+                    Loader {
+                        active: panel.currentSection === 1
+                        sourceComponent: ColorSection {}
+                    }
+                    Loader {
+                        active: panel.currentSection === 2
+                        sourceComponent: EnergySection {}
+                    }
                 }
             }
         }

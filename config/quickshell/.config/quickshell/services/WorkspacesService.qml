@@ -37,9 +37,11 @@ Singleton
     }
 
     // La apertura de un special vacío no dispara ningún evento de socket;
-    // este timer de respaldo garantiza que el estado activo siempre se actualice.
+    // este timer es SOLO la red de seguridad para ese caso. refreshEvents ya
+    // cubre los cambios normales, así que aquí basta una cadencia baja: cada
+    // 2s era un refreshMonitors() + invalidez de bindings 24/7 que no aportaba.
     Timer {
-        interval: 2000
+        interval: 15000
         running: true
         repeat: true
 
