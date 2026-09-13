@@ -60,21 +60,22 @@ Singleton
         const _recording = [];
 
         for (const node of nodes) {
+            // cava se excluye del tracking de PipeWire: enlazar su nodo hace
+            // que quickshell crashee (SEGV en pw_proxy_destroy, issue #529)
+            // cuando el nodo desaparece al matar cava. `node.name` viene de
+            // initProps (eager, no fuerza bind), así que cava nunca queda
+            // bound y su teardown es seguro.
+            const nodeName = node.name || "";
+            if (nodeName.includes("cava")) continue;
+
             if (!node.audio) continue; // solo nodos de audio
 
             if (node.isStream) {
                 // Stream de una app:
                 //  isSink=true  -> Stream/Output/Audio  => reproducción (emite audio)
                 //  isSink=false -> Stream/Input/Audio   => grabación (captura audio)
-                if (node.isSink) {
-                    _playback.push(node);
-                } else {
-                    // Excepción: cava es un capturador/visualizador del monitor,
-                    // pero se lista en "Reproduciendo" para poder controlarlo ahí.
-                    const nodeName = node.properties["node.name"] || "";
-                    if (nodeName.includes("cava")) _playback.push(node);
-                    else _recording.push(node);
-                }
+                if (node.isSink) _playback.push(node);
+                else _recording.push(node);
             } else {
                 // Dispositivo real (hardware o virtual, ej. monitor de sink)
                 if (node.isSink) _sinks.push(node);
