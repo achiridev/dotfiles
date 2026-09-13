@@ -1,0 +1,21 @@
+[Unit]
+Description=Quickshell Shell (bar/widgets)
+Documentation=https://github.com/quickshell-mirror/quickshell
+# PipeWire/wireplumber listos antes de arrancar la shell evita el crash
+# de inicio (use-after-free de PipeWire conocido, issues #529/#815).
+After=graphical-session.target pipewire.service pipewire-pulse.service wireplumber.service
+Wants=pipewire.service pipewire-pulse.service wireplumber.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/quickshell
+# Resurrección automática ante cualquier crash (SIGSEGV de PipeWire incluido).
+Restart=always
+RestartSec=2
+# Entorno de sesión completo y garantizado (systemd lo provee; el launch de
+# hyprland.lua inyecta capacidades ambientales que rompen quickshell).
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=%t/bus
+Environment=XDG_RUNTIME_DIR=%t
+
+[Install]
+WantedBy=graphical-session.target
