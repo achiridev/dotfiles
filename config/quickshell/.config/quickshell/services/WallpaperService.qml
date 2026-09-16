@@ -8,6 +8,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
+import qs.globals
+
 QtObject {
     id: root
 
@@ -48,6 +50,48 @@ QtObject {
     // wallpapers quedan visibles solo con `showHidden` activado (atajo H).
     readonly property string hiddenFolder: "hidden"
     property bool showHidden: false
+
+    // ============================================================
+    // ESTADO: tablero de engranajes del picker
+    // `offset` = índice (en `visibleItems`) del wallpaper en el FOCO
+    // (engranaje central del tablero). El tablero muestra una ventana
+    // deslizante de wpBoardCols × wpBoardRows; navegar mueve el foco y los
+    // engranajes se recolocan/se desplazan según la dirección.
+    // ============================================================
+    property int offset: 0
+
+    readonly property int boardCols: AppTheme.wpBoardCols
+    readonly property int boardRows: AppTheme.wpBoardRows
+    readonly property int boardCount: root.visibleItems.length
+
+    function mod(a, b) {
+        return ((a % b) + b) % b
+    }
+
+    function navigate(dx, dy) {
+        if (root.boardCount === 0)
+            return
+        root.offset = root.mod(root.offset + dx + dy * root.boardCols, root.boardCount)
+    }
+
+    function focusItem() {
+        if (root.boardCount === 0)
+            return null
+        return root.visibleItems[root.offset]
+    }
+
+    // Item que ocupa el engranaje del tablero desplazado `d` posiciones
+    // lineales respecto al foco ((dc, dr) → d = dr*cols + dc).
+    function boardItem(d) {
+        if (root.boardCount === 0)
+            return null
+        return root.visibleItems[root.mod(root.offset + d, root.boardCount)]
+    }
+
+    onVisibleItemsChanged: {
+        if (root.offset >= root.boardCount)
+            root.offset = root.boardCount > 0 ? root.boardCount - 1 : 0
+    }
 
     // ============================================================
     // ESTADO: acciones
@@ -160,6 +204,7 @@ QtObject {
         if (root.open) {
             if (!root.items.length)
                 root.loadItems()
+            root.offset = 0
             root.refreshCurrentId()
             root.ensureThumbs()
         }

@@ -16,10 +16,8 @@ Item {
     focus: true
 
     onVisibleChanged: {
-        if (visible) {
-            wallpaperGrid.currentIndex = 0
+        if (visible)
             forceActiveFocus()
-        }
     }
 
     RowLayout {
@@ -248,13 +246,42 @@ Item {
         }
 
         // ==========================================================
-        // SECCIÓN DERECHA: previsualizaciones al aire
+        // SECCIÓN DERECHA: tablero de engranajes al aire. El host rellena el
+        // hueco (invisible) y el tablero se escala para llenarlo dejando un
+        // margen real de `wpGearHostPad` por cada lado (medible y ajustable).
         // ==========================================================
-        WallpaperGrid {
-            id: wallpaperGrid
+        Item {
+            id: gearHost
             Layout.fillWidth: true
             Layout.fillHeight: true
-            onAskMenu: assignMenu.openFor(item, anchor)
+
+            Text {
+                visible: WallpaperService.boardCount === 0
+                anchors.centerIn: parent
+                text: "Sin resultados"
+                font.family: AppTheme.fontLayout
+                font.pixelSize: AppTheme.fontBase
+                color: AppTheme.textSecondary
+            }
+
+            WallpaperGear {
+                id: wallpaperGear
+                visible: WallpaperService.boardCount > 0
+                anchors.centerIn: parent
+                scale: Math.max(0.2, Math.min(
+                    (gearHost.width - AppTheme.wpGearHostPad * 2) / wallpaperGear.implicitWidth,
+                    (gearHost.height - AppTheme.wpGearHostPad * 2) / wallpaperGear.implicitHeight))
+
+                Behavior on scale {
+                    NumberAnimation { duration: AppTheme.wpAnimBase; easing.type: Easing.OutCubic }
+                }
+
+                onApplyRequested: item => {
+                    if (item)
+                        WallpaperService.apply(item.id)
+                }
+                onMenuRequested: (item, anchor) => assignMenu.openFor(item, anchor)
+            }
         }
     }
 
@@ -283,24 +310,27 @@ Item {
             event.accepted = true
             break
         case Qt.Key_Return:
-        case Qt.Key_Enter:
-            wallpaperGrid.applyCurrent()
+        case Qt.Key_Enter: {
+            const focus = WallpaperService.focusItem()
+            if (focus)
+                WallpaperService.apply(focus.id)
             event.accepted = true
             break
-        case Qt.Key_Up:
-            wallpaperGrid.moveCurrentIndexUp()
-            event.accepted = true
-            break
-        case Qt.Key_Down:
-            wallpaperGrid.moveCurrentIndexDown()
-            event.accepted = true
-            break
+        }
         case Qt.Key_Left:
-            wallpaperGrid.moveCurrentIndexLeft()
+            WallpaperService.navigate(-1, 0)
             event.accepted = true
             break
         case Qt.Key_Right:
-            wallpaperGrid.moveCurrentIndexRight()
+            WallpaperService.navigate(1, 0)
+            event.accepted = true
+            break
+        case Qt.Key_Up:
+            WallpaperService.navigate(0, -1)
+            event.accepted = true
+            break
+        case Qt.Key_Down:
+            WallpaperService.navigate(0, 1)
             event.accepted = true
             break
         case Qt.Key_H:

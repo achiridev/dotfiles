@@ -159,6 +159,23 @@ QtObject {
     readonly property int wpAnimFast: 120
     readonly property int wpAnimBase: 200
     readonly property int wpAnimSlow: 280
+    // Tablero de engranajes del picker (cada wallpaper = mini-engranaje con su
+    // imagen, dispuestos en columnas/filas como un tablero 5×4 compacto).
+    readonly property int wpBoardCols: 5
+    readonly property int wpBoardRows: 4
+    readonly property real wpBoardGap: 12
+    readonly property int wpGearSlotW: 92
+    readonly property int wpGearSlotH: 92
+    readonly property real wpGearToothH: 8
+    readonly property real wpGearFocusScale: 1.14
+    readonly property int wpGearAnimRest: 240
+    readonly property int wpGearSpinDeg: 90
+    // Margen real alrededor del tablero dentro de su sección (caja invisible:
+// el tablero se escala hasta llenar la sección dejando este aire por lado).
+    readonly property int wpGearHostPad: 80
+    readonly property int wpGearSpinMs: 240
+    // Duración (ms) del "paso con retorno": traslación del tablero al cambiar el foco.
+    readonly property int wpGearStepMs: 180
     // 7. Launcher Gear (SUPER+D)
     // El engranaje está compuesto por: hub central (buscador + app enfocada),
     // corona con `gearStationCount` estaciones (la frontal es la del centro),
