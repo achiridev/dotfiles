@@ -12,19 +12,8 @@ import qs.services
 Rectangle {
     id: root
 
-    width: AppTheme.wpSidebarWidth
     color: "transparent"
     Layout.fillHeight: true
-
-    Rectangle {
-        anchors {
-            top: parent.top
-            bottom: parent.bottom
-            right: parent.right
-        }
-        width: 1
-        color: AppTheme.borderColor
-    }
 
     ColumnLayout {
         anchors.fill: parent

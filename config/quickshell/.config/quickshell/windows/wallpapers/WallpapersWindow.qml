@@ -129,21 +129,10 @@ Scope {
                     }
                 }
 
-                Rectangle {
-                    id: appCard
-                    anchors.centerIn: parent
-                    width: Math.min(AppTheme.wpWindowWidth, contentLayer.width - AppTheme.paddingLarge * 2)
-                    height: Math.min(AppTheme.wpWindowHeight, contentLayer.height - AppTheme.paddingLarge * 2)
-                    radius: AppTheme.radiusLarge
-                    color: AppTheme.bgPopup
-                    border.width: 1
-                    border.color: AppTheme.borderColor
-                    clip: true
-
-                    WallpaperApp {
-                        anchors.fill: parent
-                        focus: WallpaperService.open
-                    }
+                WallpaperApp {
+                    anchors.fill: parent
+                    anchors.margins: AppTheme.paddingLarge
+                    focus: WallpaperService.open
                 }
             }
         }
