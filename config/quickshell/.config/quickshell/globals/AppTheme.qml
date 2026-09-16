@@ -160,19 +160,23 @@ QtObject {
     readonly property int wpAnimBase: 200
     readonly property int wpAnimSlow: 280
     // Tablero de engranajes del picker (cada wallpaper = mini-engranaje con su
-    // imagen, dispuestos en columnas/filas como un tablero 5×4 compacto).
+    // imagen): wpBoardCols columnas fijas × N filas (las que hagan falta, scroll).
     readonly property int wpBoardCols: 5
     readonly property int wpBoardRows: 4
     readonly property real wpBoardGap: 12
+    // Tamaño base de cada engranaje; en el tablero real el engranaje se escala
+    // para llenar su celda (celda < wpGearMaxCell).
     readonly property int wpGearSlotW: 92
     readonly property int wpGearSlotH: 92
+    // Tope de celda: el tablero llena el ancho disponible con 5 columnas pero
+    // nunca hace celdas más grandes que esto.
+    readonly property real wpGearMaxCell: 176
     readonly property real wpGearToothH: 8
-    readonly property real wpGearFocusScale: 1.14
+    readonly property real wpGearFocusScale: 1.22
     readonly property int wpGearAnimRest: 240
     readonly property int wpGearSpinDeg: 90
-    // Margen real alrededor del tablero dentro de su sección (caja invisible:
-// el tablero se escala hasta llenar la sección dejando este aire por lado).
-    readonly property int wpGearHostPad: 80
+    // Margen real alrededor del tablero dentro de su sección (caja invisible).
+    readonly property int wpGearHostPad: 20
     readonly property int wpGearSpinMs: 240
     // Duración (ms) del "paso con retorno": traslación del tablero al cambiar el foco.
     readonly property int wpGearStepMs: 180

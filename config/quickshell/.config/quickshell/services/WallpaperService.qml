@@ -53,10 +53,10 @@ QtObject {
 
     // ============================================================
     // ESTADO: tablero de engranajes del picker
-    // `offset` = índice (en `visibleItems`) del wallpaper en el FOCO
-    // (engranaje central del tablero). El tablero muestra una ventana
-    // deslizante de wpBoardCols × wpBoardRows; navegar mueve el foco y los
-    // engranajes se recolocan/se desplazan según la dirección.
+    // `offset` = índice (en `visibleItems`) del wallpaper en el FOCO.
+    // El tablero muestra TODOS los wallpapers en una cuadrícula de
+    // wpBoardCols columnas × N filas (las que haga falta); el foco
+    // empieza arriba-izquierda (1x1) y navega con clamps (sin wrap).
     // ============================================================
     property int offset: 0
 
@@ -71,7 +71,8 @@ QtObject {
     function navigate(dx, dy) {
         if (root.boardCount === 0)
             return
-        root.offset = root.mod(root.offset + dx + dy * root.boardCols, root.boardCount)
+        const next = root.offset + dx + dy * root.boardCols
+        root.offset = Math.max(0, Math.min(next, root.boardCount - 1))
     }
 
     function focusItem() {
@@ -80,17 +81,17 @@ QtObject {
         return root.visibleItems[root.offset]
     }
 
-    // Item que ocupa el engranaje del tablero desplazado `d` posiciones
-    // lineales respecto al foco ((dc, dr) → d = dr*cols + dc).
+    // Item que ocupa la celda desplazada `d` posiciones (en el grid completo,
+    // no hay wrap: fuera de rango devuelve null).
     function boardItem(d) {
-        if (root.boardCount === 0)
+        const i = root.offset + d
+        if (root.boardCount === 0 || i < 0 || i >= root.boardCount)
             return null
-        return root.visibleItems[root.mod(root.offset + d, root.boardCount)]
+        return root.visibleItems[i]
     }
 
     onVisibleItemsChanged: {
-        if (root.offset >= root.boardCount)
-            root.offset = root.boardCount > 0 ? root.boardCount - 1 : 0
+        root.offset = 0
     }
 
     // ============================================================

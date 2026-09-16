@@ -34,13 +34,24 @@ Item {
     readonly property real imgD: (root.gearR - root.toothH * 1.25) * 2
     readonly property int teeth: 12
 
-    width: AppTheme.wpGearSlotW
-    height: AppTheme.wpGearSlotH
+    // Tamaño del engranaje (dimensionado por el tablero; default el del tema).
+    property real size: AppTheme.wpGearSlotW
+
+    width: root.size
+    height: root.size
     transformOrigin: Item.Center
     scale: root.isFocus ? AppTheme.wpGearFocusScale : (root.hovered ? 1.04 : 1.0)
     z: root.isFocus ? 5 : (root.hovered ? 4 : 1)
 
     Behavior on scale {
+        NumberAnimation { duration: AppTheme.wpAnimFast; easing.type: Easing.OutCubic }
+    }
+
+    // Progreso de foco 0..1: anima el color del cuerpo y el anillo al GANAR y
+    // al PERDER el foco (único engranaje tintado = el del foco).
+    property real focusProgress: root.isFocus ? 1.0 : 0.0
+
+    Behavior on focusProgress {
         NumberAnimation { duration: AppTheme.wpAnimFast; easing.type: Easing.OutCubic }
     }
 
@@ -69,6 +80,7 @@ Item {
     onIsFocusChanged: gearCanvas.requestPaint()
     onIsCurrentChanged: gearCanvas.requestPaint()
     onHoveredChanged: gearCanvas.requestPaint()
+    onFocusProgressChanged: gearCanvas.requestPaint()
 
     // ---- Traslación del wallpaper al fluir por el tablero ----
     // Cuando cambia el contenido, la imagen nueva desliza DESDE la celda
@@ -116,34 +128,47 @@ Item {
             const cx = gearCanvas.width / 2;
             const cy = gearCanvas.height / 2;
             root.buildGearPath(ctx, cx, cy, root.gearR, root.toothH, root.teeth);
-            // Cuerpo: el engranaje del "Actual" se tiñe del color de acento
-            // (su engranaje es "de otro color"); el resto oscuro translúcido.
-            let c0 = Qt.alpha(AppTheme.bg, 0.5), c1 = Qt.alpha(AppTheme.bg, 0.64), c2 = Qt.alpha(AppTheme.bg, 0.78);
-            if (root.isCurrent) {
-                c0 = Qt.alpha(AppTheme.accent, 0.55);
-                c1 = Qt.alpha(AppTheme.accent, 0.72);
-                c2 = Qt.alpha(AppTheme.accent, 0.9);
-            }
+            // Cuerpo: SOLO el engranaje del FOCO se tiñe de acento (mezclado
+            // con `focusProgress` para animarlo al ganar/perder). El resto es
+            // oscuro translúcido; el "Actual" ya no pinta el cuerpo.
+            const t = root.focusProgress;
+            const mix = (a, b) => a + (b - a) * t;
+            const base = Qt.alpha(AppTheme.bg, 0.5);
+            const acc = Qt.lighter(AppTheme.accent, 1.15);
+            const c0 = Qt.rgba(mix(base.r, acc.r), mix(base.g, acc.g), mix(base.b, acc.b), mix(0.5, 0.85));
+            const c1 = Qt.rgba(mix(base.r, acc.r), mix(base.g, acc.g), mix(base.b, acc.b), mix(0.64, 0.92));
+            const c2 = Qt.rgba(mix(base.r, acc.r), mix(base.g, acc.g), mix(base.b, acc.b), mix(0.78, 1.0));
             const grad = ctx.createRadialGradient(cx, cy, root.gearR * 0.2, cx, cy, root.width / 2);
             grad.addColorStop(0, c0);
             grad.addColorStop(0.7, c1);
             grad.addColorStop(1, c2);
             ctx.fillStyle = grad;
             ctx.fill();
-            // Contorno: el FOCO lleva el anillo de acento (único en resaltarse
-            // por selección); el Actual lleva un aro del mismo acento pero sin
-            // escala; hover sutil; reposo neutro.
-            const ring = root.isFocus ? Qt.alpha(AppTheme.accent, 0.95)
-                        : root.isCurrent ? Qt.alpha(AppTheme.accent, 0.7)
-                        : root.hovered ? Qt.alpha(AppTheme.accent, 0.55)
-                                       : Qt.alpha(AppTheme.borderColor, 0.7);
+            // Contorno: el FOCO lleva el anillo de acento (el único en color,
+            // grueso y con transición también al liberar/conceder el foco);
+            // el Actual un aro fino del mismo acento; hover sutil; reposo neutro.
+            let ring;
+            let ringW;
+            if (t > 0) {
+                ring = Qt.alpha(AppTheme.accent, 0.6 + t * 0.4);
+                ringW = 2 + t * 2;
+            } else if (root.isCurrent) {
+                ring = Qt.alpha(AppTheme.accent, 0.35);
+                ringW = 1.5;
+            } else if (root.hovered) {
+                ring = Qt.alpha(AppTheme.accent, 0.55);
+                ringW = 1.5;
+            } else {
+                ring = Qt.alpha(AppTheme.borderColor, 0.7);
+                ringW = 1.5;
+            }
             ctx.strokeStyle = ring;
-            ctx.lineWidth = root.isFocus ? 3 : 1.5;
+            ctx.lineWidth = ringW;
             ctx.stroke();
-            // Aro interior para "leer" la corona de dientes.
+            // Aro interior para "leer" la corona de dientes (acento con foco).
             ctx.beginPath();
             ctx.arc(cx, cy, root.gearR, 0, Math.PI * 2);
-            ctx.strokeStyle = Qt.alpha(root.isFocus ? AppTheme.accent : AppTheme.fg, 0.45);
+            ctx.strokeStyle = Qt.alpha(t > 0 ? AppTheme.accent : AppTheme.fg, 0.45);
             ctx.lineWidth = 1;
             ctx.stroke();
         }
@@ -168,6 +193,14 @@ Item {
             radius: width / 2
             color: Qt.alpha(AppTheme.bg, 0.9)
             clip: true
+            // Borde de acento del disco: señal de foco siempre visible (el foco
+            // es el único engranaje con este anillo sobre la imagen).
+            border.color: Qt.alpha(AppTheme.accent, 0.75 + root.focusProgress * 0.25)
+            border.width: root.focusProgress > 0 ? 2.5 : 0
+
+            Behavior on border.color {
+                ColorAnimation { duration: AppTheme.wpAnimFast; easing.type: Easing.OutCubic }
+            }
 
             LazyImage {
                 anchors.fill: parent

@@ -266,15 +266,9 @@ Item {
 
             WallpaperGear {
                 id: wallpaperGear
-                visible: WallpaperService.boardCount > 0
-                anchors.centerIn: parent
-                scale: Math.max(0.2, Math.min(
-                    (gearHost.width - AppTheme.wpGearHostPad * 2) / wallpaperGear.implicitWidth,
-                    (gearHost.height - AppTheme.wpGearHostPad * 2) / wallpaperGear.implicitHeight))
-
-                Behavior on scale {
-                    NumberAnimation { duration: AppTheme.wpAnimBase; easing.type: Easing.OutCubic }
-                }
+                visible: WallpaperService.visibleItems.length > 0
+                anchors.fill: parent
+                anchors.margins: AppTheme.wpGearHostPad
 
                 onApplyRequested: item => {
                     if (item)

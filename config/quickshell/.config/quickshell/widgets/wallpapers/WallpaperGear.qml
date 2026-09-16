@@ -1,11 +1,9 @@
 // widgets/wallpapers/WallpaperGear.qml
-// Tablero de engranajes del picker de wallpapers: un patrón de columnas/filas
-// (wpBoardCols × wpBoardRows) de mini-engranajes (WallpaperGearSlot), cada uno
-// con la imagen de un wallpaper. El engranaje del CENTRO es el foco y se ve más
-// grande. Al navegar con las flechas el contenido del tablero "fluye" una celda
-// en la dirección de la flecha: cada wallpaper entra deslizando desde el
-// engranaje vecino hasta la celda que le toca (el foco nuevo llega a la celda
-// 3x2 físicamente, sin saltos) y, en paralelo, los dientes giran ("muerden").
+// Tablero de engranajes del picker: muestra TODOS los wallpapers visibles en
+// una cuadrícula fija de `wpBoardCols` columnas × N filas (N depende de la
+// cantidad). El foco empieza arriba-izquierda (1x1) y se mueve con las flechas
+// (clamp, sin wrap); si las filas no caben, la cuadrícula hace scroll vertical.
+// Al cambiar el foco, el engranaje focado "muerde" un paso: giro de dientes.
 import QtQuick
 import Quickshell
 
@@ -19,71 +17,69 @@ Item {
     signal menuRequested(var item, Item anchor)
 
     readonly property int cols: AppTheme.wpBoardCols
-    readonly property int rows: AppTheme.wpBoardRows
-    // Foco en la celda 3x2 (1-indexado): fila 2 para un tablero de 4 filas.
-    readonly property int centerCol: Math.floor(root.cols / 2)
-    readonly property int centerRow: Math.floor((root.rows - 1) / 2)
-    readonly property real stepW: AppTheme.wpGearSlotW + AppTheme.wpBoardGap
-    readonly property real stepH: AppTheme.wpGearSlotH + AppTheme.wpBoardGap
-    readonly property real boardW: root.cols * root.stepW - AppTheme.wpBoardGap
-    readonly property real boardH: root.rows * root.stepH - AppTheme.wpBoardGap
+    readonly property real gap: AppTheme.wpBoardGap
+    // Celda dinámica: el tablero llena el ancho disponible con `cols` columnas,
+    // sin superar `wpGearMaxCell` (si sobra, la rejilla queda centrada).
+    readonly property real cellW: Math.max(24, Math.min((root.width - root.gap) / root.cols, AppTheme.wpGearMaxCell))
+    readonly property real boardW: root.cols * root.cellW
 
-    // Offset previo (mutable): para calcular el delta en cada paso de foco.
+    // Offset previo (mutable): para calcular el delta de paso del foco.
     property int lastOffset: WallpaperService.offset
 
-    implicitWidth: root.boardW
-    implicitHeight: root.boardH
-
-    // ---- Tablero: lattice de engranajes (sin caja, al aire) ----
-    Item {
-        anchors.centerIn: parent
+    GridView {
+        id: grid
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
         width: root.boardW
-        height: root.boardH
+        clip: true
+        interactive: true
+        cellWidth: root.cellW
+        cellHeight: root.cellW
+        model: WallpaperService.visibleItems
+        cacheBuffer: root.cellW * 4
+        boundsBehavior: Flickable.StopAtBounds
 
-        Repeater {
-            id: slots
-            model: root.cols * root.rows
+        delegate: Item {
+            required property int index
+            required property var modelData
+            // OJO: `GridView.isCurrentItem` se adjunta a la RAÍZ del delegate;
+            // leerlo dentro de un hijo devuelve siempre false.
+            readonly property bool cellCurrent: GridView.isCurrentItem
+            width: root.cellW
+            height: root.cellW
 
-            delegate: WallpaperGearSlot {
-                required property int index
-                readonly property int c: index % root.cols
-                readonly property int r: Math.floor(index / root.cols)
-                readonly property int d: (r - root.centerRow) * root.cols + (c - root.centerCol)
+            WallpaperGearSlot {
+                id: gear
+                anchors.centerIn: parent
+                size: root.cellW - root.gap
+                item: modelData
+                isFocus: cellCurrent
+                onClicked: it => {
+                    grid.currentIndex = index
+                    root.applyRequested(it)
+                }
+                onContextRequested: (it, anchor) => root.menuRequested(it, anchor)
+            }
 
-                x: root.centerCol * root.stepW + (c - root.centerCol) * root.stepW
-                y: root.centerRow * root.stepH + (r - root.centerRow) * root.stepH
-                item: WallpaperService.boardItem(d)
-                isFocus: (c === root.centerCol && r === root.centerRow)
-                onClicked: it => root.applyRequested(it)
-                onContextRequested: (it, slotRef) => root.menuRequested(it, slotRef)
+            function biteStep(delta) {
+                gear.biteStep(delta)
             }
         }
     }
 
-    // ---- Al cambiar el foco: flujo del contenido + giro de dientes ----
+    // ---- Al cambiar el foco: giro del engranaje focado + scroll al foco ----
     Connections {
         target: WallpaperService
         function onOffsetChanged() {
             const delta = WallpaperService.offset - root.lastOffset;
             root.lastOffset = WallpaperService.offset;
-            if (delta === 0)
-                return;
-            // Descomposición CON SIGNO del delta en celdas (soporta deltas
-            // negativos: ←/↑). IMPORTANTE: mod() no vale aquí — mapea -1 a
-            // cols-1 y el contenido se iba a una esquina/otro lado.
-            const dr = delta < 0 ? Math.ceil(delta / root.cols) : Math.floor(delta / root.cols);
-            const dc = delta - dr * root.cols;
-            // Dirección de entrada del contenido: el wallpaper nuevo viene del
-            // engranaje vecino en contra del avance. Ej: ← (dc=-1) entra desde
-            // la izquierda (-stepW) y desliza hacia el foco; ↓ (dr=+1) entra
-            // desde abajo (+stepH) y sube hasta su celda.
-            const fx = dc * root.stepW;
-            const fy = dr * root.stepH;
-            for (let i = 0; i < slots.count; ++i) {
-                const slot = slots.itemAt(i);
-                slot.flowFromX = fx;
-                slot.flowFromY = fy;
-                slot.biteStep(delta);
+            grid.currentIndex = WallpaperService.offset;
+            grid.positionViewAtIndex(WallpaperService.offset, GridView.Center);
+            if (delta !== 0) {
+                const d = grid.currentItem;
+                if (d && d.biteStep)
+                    d.biteStep(delta);
             }
         }
     }
