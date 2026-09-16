@@ -31,7 +31,9 @@ Item {
 
     readonly property real toothH: AppTheme.wpGearToothH
     readonly property real gearR: root.width / 2 - root.toothH / 2
-    readonly property real imgD: (root.gearR - root.toothH * 1.25) * 2
+    // Preview "congelada": el disco (imagen) no crece con el engranaje — se
+    // topa en `wpGearPreviewCap` mientras la silueta de dientes puede agrandarse.
+    readonly property real imgD: Math.min((root.gearR - root.toothH * 1.25) * 2, AppTheme.wpGearPreviewCap)
     readonly property int teeth: 12
 
     // Tamaño del engranaje (dimensionado por el tablero; default el del tema).

@@ -163,14 +163,20 @@ QtObject {
     // imagen): wpBoardCols columnas fijas × N filas (las que hagan falta, scroll).
     readonly property int wpBoardCols: 5
     readonly property int wpBoardRows: 4
-    readonly property real wpBoardGap: 12
+    readonly property real wpBoardGap: 42
     // Tamaño base de cada engranaje; en el tablero real el engranaje se escala
     // para llenar su celda (celda < wpGearMaxCell).
     readonly property int wpGearSlotW: 92
     readonly property int wpGearSlotH: 92
     // Tope de celda: el tablero llena el ancho disponible con 5 columnas pero
-    // nunca hace celdas más grandes que esto.
-    readonly property real wpGearMaxCell: 176
+    // nunca hace celdas más grandes que esto. Ajustado con wpBoardGap para que
+    // el desborde del engranaje enfocado (escala 1.22) quepa en su propia celda
+    // y NUNCA se recorte en los bordes del grid.
+    readonly property real wpGearMaxCell: 224
+    // Tope de la PREVIEW (disco con la imagen): el engranaje puede crecer más
+    // que esto, pero la imagen del fondo no (el engranaje se ve más grande por
+    // la corona extra, sin agrandar la preview).
+    readonly property real wpGearPreviewCap: 134
     readonly property real wpGearToothH: 8
     readonly property real wpGearFocusScale: 1.22
     readonly property int wpGearAnimRest: 240

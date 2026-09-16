@@ -31,6 +31,8 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         anchors.bottom: parent.bottom
+        // El engranaje del FOCO (escala 1.22) desborda su celda pero cabe en el
+        // hueco (`wpBoardGap`) → el clip del grid ya no corta nada en ningún borde.
         width: root.boardW
         clip: true
         interactive: true
