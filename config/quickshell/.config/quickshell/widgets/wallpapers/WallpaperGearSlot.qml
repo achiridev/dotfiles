@@ -16,11 +16,6 @@ Item {
     required property var item          // wallpaper item o null
     property bool isFocus: false
 
-    // Origen de la traslación del contenido (px) al entrar un wallpaper nuevo:
-    // el gear lo rellena con la celda avanzada en la dirección del movimiento.
-    property real flowFromX: 0
-    property real flowFromY: 0
-
     signal clicked(var item)
     signal contextRequested(var item)
 
@@ -29,10 +24,19 @@ Item {
     readonly property bool isApplying: wpId !== "" && WallpaperService.applyingId === wpId
     readonly property bool hovered: hoverHandler.hovered
 
-    readonly property real toothH: AppTheme.wpGearToothH
-    readonly property real gearR: root.width / 2 - root.toothH / 2
+    // Altura de los dientes PROPORCIONAL al tamaño del engranaje (misma
+    // proporción que el launcher, ~20% del radio), con piso en el tema.
+    // Un toothH fijo hacía que los engranajes grandes parecieran discos con
+    // dientes diminutos.
+    readonly property real toothH: Math.max(AppTheme.wpGearToothH, Math.min(root.size * 0.09, 15))
+    // R calculado dejando margen ANTIALIAS: con gearR = width/2 - toothH las
+    // puntas de los dientes quedan toothH/2 dentro del canvas (igual que el
+    // launcher). Con solo toothH/2, outer == width/2 y un círculo inscrito al
+    // borde biseca las puntas de los 4 dientes cardinales (0/90/180/270°).
+    readonly property real gearR: root.width / 2 - root.toothH
     // Preview "congelada": el disco (imagen) no crece con el engranaje — se
-    // topa en `wpGearPreviewCap` mientras la silueta de dientes puede agrandarse.
+    // topa en `wpGearPreviewCap` mientras la silueta de dientes puede agrandarse
+    // (el scale de foco se aplica SOLO a la silueta, no al disco).
     readonly property real imgD: Math.min((root.gearR - root.toothH * 1.25) * 2, AppTheme.wpGearPreviewCap)
     readonly property int teeth: 12
 
@@ -41,13 +45,7 @@ Item {
 
     width: root.size
     height: root.size
-    transformOrigin: Item.Center
-    scale: root.isFocus ? AppTheme.wpGearFocusScale : (root.hovered ? 1.04 : 1.0)
     z: root.isFocus ? 5 : (root.hovered ? 4 : 1)
-
-    Behavior on scale {
-        NumberAnimation { duration: AppTheme.wpAnimFast; easing.type: Easing.OutCubic }
-    }
 
     // Progreso de foco 0..1: anima el color del cuerpo y el anillo al GANAR y
     // al PERDER el foco (único engranaje tintado = el del foco).
@@ -84,43 +82,21 @@ Item {
     onHoveredChanged: gearCanvas.requestPaint()
     onFocusProgressChanged: gearCanvas.requestPaint()
 
-    // ---- Traslación del wallpaper al fluir por el tablero ----
-    // Cuando cambia el contenido, la imagen nueva desliza DESDE la celda
-    // vecina (dirección del movimiento) hasta asentarse en este engranaje:
-    // así se ve adónde fue el foco.
-    onItemChanged: {
-        flowDisc.x = root.flowFromX;
-        flowDisc.y = root.flowFromY;
-        flowIntoX.stop();
-        flowIntoY.stop();
-        flowIntoX.to = 0;
-        flowIntoY.to = 0;
-        flowIntoX.start();
-        flowIntoY.start();
-    }
-
-    NumberAnimation {
-        id: flowIntoX
-        target: flowDisc
-        property: "x"
-        duration: AppTheme.wpGearAnimRest
-        easing.type: Easing.OutCubic
-    }
-
-    NumberAnimation {
-        id: flowIntoY
-        target: flowDisc
-        property: "y"
-        duration: AppTheme.wpGearAnimRest
-        easing.type: Easing.OutCubic
-    }
-
     // ---- Silueta del mini-engranaje (disc + dientes) ----
     Canvas {
         id: gearCanvas
         anchors.fill: parent
         antialiasing: true
+        transformOrigin: Item.Center
+        // El scale de foco/hover se aplica SOLO a la silueta: la preview
+        // (disco) y los badges quedan a tamaño base (diseño "preview congelada").
+        scale: root.isFocus ? AppTheme.wpGearFocusScale : (root.hovered ? 1.04 : 1.0)
         z: 0
+
+        Behavior on scale {
+            NumberAnimation { duration: AppTheme.wpAnimFast; easing.type: Easing.OutCubic }
+        }
+
         Component.onCompleted: requestPaint()
         onWidthChanged: requestPaint()
         onHeightChanged: requestPaint()
@@ -168,8 +144,11 @@ Item {
             ctx.lineWidth = ringW;
             ctx.stroke();
             // Aro interior para "leer" la corona de dientes (acento con foco).
+            // Se traza DENTRO del disco sólido (rim = gearR - toothH/2) para
+            // no quedar fragmentado en los valles entre dientes: siempre es un
+            // círculo continuo, nunca arcos sueltos fuera de la silueta.
             ctx.beginPath();
-            ctx.arc(cx, cy, root.gearR, 0, Math.PI * 2);
+            ctx.arc(cx, cy, root.gearR - root.toothH * 0.75, 0, Math.PI * 2);
             ctx.strokeStyle = Qt.alpha(t > 0 ? AppTheme.accent : AppTheme.fg, 0.45);
             ctx.lineWidth = 1;
             ctx.stroke();
@@ -181,10 +160,10 @@ Item {
     }
 
     // ---- Imagen del wallpaper dentro del engranaje (disco) ----
-    // `flowDisc` se traslada al cambiar el wallpaper (entra deslizando desde el
-    // engranaje vecino en la dirección del movimiento).
+    // Estático y a tamaño base: no escala con el foco ni fluye al cambiar de
+    // contenido (el scale de foco vive en `gearCanvas`, no en el root).
     Item {
-        id: flowDisc
+        id: previewDisc
         anchors.centerIn: parent
         width: root.imgD
         height: root.imgD
@@ -216,10 +195,10 @@ Item {
     Rectangle {
         visible: root.isCurrent && !root.isApplying
         anchors {
-            top: gearCanvas.top
-            right: gearCanvas.right
-            topMargin: 3
-            rightMargin: 3
+            top: previewDisc.top
+            right: previewDisc.right
+            topMargin: 1
+            rightMargin: 1
         }
         width: 18
         height: 18

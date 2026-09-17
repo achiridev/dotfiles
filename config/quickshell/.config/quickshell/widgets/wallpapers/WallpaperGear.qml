@@ -29,8 +29,12 @@ Item {
     GridView {
         id: grid
         anchors.horizontalCenter: parent.horizontalCenter
+        // Holgura vertical: el engranaje enfocado (escala wpGearFocusScale) y sus
+        // puntas de dientes quedan siempre dentro del clip en la 1ª/última fila.
         anchors.top: parent.top
         anchors.bottom: parent.bottom
+        anchors.topMargin: 4
+        anchors.bottomMargin: 4
         // El engranaje del FOCO (escala 1.22) desborda su celda pero cabe en el
         // hueco (`wpBoardGap`) → el clip del grid ya no corta nada en ningún borde.
         width: root.boardW

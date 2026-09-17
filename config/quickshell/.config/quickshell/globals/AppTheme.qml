@@ -177,6 +177,8 @@ QtObject {
     // que esto, pero la imagen del fondo no (el engranaje se ve más grande por
     // la corona extra, sin agrandar la preview).
     readonly property real wpGearPreviewCap: 134
+    // Altura mínima de los dientes del engranaje del picker: la silueta la
+    // escala con su tamaño (up to ~15px) manteniendo la proporción del launcher.
     readonly property real wpGearToothH: 8
     readonly property real wpGearFocusScale: 1.22
     readonly property int wpGearAnimRest: 240
