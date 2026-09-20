@@ -12,6 +12,10 @@ ExecStart=/usr/bin/quickshell
 # Resurrección automática ante cualquier crash (SIGSEGV de PipeWire incluido).
 Restart=always
 RestartSec=2
+# Al detener el servicio solo se mata el PID de quickshell, no las apps
+# lanzadas desde su launcher (quedan en el mismo cgroup: KillMode=control-group
+# por defecto las cerraría junto a la shell).
+KillMode=process
 # Entorno de sesión completo y garantizado (systemd lo provee; el launch de
 # hyprland.lua inyecta capacidades ambientales que rompen quickshell).
 Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=%t/bus

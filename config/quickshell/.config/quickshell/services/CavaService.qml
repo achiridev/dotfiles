@@ -8,7 +8,7 @@ import qs.globals
 QtObject {
     id: root
 
-    readonly property int barCount: 60
+    readonly property int barCount: 32
     property var bars: new Array(barCount).fill(0)
 
     // El visualizador solo se muestra con MÚSICA real (MPRIS / YouTube Music),

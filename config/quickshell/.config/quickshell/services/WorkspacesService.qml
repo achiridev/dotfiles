@@ -41,7 +41,7 @@ Singleton
     // cubre los cambios normales, así que aquí basta una cadencia baja: cada
     // 2s era un refreshMonitors() + invalidez de bindings 24/7 que no aportaba.
     Timer {
-        interval: 15000
+        interval: 60000
         running: true
         repeat: true
 

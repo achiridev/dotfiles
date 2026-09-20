@@ -17,6 +17,7 @@ PanelWindow {
     implicitHeight: AppTheme.heightBar
     exclusiveZone: height
     WlrLayershell.layer: WlrLayer.Top
+    WlrLayershell.namespace: "quickshell-bar"
 
     color: Qt.alpha(AppTheme.bg, 0.55)
 

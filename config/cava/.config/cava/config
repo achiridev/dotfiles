@@ -4,8 +4,8 @@
 
 [general]
 
-bars = 60
-framerate = 60
+bars = 32
+framerate = 30
 
 # Segundos sin input antes de que cava duerma (no hace FFT ni dibuja).
 # Red de seguridad: con el gate por MPRIS en quickshell no debería activarse,

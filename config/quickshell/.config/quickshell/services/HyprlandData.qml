@@ -9,6 +9,7 @@ import Quickshell.Io
 import Quickshell.Hyprland
 
 import qs.globals
+import qs.services
 
 Singleton {
     id: root
@@ -62,13 +63,25 @@ Singleton {
         }
     }
 
-    Component.onCompleted: {
-        root.scheduleUpdates(true, true, true, true)
-        root.flushPendingUpdates()
+    // Solo el Overview consume estos datos, así que no gastamos hyprctl en
+    // reposo: nos activamos al abrirlo y nos dormimos al cerrarlo. El refresco
+    // inicial se hace desde onOverviewOpenChanged (carga cold start al abrir).
+    readonly property bool enabled: OverviewService.overviewOpen
+
+    Connections {
+        target: OverviewService
+
+        function onOverviewOpenChanged() {
+            if (OverviewService.overviewOpen) {
+                root.scheduleUpdates(true, true, true, true)
+                root.flushPendingUpdates()
+            }
+        }
     }
 
     Connections {
         target: Hyprland
+        enabled: root.enabled
 
         function onRawEvent(event) {
             const eventName = `${event?.name ?? event?.event ?? event?.type ?? ""}`;

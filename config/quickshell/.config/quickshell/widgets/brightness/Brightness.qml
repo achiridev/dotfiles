@@ -27,6 +27,9 @@ Item {
         }
     }
 
+    // El poll de sysfs de BrightnessService solo corre con el popup abierto.
+    onPopupOpenChanged: BrightnessService.detailMode = root.popupOpen
+
     Timer {
         id: closeTimer
         interval: 150
