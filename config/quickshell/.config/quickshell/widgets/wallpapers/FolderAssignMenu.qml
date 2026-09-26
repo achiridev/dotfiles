@@ -15,6 +15,12 @@ Item {
     property var item: null
     readonly property bool open: item !== null
 
+    // Ancla (el engranaje pulsado) y "ya posicionado": el box nace en (0,0) y
+    // openFor lo coloca en el callLater, así que hasta entonces se oculta para
+    // que no aparezca un frame en la esquina superior izquierda.
+    property Item anchorItem: null
+    property bool positioned: false
+
     signal closeRequested
 
     visible: open
@@ -29,6 +35,7 @@ Item {
 
     Rectangle {
         id: box
+        visible: root.positioned
         width: 236
         height: contentLayout.implicitHeight + AppTheme.paddingLarge * 2
         radius: AppTheme.radiusLarge
@@ -36,6 +43,11 @@ Item {
         border.width: 1
         border.color: AppTheme.borderColor
         z: 1
+        // El alto depende del nº de carpetas, así que puede cambiar con el menú
+        // ya abierto (layout sin resolver en el 1er frame, o una carpeta nueva):
+        // se recalcula el volteo para que el panel no se salga del app.
+        onHeightChanged: if (root.open)
+            positionBox()
 
         ColumnLayout {
             id: contentLayout
@@ -209,17 +221,41 @@ Item {
         root.closeRequested()
     }
 
-    // Abre el menú anclado debajo de `anchor`, clampeado al área del app.
+    // Coloca el panel CENTRADO bajo el engranaje (con un pequeño hueco); si no
+    // cabe debajo (última fila) voltea encima; siempre clampeado al área del app.
+    function positionBox() {
+        const m = 8
+        const anchor = root.anchorItem
+        let x
+        let y
+        if (anchor) {
+            // mapToItem desde la esquina superior izquierda del engranaje: el
+            // rect del slot no cambia con el scale de foco/hover, así el panel
+            // no se mueve al pasar el mouse por encima.
+            const a = anchor.mapToItem(root, 0, 0)
+            x = a.x + anchor.width / 2 - box.width / 2
+            const below = a.y + anchor.height + m
+            const above = a.y - m - box.height
+            y = below + box.height <= root.height ? below : (above >= 0 ? above : below)
+        } else {
+            x = (root.width - box.width) / 2
+            y = (root.height - box.height) / 2
+        }
+        box.x = Math.max(m, Math.min(x, root.width - box.width - m))
+        box.y = Math.max(m, Math.min(y, root.height - box.height - m))
+        root.positioned = true
+    }
+
     function openFor(item, anchor) {
         root.item = item
-        const p = anchor.mapToItem(root, 0, anchor.height)
-        Qt.callLater(() => {
-            box.x = Math.max(6, Math.min(p.x, root.width - box.width - 6))
-            box.y = Math.max(6, Math.min(p.y, root.height - box.height - 6))
-        })
+        root.anchorItem = anchor
+        root.positioned = false
+        // callLater: el box nace en (0,0) y solo se pinta cuando positioned.
+        Qt.callLater(positionBox)
     }
 
     function closeMenu() {
         root.item = null
+        root.anchorItem = null
     }
 }

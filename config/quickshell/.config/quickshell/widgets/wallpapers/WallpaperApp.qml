@@ -285,7 +285,7 @@ Item {
     FolderAssignMenu {
         id: assignMenu
         anchors.fill: parent
-        onCloseRequested: assignMenu.item = null
+        onCloseRequested: assignMenu.closeMenu()
     }
 
     // ==========================================================
@@ -294,7 +294,7 @@ Item {
     Keys.onPressed: event => {
         if (assignMenu.open) {
             if (event.key === Qt.Key_Escape)
-                assignMenu.item = null
+                assignMenu.closeMenu()
             event.accepted = true
             return
         }

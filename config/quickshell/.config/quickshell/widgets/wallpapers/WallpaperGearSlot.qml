@@ -17,7 +17,7 @@ Item {
     property bool isFocus: false
 
     signal clicked(var item)
-    signal contextRequested(var item)
+    signal contextRequested(var item, Item anchor)
 
     readonly property string wpId: item ? String(item.id) : ""
     readonly property bool isCurrent: wpId !== "" && WallpaperService.currentId === wpId
@@ -244,7 +244,7 @@ Item {
             if (mouse.button === Qt.LeftButton)
                 root.clicked(root.item)
             else
-                root.contextRequested(root.item)
+                root.contextRequested(root.item, root)
         }
     }
 
