@@ -25,7 +25,7 @@ Item {
             spacing: AppTheme.paddingBase
 
             Text {
-                text: "\uf0f3  Centro de Notificaciones"
+                text: "\uf0f3  Notificaciones"
                 font.family: AppTheme.fontLayout
                 font.pixelSize: AppTheme.fontLarge
                 font.bold: true
@@ -66,9 +66,12 @@ Item {
 
                 ColumnLayout {
                     Layout.fillWidth: true
+                    Layout.minimumWidth: 0
                     spacing: 2
 
                     Text {
+                        Layout.fillWidth: true
+                        elide: Text.ElideRight
                         text: "No Molestar"
                         font.family: AppTheme.fontLayout
                         font.pixelSize: AppTheme.fontBase
@@ -76,6 +79,8 @@ Item {
                         color: AppTheme.fg
                     }
                     Text {
+                        Layout.fillWidth: true
+                        elide: Text.ElideRight
                         text: NotificationsService.dndEnabled
                             ? "Silencia notificaciones (excepto críticas)"
                             : "Recibir todas las notificaciones"
@@ -113,12 +118,17 @@ Item {
         // ─── Configuración ───
         Rectangle {
             Layout.fillWidth: true
+            // anchors.fill NO genera tamaño implicito en el padre: sin esto el
+            // Rectangle queda en alto 0/1 y su ColumnLayout interior se sale,
+            // amontonando los textos uno encima de otro.
+            implicitHeight: ajustesCol.implicitHeight + AppTheme.paddingBase * 2
             radius: AppTheme.radius
             color: AppTheme.surface
             border.width: 1
             border.color: AppTheme.borderColor
 
             ColumnLayout {
+                id: ajustesCol
                 anchors.fill: parent
                 anchors.margins: AppTheme.paddingBase
                 spacing: AppTheme.paddingSmall
@@ -137,6 +147,10 @@ Item {
 
                     ColumnLayout {
                         Layout.fillWidth: true
+                        // Sin esto la columna no baja del ancho natural de sus
+                        // hijos y los textos se desbordan encima del control de
+                        // la derecha (elide nunca llega a activarse).
+                        Layout.minimumWidth: 0
                         spacing: 2
 
                         Text {
@@ -144,12 +158,16 @@ Item {
                             font.family: AppTheme.fontLayout
                             font.pixelSize: AppTheme.fontBase
                             color: AppTheme.fg
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
                         }
                         Text {
                             text: "Mostrar toasts emergentes y mantener historial"
                             font.family: AppTheme.fontLayout
                             font.pixelSize: AppTheme.fontSmall
                             color: AppTheme.textSecondary
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
                         }
                     }
 
@@ -199,6 +217,10 @@ Item {
 
                     ColumnLayout {
                         Layout.fillWidth: true
+                        // Sin esto la columna no baja del ancho natural de sus
+                        // hijos y los textos se desbordan encima del control de
+                        // la derecha (elide nunca llega a activarse).
+                        Layout.minimumWidth: 0
                         spacing: 2
 
                         Text {
@@ -206,12 +228,16 @@ Item {
                             font.family: AppTheme.fontLayout
                             font.pixelSize: AppTheme.fontBase
                             color: AppTheme.fg
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
                         }
                         Text {
                             text: "Mostrar toasts solo en el monitor con foco (requiere reinicio)"
                             font.family: AppTheme.fontLayout
                             font.pixelSize: AppTheme.fontSmall
                             color: AppTheme.textSecondary
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
                         }
                     }
 
@@ -243,6 +269,10 @@ Item {
 
                     ColumnLayout {
                         Layout.fillWidth: true
+                        // Sin esto la columna no baja del ancho natural de sus
+                        // hijos y los textos se desbordan encima del control de
+                        // la derecha (elide nunca llega a activarse).
+                        Layout.minimumWidth: 0
                         spacing: 2
 
                         Text {
@@ -250,12 +280,16 @@ Item {
                             font.family: AppTheme.fontLayout
                             font.pixelSize: AppTheme.fontBase
                             color: AppTheme.fg
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
                         }
                         Text {
                             text: "Número máximo de notificaciones apiladas simultáneamente"
                             font.family: AppTheme.fontLayout
                             font.pixelSize: AppTheme.fontSmall
                             color: AppTheme.textSecondary
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
                         }
                     }
 
@@ -275,12 +309,14 @@ Item {
         // ─── Historial ───
         Rectangle {
             Layout.fillWidth: true
+            implicitHeight: historialCol.implicitHeight + AppTheme.paddingBase * 2
             radius: AppTheme.radius
             color: AppTheme.surface
             border.width: 1
             border.color: AppTheme.borderColor
 
             ColumnLayout {
+                id: historialCol
                 anchors.fill: parent
                 anchors.margins: AppTheme.paddingBase
                 spacing: AppTheme.paddingSmall
@@ -298,6 +334,10 @@ Item {
 
                     ColumnLayout {
                         Layout.fillWidth: true
+                        // Sin esto la columna no baja del ancho natural de sus
+                        // hijos y los textos se desbordan encima del control de
+                        // la derecha (elide nunca llega a activarse).
+                        Layout.minimumWidth: 0
                         spacing: 2
 
                         Text {
@@ -305,12 +345,16 @@ Item {
                             font.family: AppTheme.fontLayout
                             font.pixelSize: AppTheme.fontBase
                             color: AppTheme.fg
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
                         }
                         Text {
                             text: "Límite de notificaciones guardadas al recargar Quickshell"
                             font.family: AppTheme.fontLayout
                             font.pixelSize: AppTheme.fontSmall
                             color: AppTheme.textSecondary
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
                         }
                     }
 
@@ -345,6 +389,10 @@ Item {
 
                     ColumnLayout {
                         Layout.fillWidth: true
+                        // Sin esto la columna no baja del ancho natural de sus
+                        // hijos y los textos se desbordan encima del control de
+                        // la derecha (elide nunca llega a activarse).
+                        Layout.minimumWidth: 0
                         spacing: 2
 
                         Text {
@@ -352,12 +400,16 @@ Item {
                             font.family: AppTheme.fontLayout
                             font.pixelSize: AppTheme.fontBase
                             color: AppTheme.fg
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
                         }
                         Text {
-                            text: "Elimina todas las notificaciones del centro permanentemente"
+                            text: "Elimina todas las notificaciones guardadas permanentemente"
                             font.family: AppTheme.fontLayout
                             font.pixelSize: AppTheme.fontSmall
                             color: AppTheme.textSecondary
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
                         }
                     }
 
@@ -391,12 +443,14 @@ Item {
         // ─── Estadísticas ───
         Rectangle {
             Layout.fillWidth: true
+            implicitHeight: statsCol.implicitHeight + AppTheme.paddingBase * 2
             radius: AppTheme.radius
             color: AppTheme.surface
             border.width: 1
             border.color: AppTheme.borderColor
 
             ColumnLayout {
+                id: statsCol
                 anchors.fill: parent
                 anchors.margins: AppTheme.paddingBase
                 spacing: AppTheme.paddingSmall
@@ -414,6 +468,10 @@ Item {
 
                     ColumnLayout {
                         Layout.fillWidth: true
+                        // Sin esto la columna no baja del ancho natural de sus
+                        // hijos y los textos se desbordan encima del control de
+                        // la derecha (elide nunca llega a activarse).
+                        Layout.minimumWidth: 0
                         spacing: 2
 
                         Text {
@@ -421,12 +479,16 @@ Item {
                             font.family: AppTheme.fontLayout
                             font.pixelSize: AppTheme.fontBase
                             color: AppTheme.fg
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
                         }
                         Text {
                             text: "Información desde el último inicio de Quickshell"
                             font.family: AppTheme.fontLayout
                             font.pixelSize: AppTheme.fontSmall
                             color: AppTheme.textSecondary
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
                         }
                     }
                 }
@@ -456,12 +518,14 @@ Item {
         // ─── Atajos ───
         Rectangle {
             Layout.fillWidth: true
+            implicitHeight: atajosCol.implicitHeight + AppTheme.paddingBase * 2
             radius: AppTheme.radius
             color: AppTheme.surface
             border.width: 1
             border.color: AppTheme.borderColor
 
             ColumnLayout {
+                id: atajosCol
                 anchors.fill: parent
                 anchors.margins: AppTheme.paddingBase
                 spacing: AppTheme.paddingSmall
@@ -479,6 +543,10 @@ Item {
 
                     ColumnLayout {
                         Layout.fillWidth: true
+                        // Sin esto la columna no baja del ancho natural de sus
+                        // hijos y los textos se desbordan encima del control de
+                        // la derecha (elide nunca llega a activarse).
+                        Layout.minimumWidth: 0
                         spacing: 2
 
                         Text {
@@ -486,12 +554,16 @@ Item {
                             font.family: AppTheme.fontLayout
                             font.pixelSize: AppTheme.fontBase
                             color: AppTheme.fg
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
                         }
                         Text {
                             text: "Configurados en Hyprland (SUPER+N por defecto)"
                             font.family: AppTheme.fontLayout
                             font.pixelSize: AppTheme.fontSmall
                             color: AppTheme.textSecondary
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
                         }
                     }
                 }
@@ -508,13 +580,14 @@ Item {
                     Layout.fillWidth: true
                     spacing: 4
 
-                    KeybindRow { key: "SUPER + N"; action: "Abrir/cerrar centro de notificaciones" }
-                    KeybindRow { key: "Click izq. campana"; action: "Abrir centro de notificaciones" }
+                    // Solo se listan los atajos que existen de verdad. La ventana de centro de
+                    // notificaciones se eliminó, así que SUPER+N, "Esc en
+                    // centro" y Del/Backspace ya no aplican.
+                    KeybindRow { key: "Hover campana"; action: "Ver notificaciones (popup)" }
                     KeybindRow { key: "Click der. campana"; action: "Alternar No Molestar" }
                     KeybindRow { key: "Click mid. campana"; action: "Limpiar historial" }
-                    KeybindRow { key: "Hover campana"; action: "Vista rápida (popup)" }
-                    KeybindRow { key: "Esc en centro"; action: "Cerrar centro" }
-                    KeybindRow { key: "Del / Backspace"; action: "Eliminar notificación seleccionada" }
+                    KeybindRow { key: "Rueda en el popup"; action: "Subir/bajar la lista" }
+                    KeybindRow { key: "Click ✕ en la notificación"; action: "Quitarla del historial" }
                 }
             }
         }
@@ -576,6 +649,7 @@ Item {
             font.pixelSize: AppTheme.fontSmall
             color: AppTheme.textTertiary
             Layout.fillWidth: true
+            elide: Text.ElideRight
         }
     }
 }
