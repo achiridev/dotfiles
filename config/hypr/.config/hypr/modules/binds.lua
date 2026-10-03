@@ -22,7 +22,7 @@ hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + D", hl.dsp.exec_cmd(launcher))
 hl.bind(mainMod .. " + SHIFT + D", hl.dsp.exec_cmd(menu))
-hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("swaync-client -t"))
+hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("quickshell ipc call notifications toggle"))
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprpicker -a"))
 
 -- ───────── MOVER FOCO ─────────

@@ -121,9 +121,6 @@ pkill rofi 2>/dev/null || true
 # Waybar
 pkill -SIGUSR2 waybar 2>/dev/null || true
 
-# SwayNC (lo recarga el hook de wallust, redundancia por si acaso)
-pkill -SIGUSR2 swaync 2>/dev/null || true
-
 # Hyprland
 hyprctl reload 2>/dev/null || true
 

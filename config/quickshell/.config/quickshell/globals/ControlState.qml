@@ -24,6 +24,7 @@ Singleton {
     property bool launcherEnabled: true
     property bool activateEnabled: true
     property bool visualizerEnabled: true
+    property bool notificationsEnabled: true
 
     // ============================================================
     // VISIBILIDAD DEL PANEL DE CONTROL (ventana flotante)
@@ -81,5 +82,8 @@ Singleton {
         } else {
             AppState.activateMode = root.savedActivateMode > 0 ? root.savedActivateMode : 2
         }
+    }
+    onNotificationsEnabledChanged: {
+        if (!root.notificationsEnabled) NotificationsService.notificationCenterOpen = false
     }
 }

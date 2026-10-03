@@ -11,6 +11,8 @@ import qs.windows.overview
 import qs.windows.wallpapers
 import qs.windows.launcher
 import qs.windows.activate
+import qs.windows.notifications
+import qs.widgets.notifications
 
 ShellRoot {
     // Cada componente se monta/desmonta según ControlState.<x>Enabled.
@@ -19,6 +21,13 @@ ShellRoot {
     Loader {
         active: ControlState.barEnabled
         sourceComponent: Bar {}
+    }
+
+    // Toast host: per-monitor (NotificationToastHost maneja Variants internamente)
+    Loader {
+        id: toastHostLoader
+        active: ControlState.notificationsEnabled
+        sourceComponent: NotificationToastHost {}
     }
 
     Variants {
@@ -53,6 +62,10 @@ ShellRoot {
     Loader {
         active: ControlState.activateEnabled
         sourceComponent: ActivateWindow {}
+    }
+    Loader {
+        active: ControlState.notificationsEnabled
+        sourceComponent: NotificationCenter {}
     }
 
     // Panel de control: PERMANENTE, no se desactiva.

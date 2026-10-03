@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.widgets.battery
 import qs.widgets.idleinhibitor
+import qs.widgets.notifications
 import qs.widgets.powermenu
 import qs.widgets.systemstats
 
@@ -18,5 +19,6 @@ RowLayout {
     IdleInhibitor {}
     SystemStats {}
     Battery {}
+    NotificationBell {}
     PowerButton {}
 }

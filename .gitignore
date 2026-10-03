@@ -25,7 +25,6 @@ tmp/
 config/hypr/.config/hypr/modules/colors.lua
 config/kitty/.config/kitty/colors.conf
 config/rofi/.config/rofi/themes/colors.rasi
-config/swaync/.config/swaync/colors.css
 config/waybar/.config/waybar/colors.css
 config/wallust/.config/wallust/colorschemes/
 

@@ -213,6 +213,21 @@ QtObject {
     readonly property real launcherBackdropOpacity: 0
     readonly property bool launcherCloseOnFocusLoss: true
 
+    // 8. Notificaciones (toast + centro)
+    // Timeouts en segundos por urgencia (paridad con el viejo config de swaync:
+    // normal 8s, low 5s, critical nunca). Se aplican cuando el app no envía
+    // expireTimeout explícito (lo habitual con notify-send, que manda -1).
+    readonly property int notificationsTimeoutNormal: 8
+    readonly property int notificationsTimeoutLow: 5
+    readonly property int notificationsToastWidth: 420
+    readonly property bool notificationsBlur: true
+    readonly property bool notificationsBackdrop: true
+    readonly property real notificationsBackdropOpacity: 0.35
+    readonly property bool notificationsCloseOnFocusLoss: true
+    readonly property int notificationsToastMaxVisible: 3
+    readonly property int notificationsToastGap: 8
+    readonly property int notificationsCenterWidth: 460
+
     wallustFile: FileView {
         path: Qt.resolvedUrl("file://" + Quickshell.env("HOME") + "/.cache/wallust/colors.json")
         blockLoading: true

@@ -92,6 +92,15 @@ hl.layer_rule({
 	ignore_alpha = 0.2,
 })
 
+-- Centro de notificaciones (Quickshell): namespace "quickshell:notifications-blur"
+-- definido en windows/notifications/NotificationCenter.qml.
+hl.layer_rule({
+	name = "notifications-blur",
+	match = { namespace = "^quickshell:notifications-blur$" },
+	blur = false,
+	ignore_alpha = 0.2,
+})
+
 -- Bar (Quickshell): namespace "quickshell-bar" en windows/bar/Bar.qml. La
 -- barra es semitransparente (alpha bg 0.55) sobre WlrLayer.Top; sin blur no
 -- hace un pase de blur por frame 24/7 sobre todo lo que pasa por debajo.

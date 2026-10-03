@@ -142,6 +142,13 @@ Item {
             onToggled: () => { ControlState.visualizerEnabled = !ControlState.visualizerEnabled }
         }
 
+        ToggleRow {
+            label: "Notificaciones"
+            icon: String.fromCodePoint(0xf0f3) // campana
+            checked: ControlState.notificationsEnabled
+            onToggled: () => { ControlState.notificationsEnabled = !ControlState.notificationsEnabled }
+        }
+
         // Espaciador para mantener el contenido arriba.
         Item { Layout.fillHeight: true }
 

@@ -31,7 +31,8 @@ FloatingWindow {
     readonly property var sections: [
         { icon: String.fromCodePoint(0xf0c9), label: "Componentes" },
         { icon: String.fromCodePoint(0xf1fc), label: "Colores" },   // pincel/paleta
-        { icon: String.fromCodePoint(0xf07b), label: "Energía" }
+        { icon: String.fromCodePoint(0xf07b), label: "Energía" },
+        { icon: String.fromCodePoint(0xf0f3), label: "Notificaciones" }
     ]
 
     // Identificador para la windowrule de Hyprland (float + center).
@@ -258,6 +259,10 @@ FloatingWindow {
                     Loader {
                         active: panel.currentSection === 2
                         sourceComponent: EnergySection {}
+                    }
+                    Loader {
+                        active: panel.currentSection === 3
+                        sourceComponent: NotificationsSection {}
                     }
                 }
             }

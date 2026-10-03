@@ -156,7 +156,7 @@ Item {
             "\"" + Quickshell.env("HOME") + "/dotfiles/bin/.local/bin/wallust-keyboard.sh\" >/dev/null 2>&1; " +
             "kitty @ set-colors -a ~/.config/kitty/colors.conf 2>/dev/null || true; " +
             "hyprctl reload 2>/dev/null || true; " +
-            "pkill -SIGUSR2 swaync 2>/dev/null || true; pkill rofi 2>/dev/null || true; " +
+            "pkill rofi 2>/dev/null || true; " +
             "exit $CS_OK"
         ]
         themeProcess.running = true
@@ -226,7 +226,7 @@ Item {
             "\"" + Quickshell.env("HOME") + "/dotfiles/bin/.local/bin/wallust-keyboard.sh\" >/dev/null 2>&1; " +
             "kitty @ set-colors -a ~/.config/kitty/colors.conf 2>/dev/null || true; " +
             "hyprctl reload 2>/dev/null || true; " +
-            "pkill -SIGUSR2 swaync 2>/dev/null || true; pkill rofi 2>/dev/null || true; " +
+            "pkill rofi 2>/dev/null || true; " +
             "exit $CS_OK"
         ]
         customApplyProcess.running = true
