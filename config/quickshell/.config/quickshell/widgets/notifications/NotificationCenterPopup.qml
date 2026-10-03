@@ -250,6 +250,15 @@ PopupWindow {
         target: "notifications"
         function toggleDND(): void { NotificationsService.toggleDND() }
         function clear(): void { NotificationsService.clearHistory() }
+        // Solo lectura, para depurar sin necesidad del ratón:
+        //   quickshell ipc call notifications status
+        function status(): string {
+            return JSON.stringify({
+                unread: NotificationsService.unreadCount,
+                dnd: NotificationsService.dndEnabled,
+                themes: NotificationThemes.allowed
+            })
+        }
     }
 
     // ─── Animaciones (idénticas a VolumePopup) ───

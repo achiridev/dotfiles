@@ -12,8 +12,10 @@ HIGH_STATE="/tmp/battery_80_warned"
 # BATERIA BAJA (≤20%)
 ############################
 # Solo avisar si está descargando y es <= 20%
+# El aviso usa el tema "battery" (themes/BatteryTheme.qml): no expira solo,
+# color por franja y medidor de nivel. El sonido va aparte con paplay.
 if [ "$STATUS" = "Discharging" ] && [ "$LEVEL" -le 20 ] && [ ! -f "$LOW_STATE" ]; then
-    notify-send -a "Bateria" -u critical "⚠ Batería baja" "Batería al ${LEVEL}%"
+    notify-send -a "battery" -u critical "⚠ Batería baja" "Batería al ${LEVEL}%"
     paplay  ~/.config/dunst/sounds/sourcream.wav
     touch "$LOW_STATE"
 fi
@@ -26,7 +28,7 @@ fi
 # ⚡ BATERÍA ALTA (≥80%)
 ############################
 if [ "$STATUS" = "Charging" ] && [ "$LEVEL" -ge 80 ] && [ ! -f "$HIGH_STATE" ]; then
-    notify-send -a "BateriaAlta" -u normal "⚡ Batería al 80%" "Desconecta el cargador"
+    notify-send -a "batteryFull" -u normal "⚡ Batería al 80%" "Desconecta el cargador"
     paplay /usr/share/sounds/freedesktop/stereo/complete.oga
     touch "$HIGH_STATE"
 fi

@@ -52,12 +52,59 @@ Item {
     // progreso/hora y para pausar/reanudar el timer real.
     property int sId: 0
 
+    // ──────────────────────────────────────────────────────────────
+    // Tema (opcional)
+    //
+    // Lo resuelve el registro NotificationThemes por appName. Si la
+    // notificación no tiene tema, `theme` es null y todo lo de abajo cae
+    // al comportamiento normal. Ver themes/README.md.
+    // ──────────────────────────────────────────────────────────────
+    property var theme: null
+
+    // ¿Hay tema? Marca el camino de color de acento y timeout.
+    readonly property bool hasTheme: toast.theme !== null
+
+    // Color de acento: el del tema si existe, si no el de la urgencia.
+    readonly property color accentColor: toast.hasTheme
+        ? toast.theme.accent
+        : toast.urgencyColor
+
+    // Título/cuerpo: los del tema si la notificación no los trajo.
+    readonly property string displaySummary: toast.sSummary
+        || (toast.hasTheme ? toast.theme.defaultSummary : "Notificación")
+    readonly property string displayBody: toast.sBody
+        || (toast.hasTheme ? toast.theme.defaultBody : "")
+
+    // Icono: el del tema si existe.
+    readonly property string displayIcon: toast.sAppIcon
+        || (toast.hasTheme && toast.theme.icon ? toast.theme.icon : "")
+
+    // Glifo de fuente del tema (p. ej. batería).
+    //
+    // Va aparte de displayIcon a propósito: displayIcon se resuelve con
+    // Quickshell.iconPath(), que busca un ARCHIVO con ese nombre. Un glifo
+    // de fuente (U+F240) no existe como archivo, así que por ahí salía un
+    // tofu y el aviso "Could not load icon". Los glifos van como Text con
+    // AppTheme.fontMono, que es como la barra ya pinta la campana (U+F0F3).
+    readonly property string themeGlyph: (toast.hasTheme && toast.theme.glyph)
+        ? toast.theme.glyph : ""
+
+    // El tema puede querer su propio medidor (barra de nivel de batería).
+    readonly property bool showGauge: toast.hasTheme && toast.theme.showGauge
+    readonly property real gaugeValue: toast.hasTheme ? toast.theme.gaugeValue : 0
+
     // Hora de envío en ms epoch (la pinta el servicio al recibirla) para la
     // hora relativa. OJO: debe ser real, no int — un timestamp en ms (~1.7e12)
     // desborda el int de 32 bits (~2.1e9) y daría un valor corrupto.
     property real sSentAt: 0
 
     function resolveIcon() {
+        if (toast.displayIcon) {
+            if (toast.displayIcon.startsWith("file:") || toast.displayIcon.startsWith("/"))
+                return toast.displayIcon;
+            const t = Quickshell.iconPath(toast.displayIcon);
+            if (t) return t;
+        }
         if (toast.sAppIcon) {
             if (toast.sAppIcon.startsWith("file:") || toast.sAppIcon.startsWith("/"))
                 return toast.sAppIcon;
@@ -181,7 +228,7 @@ Item {
             id: urgencyLine
             width: parent.width
             height: 3
-            color: toast.urgencyColor
+            color: toast.accentColor
             anchors.top: parent.top
             anchors.horizontalCenter: parent.horizontalCenter
             Behavior on color { ColorAnimation { duration: 200 } }
@@ -252,7 +299,8 @@ Item {
 
                 Loader {
                     id: appIconLoader
-                    sourceComponent: toast.iconSource ? iconComponent : iconFallback
+                    sourceComponent: toast.themeGlyph ? glyphComponent
+                                  : (toast.iconSource ? iconComponent : iconFallback)
                     Layout.preferredWidth: 24
                     Layout.preferredHeight: 24
                 }
@@ -260,7 +308,7 @@ Item {
                 Text {
                     id: summaryText
                     Layout.fillWidth: true
-                    text: toast.sSummary
+                    text: toast.displaySummary
                     font.family: AppTheme.fontLayout
                     font.pixelSize: AppTheme.fontBase
                     font.bold: true
@@ -309,8 +357,8 @@ Item {
             Text {
                 id: bodyText
                 Layout.fillWidth: true
-                visible: toast.sBody && toast.sBody.length > 0
-                text: toast.sBody
+                visible: toast.displayBody && toast.displayBody.length > 0
+                text: toast.displayBody
                 font.family: AppTheme.fontLayout
                 font.pixelSize: AppTheme.fontSmall
                 color: toast.textColor
@@ -318,6 +366,14 @@ Item {
                 textFormat: Text.RichText
                 maximumLineCount: 10
                 onLinkActivated: (url) => Qt.openUrlExternally(url)
+            }
+
+            // Medidor del tema (p. ej. barra de nivel de batería).
+            // Solo visible si el tema lo pide (showGauge).
+            Loader {
+                id: gaugeLoader
+                visible: toast.showGauge
+                sourceComponent: gaugeComponent
             }
 
             // Imagen adjunta
@@ -347,14 +403,14 @@ Item {
                 Layout.fillWidth: true
                 height: 3
                 radius: 1.5
-                color: Qt.alpha(toast.urgencyColor, 0.3)
+                color: Qt.alpha(toast.accentColor, 0.3)
                 visible: toast.hasAutoExpire && !toast.closing
                 Rectangle {
                     id: progressFill
                     height: parent.height
                     width: parent.width * toast.progress
                     radius: 1.5
-                    color: toast.urgencyColor
+                    color: toast.accentColor
                     Behavior on width { NumberAnimation { duration: 100 } }
                 }
             }
@@ -372,6 +428,19 @@ Item {
         }
     }
 
+    // Glifo del tema, pintado como texto con la fuente de la barra
+    // (AppTheme.fontMono → JetBrainsMono Nerd Font, que sí trae los
+    // glifos de Font Awesome en el rango U+F0xx).
+    Component {
+        id: glyphComponent
+        Text {
+            text: toast.themeGlyph
+            font.family: AppTheme.fontMono
+            font.pixelSize: AppTheme.fontBase
+            color: toast.accentColor
+        }
+    }
+
     Component {
         id: iconFallback
         Text {
@@ -379,6 +448,26 @@ Item {
             font.family: AppTheme.fontMono
             font.pixelSize: AppTheme.fontBase
             color: toast.urgencyColor
+        }
+    }
+
+    // Medidor del tema. ancho explícito: los items cargados por Loader
+    // no son hijos directos del ColumnLayout, así que Layout.* no aplican.
+    Component {
+        id: gaugeComponent
+        Rectangle {
+            width: toast.contentWidth
+            height: 8
+            radius: 4
+            color: Qt.alpha(toast.accentColor, 0.22)
+            Rectangle {
+                id: gaugeFill
+                height: parent.height
+                width: parent.width * Math.max(0.02, Math.min(1, toast.gaugeValue))
+                radius: parent.radius
+                color: toast.accentColor
+                Behavior on width { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+            }
         }
     }
 
@@ -510,8 +599,14 @@ Item {
         if (!n) { destroy(); return; }
 
         toast.sId = n.id;
-        toast.sSummary = n.summary || n.appName || "Notificación";
         toast.sAppName = n.appName;
+
+        // Resolver tema por appName ANTES de leer summary/body/icon, porque
+        // el tema puede aportarlos si la notificación no los trajo.
+        toast.theme = NotificationThemes.resolve(n.appName);
+
+        toast.sSummary = n.summary
+            || (toast.hasTheme ? toast.theme.defaultSummary : "");
         toast.sAppIcon = n.appIcon;
         toast.sDesktopEntry = n.desktopEntry;
         toast.sBody = n.body;
@@ -535,7 +630,10 @@ Item {
 
         // Cuenta atrás propia (paridad con el servicio: normal 8s, low 5s,
         // critical nunca). Se congela aquí para que el toast sea autónomo.
-        toast.totalMs = NotificationsService.timeoutFor(n);
+        // Un TEMA puede mandar su propio timeout (p. ej. batería baja = 0,
+        // no expira nunca). Sin tema, el del servicio.
+        toast.totalMs = toast.hasTheme ? toast.theme.timeoutMs
+                                       : NotificationsService.timeoutFor(n);
         toast.deadline = Date.now() + toast.totalMs;
         toast.frozen = toast.totalMs;
         toast.progress = toast.totalMs > 0 ? 1 : 0;

@@ -17,30 +17,55 @@ Singleton {
     id: root
 
     // ──────────────────────────────────────────────────────────────
-    // Filtros de paridad con swaync (config.json → "scripts" exec:true)
-    // Estas notificaciones son "tragadas": ni toast ni historial.
-    // - "Bateria"/"BateriaAlta": el script notificacion_bateria.sh ya
-    //   reproduce sonido con paplay, no hace falta notificación.
-    // - Aviso pre-bloqueo de hypridle (low, "Inactividad detectada").
+    // Retención: TODO se guarda, sin excepciones.
+    //
+    // Antes había un filtro de "paridad con swaync" que se tragaba algunas
+    // notificaciones (batería, aviso de inactividad). Se eliminó: el usuario
+    // pidió que ninguna se pierda. isSwallowed() queda como punto de extensión
+    // documentado, pero no traga nada.
+    //
+    // Las dos DURACIONES están desacopladas a propósito:
+    //   * timeoutFor()      → cuánto vive el TOAST en pantalla
+    //   * historyTimeoutMs()→ cuánto vive en el HISTORIAL del popup
+    // Antes eran la misma, así que "8s" quitaba la notificación del centro.
     // ──────────────────────────────────────────────────────────────
     function isSwallowed(notification) {
-        if (notification.appName === "Bateria" || notification.appName === "BateriaAlta")
-            return true;
-        if (notification.urgency === NotificationUrgency.Low
-            && notification.summary.indexOf("Inactividad detectada") >= 0)
-            return true;
+        // Extensión para el futuro. Ahora mismo: no traga nada.
         return false;
     }
 
-    // Timeout efectivo en ms. Lo mandan los apps vía D-Bus (expireTimeout en
-    // SEGUNDOS, -1 = sin expiración, lo que hace notify-send por defecto).
-    // Paridad con swaync: normal 8s, low 5s, critical nunca (timeout 0).
-    function effectiveTimeoutMs(notification) {
-        if (notification.urgency === NotificationUrgency.Critical) return 0; // persiste
+    // Timeout del TOAST (lo que se ve en pantalla), en ms.
+    // 0 = no se cierra solo.
+    function timeoutFor(notification) {
+        // Un TEMA manda: p. ej. batería baja usa 0 = persistente.
+        const theme = root.themeForNotification(notification);
+        if (theme) return theme.timeoutMs;
+
+        if (notification.urgency === NotificationUrgency.Critical) return 0;
         if (notification.expireTimeout > 0) return notification.expireTimeout * 1000;
         if (notification.urgency === NotificationUrgency.Low)
             return AppTheme.notificationsTimeoutLow * 1000;
         return AppTheme.notificationsTimeoutNormal * 1000;
+    }
+
+    // Timeout del HISTORIAL (lo que queda guardado en el popup), en ms.
+    // 0 = permanente: solo lo quita el usuario.
+    function historyTimeoutMs(notification) {
+        // ⚠️ Las notificaciones CON ACCIONES sí expiran, y es a propósito.
+        // `notify-send -A ...` implica --wait: el script queda BLOQUEADO
+        // esperando un clic (ver bin/.local/bin/screenshot.sh). Si la
+        // notificación no se cerrara nunca, el script se quedaría colgado
+        // para siempre. Es la única excepción a "todo se guarda".
+        if (notification.actions && notification.actions.length > 0)
+            return root.timeoutFor(notification);
+
+        // Resto: permanente.
+        return 0;
+    }
+
+    // Tema aplicable a una notificación (por appName), o null.
+    function themeForNotification(notification) {
+        return notification ? NotificationThemes.resolve(notification.appName) : null;
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -66,49 +91,41 @@ Singleton {
         // Manejo de notificaciones entrantes
         // ──────────────────────────────────────────────────────────
         onNotification: (notification) => {
-            // 1) Tragadas por regla de paridad con swaync: ni toast ni
-            //    historial (el script ya reproduce su propio sonido).
+            // 1) Punto de extension: isSwallowed() ya no traga nada, pero si
+            //    algun dia se usa, sale aqui y no se guarda nada.
             if (root.isSwallowed(notification)) {
                 notification.tracked = false;
                 return;
             }
 
-            const isTransient = notification.transient;
-
-            // 2) Do Not Disturb: NO se muestra toast, pero la notificación se guarda
-            //    en el centro. Antes se destruía y se perdía para siempre.
-            //    La urgency critical siempre se muestra.
+            // 2) Do Not Disturb: NO se muestra toast, pero SI se guarda.
+            //    La critical siempre se muestra.
             const blockedByDnd = root.dndEnabled
                 && notification.urgency !== NotificationUrgency.Critical;
 
-            // 3) Solo entra al historial (modelo) lo que debe persistir.
-            //    - un transient NO se guarda (pero sí se muestra como toast):
-            //      los OSD de volumen/brillo no deben llenar el centro.
-            //    - lo bloqueado por DND SÍ se guarda: solo se le calla el
-            //      toast, así no se pierde nada.
-            //    Untracked = Quickshell destruye el objeto al salir del
-            //    handler, así que ese toast debe vivir de su snapshot.
-            const tracked = !isTransient;
-            notification.tracked = tracked;
+            // 3) TODO se trackea, incluidos los transient y los de DND.
+            //    tracked = true es lo que mantiene el objeto vivo y lo mete
+            //    en el historial del popup. Untracked = Quickshell destruye
+            //    el Notification al salir del handler, o sea que se pierde.
+            notification.tracked = true;
 
-            // Estado del timer de expiración, keyeado por id.
-            // (El objeto Notification se destruye al cerrarse, así que el
-            // estado vive aquí, no en el propio notification.)
-            // El barrido (Timer del servicio) se encarga de expirar.
-            const ms = root.effectiveTimeoutMs(notification);
+            // Estado de expiracion del HISTORIAL, keyeado por id.
+            // (El objeto Notification se destruye al cerrarse, asi que el
+            // estado vive aqui y no en el propio notification.)
             root._expire[notification.id] = {
-                total: ms,
+                total: root.historyTimeoutMs(notification),
                 started: Date.now(),
                 paused: false,
                 remaining: 0,
-                history: tracked
+                history: true
             };
 
-            // Límite de historial: se expira la más antigua (no la que llega)
+            // Red de seguridad por memoria: se descarta la mas antigua al
+            // superar historyLimit (500). No se nota en el uso normal.
             root.enforceHistoryLimit();
 
-            // Señal para UI (toast, badge, etc.).
-            // DND bloquea el toast, pero no el historial.
+            // Senal para UI (toast, badge). DND silencia el toast, no el
+            // historial.
             if (!blockedByDnd)
                 root.notificationReceived(notification);
         }
@@ -139,7 +156,11 @@ Singleton {
     // Estado y API pública
     // ──────────────────────────────────────────────────────────────
     property bool dndEnabled: false
-    property int historyLimit: 100
+
+    // Red de seguridad por memoria, NO una política de limpieza: todo se
+    // guarda hasta que el usuario lo quita. Al superar este número se
+    // descarta la más antigua. 500 es de sobra para el uso normal.
+    property int historyLimit: 500
 
     // Signal para que toasts reaccionen
     signal notificationReceived(var notification)
@@ -207,6 +228,10 @@ Singleton {
 
     // Barrido: expira lo vencido. La poda del modelo la hace pruneExpire()
     // desde las señales del modelo (aquí la lista puede ir atrasada).
+    // Expiración del HISTORIAL. Solo actúa sobre lo que tiene total > 0, o sea
+    // las notificaciones CON ACCIONES (ver historyTimeoutMs). El resto tiene
+    // total = 0 (permanentes) y aquí no se tocan: viven hasta que el usuario
+    // las quite.
     function _sweepExpire() {
         const now = Date.now();
         let expired = false;
@@ -219,14 +244,8 @@ Singleton {
                     n.expire();
                     expired = true;
                 }
-                // Si no está en el modelo (transient / DND) no hay nada que
-                // cerrar aquí: su toast lleva su propia cuenta atrás.
                 delete root._expire[key];
-                continue;
             }
-            // Red de seguridad ante entradas huérfanas.
-            if (info.history && now - info.started > 3600000)
-                delete root._expire[key];
         }
         if (expired) root.syncHistoryModel();
     }
@@ -255,12 +274,6 @@ Singleton {
             delete root._expire[id];
             root.syncHistoryModel();
         }
-    }
-
-    // Timeout efectivo en ms de una notificación (misma política que aplica el
-    // servicio al recibirla). Lo consultan los toasts para su cuenta atrás.
-    function timeoutFor(notification) {
-        return notification ? root.effectiveTimeoutMs(notification) : 0;
     }
 
     function sentAt(id) {

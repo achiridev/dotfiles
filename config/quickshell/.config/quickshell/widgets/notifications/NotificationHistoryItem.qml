@@ -204,6 +204,11 @@ Item {
                 id: actionsLoader
                 property var actionList: item.sActions
                 readonly property real compWidth: item.contentWidth
+                // Los items dentro de un Component se evalúan fuera del
+                // árbol: leer item.<color> ahí devolvía undefined
+                // ("Unable to assign [undefined] to QColor").
+                readonly property color actionBorder: item.borderColor
+                readonly property color actionText: item.textColor
                 visible: item.isExpanded && item.sActions.length > 0
                 sourceComponent: actionsComponent
             }
@@ -279,14 +284,14 @@ Item {
                         radius: AppTheme.radiusSmall
                         color: AppTheme.surface
                         border.width: 1
-                        border.color: item.borderColor
+                        border.color: actionsLoader.actionBorder
                         Text {
                             anchors.centerIn: parent
                             text: actionsLoader.actionList[index]
                                 ? actionsLoader.actionList[index].text : ""
                             font.family: AppTheme.fontLayout
                             font.pixelSize: AppTheme.fontSmall
-                            color: item.textColor
+                            color: actionsLoader.actionText
                             elide: Text.ElideRight
                         }
                     }
