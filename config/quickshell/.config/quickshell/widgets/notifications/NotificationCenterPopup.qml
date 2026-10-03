@@ -1,10 +1,13 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.Notifications
 
 import qs.globals
 import qs.services
+import qs.widgets.notifications
 
 // widgets/notifications/NotificationCenterPopup.qml
 // Popup compacto al hacer hover en la campana (estilo VolumePopup)
@@ -142,28 +145,66 @@ PopupWindow {
                 opacity: 0.3
             }
 
-            // ─── Lista compacta (máx 5 items) ───
-            ColumnLayout {
-                id: recentList
+            // ─── Lista con scroll ───
+            //
+            // Flickable + Column + Repeater (NO ListView): con ListView los
+            // roles del delegate se asignan después de Component.onCompleted
+            // y el cambio de `modelData` no siempre emite su señal, así que
+            // el item se quedaba con el snapshot vacío ("Desconocido" /
+            // "(sin título)"). Con Repeater la inyección de modelData sí
+            // funciona. Flickable aporta el scroll (barra + rueda nativos).
+            //
+            // El alto visible está acotado a ~5 items: el resto se alcanza
+            // con la rueda o arrastrando la barra.
+            Flickable {
+                id: scrollArea
                 Layout.fillWidth: true
-                spacing: 4
+                Layout.preferredHeight: {
+                    const visible = Math.min(NotificationsService.unreadCount,
+                                              AppTheme.notificationsHistoryMaxVisible);
+                    if (visible <= 0) return 0;
+                    return visible * (AppTheme.notificationsHistoryRowHeight
+                                      + AppTheme.paddingSmall) - AppTheme.paddingSmall;
+                }
+                Layout.minimumHeight: 0
+                visible: NotificationsService.unreadCount > 0
 
-                Repeater {
-                    // historyModel es una lista plana (values del modelo del
-                    // server), así que el Repeater ya inyecta modelData.
-                    model: Math.min(NotificationsService.unreadCount, 5)
-                    delegate: NotificationHistoryItem {
-                        width: recentList.width
-                        isExpanded: false
-                        Layout.fillWidth: true
+                contentWidth: width
+                contentHeight: recentColumn.implicitHeight
+                clip: true
+                boundsBehavior: Flickable.StopAtBounds
+
+                Column {
+                    id: recentColumn
+                    width: scrollArea.width
+                    spacing: AppTheme.paddingSmall
+
+                    // La notificación se pasa EXPLÍCITAMENTE por índice en lugar de
+                    // confiar en el rol `modelData`: con este Repeater el rol
+                    // llegaba `undefined` (el item se quedaba con su snapshot
+                    // vacío: "Desconocido" / "(sin título)"), y en un ListView
+                    // Qt asigna los roles después de Component.onCompleted sin
+                    // que el cambio de modelData emita su señal. Indexando el
+                    // array directamente no depende de nada de eso.
+                    Repeater {
+                        model: NotificationsService.historyNewestFirst
+                        delegate: NotificationHistoryItem {
+                            required property int index
+                            width: recentColumn.width
+                            height: isExpanded ? expandedHeight : collapsedHeight
+                            notification: NotificationsService.historyNewestFirst[index]
+                        }
                     }
                 }
 
-                // "Ver más" si hay más de 5
-                Loader {
-                    id: moreLoader
-                    visible: NotificationsService.unreadCount > 5
-                    sourceComponent: moreComponent
+                // Barra de scroll: solo si hay más items que los visibles
+                ScrollBar.vertical: ScrollBar {
+                    width: 6
+                    policy: ScrollBar.AsNeeded
+                    contentItem: Rectangle {
+                        radius: 3
+                        color: Qt.alpha(AppTheme.fg, 0.3)
+                    }
                 }
             }
 
@@ -172,56 +213,6 @@ PopupWindow {
                 id: emptyLoader
                 visible: NotificationsService.unreadCount === 0
                 sourceComponent: emptyComponent
-            }
-
-            // ─── Footer: abrir centro completo ───
-            MouseArea {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 32
-                cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    NotificationsService.notificationCenterOpen = true;
-                    popup.requestOpen = false;
-                }
-                Rectangle {
-                    id: openCenterBg
-                    anchors.fill: parent
-                    anchors.margins: 2
-                    radius: AppTheme.radiusSmall
-                    color: AppTheme.surface
-                    border.width: 1
-                    border.color: AppTheme.borderColor
-                    Text {
-                        anchors.centerIn: parent
-                        text: "\uf05a  Abrir centro de notificaciones"
-                        font.family: AppTheme.fontLayout
-                        font.pixelSize: AppTheme.fontSmall
-                        color: AppTheme.fg
-                    }
-                }
-                // parent en el handler es el MouseArea → id propio en el Rectangle.
-                onEntered: openCenterBg.color = AppTheme.bgModuleHover
-                onExited: openCenterBg.color = AppTheme.surface
-            }
-        }
-    }
-
-    Component {
-        id: moreComponent
-        MouseArea {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 28
-            cursorShape: Qt.PointingHandCursor
-            onClicked: {
-                NotificationsService.notificationCenterOpen = true;
-                popup.requestOpen = false;
-            }
-            Text {
-                anchors.centerIn: parent
-                text: "+ " + (NotificationsService.unreadCount - 5) + " más..."
-                font.family: AppTheme.fontLayout
-                font.pixelSize: AppTheme.fontTiny
-                color: AppTheme.textSecondary
             }
         }
     }
@@ -246,6 +237,19 @@ PopupWindow {
                 color: AppTheme.textSecondary
             }
         }
+    }
+
+    // ─── IPC ───
+    //
+    // Este handler vivía en la ventana del centro (que se eliminó). Vive
+    // aquí porque el popup está siempre montado dentro de la campana, así
+    // que el target "notifications" sigue respondiendo:
+    //   quickshell ipc call notifications toggleDND
+    //   quickshell ipc call notifications clear
+    IpcHandler {
+        target: "notifications"
+        function toggleDND(): void { NotificationsService.toggleDND() }
+        function clear(): void { NotificationsService.clearHistory() }
     }
 
     // ─── Animaciones (idénticas a VolumePopup) ───

@@ -83,7 +83,6 @@ Singleton {
             AppState.activateMode = root.savedActivateMode > 0 ? root.savedActivateMode : 2
         }
     }
-    onNotificationsEnabledChanged: {
-        if (!root.notificationsEnabled) NotificationsService.notificationCenterOpen = false
-    }
+    // Ya no hay ventana de centro de notificaciones que cerrar; el popup de
+    // hover se gestiona solo con visible + el HoverHandler de la campana.
 }

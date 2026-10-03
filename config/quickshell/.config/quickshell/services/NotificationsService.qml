@@ -66,28 +66,32 @@ Singleton {
         // Manejo de notificaciones entrantes
         // ──────────────────────────────────────────────────────────
         onNotification: (notification) => {
-            // 1) Tragadas por regla de paridad con swaync
+            // 1) Tragadas por regla de paridad con swaync: ni toast ni
+            //    historial (el script ya reproduce su propio sonido).
             if (root.isSwallowed(notification)) {
                 notification.tracked = false;
                 return;
             }
 
-            // 2) Transientes (marcadas por el app como temporales)
-            if (notification.transient) {
-                notification.tracked = false;
-                return;
-            }
+            const isTransient = notification.transient;
 
-            // 3) Do Not Disturb: solo deja pasar critical
-            if (root.dndEnabled && notification.urgency !== NotificationUrgency.Critical) {
-                notification.tracked = false;
-                return;
-            }
+            // 2) Do Not Disturb: NO se muestra toast, pero la notificación se guarda
+            //    en el centro. Antes se destruía y se perdía para siempre.
+            //    La urgency critical siempre se muestra.
+            const blockedByDnd = root.dndEnabled
+                && notification.urgency !== NotificationUrgency.Critical;
 
-            // Trackear: esto la guarda en trackedNotifications y evita que se destruya
-            notification.tracked = true;
+            // 3) Solo entra al historial (modelo) lo que debe persistir.
+            //    - un transient NO se guarda (pero sí se muestra como toast):
+            //      los OSD de volumen/brillo no deben llenar el centro.
+            //    - lo bloqueado por DND SÍ se guarda: solo se le calla el
+            //      toast, así no se pierde nada.
+            //    Untracked = Quickshell destruye el objeto al salir del
+            //    handler, así que ese toast debe vivir de su snapshot.
+            const tracked = !isTransient;
+            notification.tracked = tracked;
 
-            // Estado del timer de auto-expiración, keyeado por id.
+            // Estado del timer de expiración, keyeado por id.
             // (El objeto Notification se destruye al cerrarse, así que el
             // estado vive aquí, no en el propio notification.)
             // El barrido (Timer del servicio) se encarga de expirar.
@@ -97,17 +101,37 @@ Singleton {
                 started: Date.now(),
                 paused: false,
                 remaining: 0,
-                seen: false
+                history: tracked
             };
 
             // Límite de historial: se expira la más antigua (no la que llega)
             root.enforceHistoryLimit();
 
-            // Sincronizar modelo de historial / contador
-            root.syncHistoryModel();
+            // Señal para UI (toast, badge, etc.).
+            // DND bloquea el toast, pero no el historial.
+            if (!blockedByDnd)
+                root.notificationReceived(notification);
+        }
+    }
 
-            // Señal para UI (toast, badge, etc.)
-            root.notificationReceived(notification);
+    // ──────────────────────────────────────────────────────────────
+    // Reactividad del modelo
+    //
+    // trackedNotifications actualiza de forma DIFERIDA respecto a
+    // `tracked = true`: leer `.values` dentro de onNotification devuelve
+    // todavía la lista vieja (por eso unreadCount daba 0 y el badge de la
+    // campana nunca aparecía). Aquí se sincroniza con las señales reales
+    // del modelo, que es cuando la lista ya está al día.
+    // ──────────────────────────────────────────────────────────────
+    Connections {
+        target: server.trackedNotifications
+        function onObjectInsertedPost(object, index) {
+            root.syncHistoryModel();
+            root.pruneExpire();
+        }
+        function onObjectRemovedPost(object, index) {
+            root.syncHistoryModel();
+            root.pruneExpire();
         }
     }
 
@@ -181,37 +205,28 @@ Singleton {
         return idx >= 0 ? server.trackedNotifications.values[idx] : null;
     }
 
-    // Barrido: expira lo vencido y poda lo que ya no está en el modelo.
+    // Barrido: expira lo vencido. La poda del modelo la hace pruneExpire()
+    // desde las señales del modelo (aquí la lista puede ir atrasada).
     function _sweepExpire() {
         const now = Date.now();
         let expired = false;
         for (const key in root._expire) {
             const info = root._expire[key];
             if (!info) { delete root._expire[key]; continue; }
-            if (info.total > 0 && !info.paused) {
-                const id = Number(key);
-                if (now - info.started >= info.total) {
-                    const n = root.byId(id);
-                    if (n) n.expire();
-                    delete root._expire[key];
+            if (info.total > 0 && !info.paused && now - info.started >= info.total) {
+                const n = root.byId(Number(key));
+                if (n) {
+                    n.expire();
                     expired = true;
-                    continue;
                 }
-            }
-            // Poda: la notificación ya no está en el modelo (dismiss, action,
-            // cierre remoto...) → su estado ya no sirve.
-            //
-            // OJO: `tracked = true` actualiza trackedNotifications de forma
-            // diferida, así que una entrada recién creada puede no aparecer
-            // todavía en el modelo. Por eso solo se poda si ya la vimos ahí
-            // (seen), o si es mucho más vieja que su timeout (evita fugas en
-            // el caso de que se cierre antes de llegar al modelo).
-            const pos = root.findIndexById(Number(key));
-            if (pos >= 0) {
-                info.seen = true;
-            } else if (info.seen || now - info.started > info.total + 600000) {
+                // Si no está en el modelo (transient / DND) no hay nada que
+                // cerrar aquí: su toast lleva su propia cuenta atrás.
                 delete root._expire[key];
+                continue;
             }
+            // Red de seguridad ante entradas huérfanas.
+            if (info.history && now - info.started > 3600000)
+                delete root._expire[key];
         }
         if (expired) root.syncHistoryModel();
     }
@@ -242,8 +257,10 @@ Singleton {
         }
     }
 
-    function expireInfo(id) {
-        return root._expire[id];
+    // Timeout efectivo en ms de una notificación (misma política que aplica el
+    // servicio al recibirla). Lo consultan los toasts para su cuenta atrás.
+    function timeoutFor(notification) {
+        return notification ? root.effectiveTimeoutMs(notification) : 0;
     }
 
     function sentAt(id) {
@@ -294,13 +311,26 @@ Singleton {
     }
 
     // ──────────────────────────────────────────────────────────────
-    // Centro de notificaciones (estado de ventana)
+    // Estado para la UI (campana + popup de hover)
+    //
+    // Ya no hay ventana de centro de notificaciones: todo se ve desde el
+    // popup que aparece al hacer hover en la campana.
     // ──────────────────────────────────────────────────────────────
-    property bool notificationCenterOpen: false
 
-    // Contador y modelo para binding en UI (la campana, el popup, el centro)
+    // Contador y modelo para binding en UI (la campana, el popup)
     property int unreadCount: 0
     property var historyModel: []
+
+    // Historial del más reciente al más antiguo.
+    //
+    // trackedNotifications.values llega en orden antiguo→reciente (índice 0 =
+    // más viejo), que es lo que usa enforceHistoryLimit para descartar el más
+    // viejo. Para la UI se invierte: lo más nuevo arriba.
+    readonly property var historyNewestFirst: {
+        const a = root.historyModel.slice();
+        a.reverse();
+        return a;
+    }
 
     // Sincronizar con el modelo del server. Se expone `values` (lista real)
     // porque UntypedObjectModel no tiene count/get().
@@ -311,18 +341,23 @@ Singleton {
         }
     }
 
-    // Poda explícita del estado de expiración tras un borrado masivo.
-    // Respeta el mismo "seen" que el barrido: trackedNotifications se
-    // actualiza de forma diferida respecto a `tracked = true`.
+    // Poda del estado de expiración. Se llama desde las señales del modelo
+    // (objectInserted/RemovedPost), donde la lista ya está actualizada y es
+    // la fuente de verdad.
+    //
+    // Solo se toca lo que entró al historial (`history: true`): las
+    // entradas de transient / DND no están en el modelo y las necesita
+    // vivas el toast para su cuenta atrás y su hora relativa.
     function pruneExpire() {
         const list = server.trackedNotifications.values;
         const alive = {};
         for (let i = 0; i < list.length; ++i) {
             const n = list[i];
-            if (n) { alive[n.id] = true; if (root._expire[n.id]) root._expire[n.id].seen = true; }
+            if (n) alive[n.id] = true;
         }
         for (const key in root._expire) {
-            if (!alive[key] && root._expire[key].seen) delete root._expire[key];
+            const info = root._expire[key];
+            if (info && info.history && !alive[key]) delete root._expire[key];
         }
     }
 

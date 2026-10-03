@@ -11,7 +11,6 @@ import qs.windows.overview
 import qs.windows.wallpapers
 import qs.windows.launcher
 import qs.windows.activate
-import qs.windows.notifications
 import qs.widgets.notifications
 
 ShellRoot {
@@ -63,10 +62,9 @@ ShellRoot {
         active: ControlState.activateEnabled
         sourceComponent: ActivateWindow {}
     }
-    Loader {
-        active: ControlState.notificationsEnabled
-        sourceComponent: NotificationCenter {}
-    }
+    // No hay ventana de centro de notificaciones: se eliminó. El daemon
+    // sigue vivo (services/NotificationsService.qml) y la UI es el popup de
+    // hover de la campana (widgets/notifications/NotificationCenterPopup.qml).
 
     // Panel de control: PERMANENTE, no se desactiva.
     ControlPanel {}

@@ -9,7 +9,7 @@ import qs.globals
 import qs.services
 import qs.widgets.notifications
 
-// windows/notifications/NotificationHistoryItem.qml
+// widgets/notifications/NotificationHistoryItem.qml
 // Item compacto para el ListView del centro de notificaciones
 Item {
     id: item
@@ -18,7 +18,11 @@ Item {
     // inyectan el objeto como `modelData`, y un alias no cuenta como required
     // ("Required property notification was not initialized").
     property var modelData
-    property Notification notification: modelData ? modelData : null
+    // `var` y NO `Notification`: al copiar el array del modelo en el servicio
+    // (historyNewestFirst hace slice/reverse), los objetos llegan aquí como
+    // wrappers JS genéricos y QML los coacciona a null al asignarlos a una
+    // propiedad tipada, dejando el snapshot vacío.
+    property var notification: modelData ? modelData : null
     property bool isExpanded: false
 
     // ──────────────────────────────────────────────────────────────
@@ -58,7 +62,7 @@ Item {
 
     // Las acciones/imagen solo se muestran expandido, así que el alto
     // máximo se calcula con un tope razonable para no crear un item gigante.
-    property int collapsedHeight: 72
+    property int collapsedHeight: AppTheme.notificationsHistoryRowHeight
     // OJO: no derivar esto de content.implicitHeight → los componentes
     // cargados por Loader leen item.width y se produce un binding loop.
     // El alto expandido lo fija el ListView (altura del delegate), no el item.
@@ -315,11 +319,17 @@ Item {
     // Se usa onModelDataChanged: dispara cuando el delegate recibe su
     // objeto, y el Notification sigue vivo en ese momento.
     // ──────────────────────────────────────────────────────────────
-    onModelDataChanged: snapshot()
+    // Se dispara con onNotificationChanged (no con el rol modelData): Qt
+    // asigna los roles del delegate DESPUÉS de Component.onCompleted, y con
+    // un ListView el cambio de `modelData` no siempre emite su señal, así
+    // que engancharse a modelData dejaba el item con el snapshot vacío
+    // ("Desconocido" / "(sin título)"). `notification` sí es fiable porque
+    // el delegate la asigna explícitamente.
+    onNotificationChanged: snapshot()
     Component.onCompleted: snapshot()
 
     function snapshot() {
-        const n = modelData;
+        const n = notification;
         if (!n) return;
         item.sId = n.id;
         item.sAppName = n.appName || "Desconocido";

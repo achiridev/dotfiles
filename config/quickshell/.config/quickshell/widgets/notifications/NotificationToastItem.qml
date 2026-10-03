@@ -95,19 +95,22 @@ Item {
     readonly property int contentWidth:
         width - (AppTheme.paddingLarge + AppTheme.paddingSmall) * 2
 
-    // Timeout efectivo, copiado del servicio al crear el toast (paridad:
-    // normal 8s, low 5s, critical nunca). Se lee del servicio porque el
-    // Notification puede destruirse en cualquier momento.
-    readonly property int effectiveTimeoutMs: {
-        const info = NotificationsService.expireInfo(toast.sId);
-        if (info) return info.total;
-        if (toast.sUrgency === NotificationUrgency.Critical) return 0;
-        if (toast.sUrgency === NotificationUrgency.Low)
-            return AppTheme.notificationsTimeoutLow * 1000;
-        return AppTheme.notificationsTimeoutNormal * 1000;
-    }
+    // Timeout efectivo (paridad con el servicio: normal 8s, low 5s, critical
+    // nunca). Se congela al crear el toast con el valor del servicio.
+    readonly property int effectiveTimeoutMs: toast.totalMs
 
-    readonly property bool hasAutoExpire: toast.effectiveTimeoutMs > 0
+    readonly property bool hasAutoExpire: toast.totalMs > 0
+
+    // Cuenta atrás propia del toast.
+    //
+    // El toast NO puede depender solo de la señal `closed` del Notification:
+    // las transient no se trackean, así que Quickshell destruye el objeto
+    // nada más salir del handler y esa señal nunca llega (el toast se
+    // quedaría colgado para siempre). Con este reloj el toast se cierra
+    // solo siempre, esté trackeado o no.
+    property int totalMs: 0
+    property real deadline: 0
+    property real frozen: 0
 
     function formatWhen() {
         if (!toast.sSentAt) return Qt.formatTime(new Date(), "HH:mm");
@@ -184,13 +187,20 @@ Item {
             Behavior on color { ColorAnimation { duration: 200 } }
         }
 
-        // Hover: pausa el timer de expiración (paridad con swaync)
+        // Hover: congela la cuenta atrás del toast Y pausa la expiración en el
+        // servicio (si la notificación está en el historial, para que no
+        // desaparezca del centro mientras se lee).
         HoverHandler {
             id: hoverHandler
             onHoveredChanged: {
                 toast.hovered = hoverHandler.hovered;
-                if (hoverHandler.hovered) NotificationsService.pauseExpire(toast.sId);
-                else NotificationsService.resumeExpire(toast.sId);
+                if (hoverHandler.hovered) {
+                    toast.frozen = Math.max(0, toast.deadline - Date.now());
+                    NotificationsService.pauseExpire(toast.sId);
+                } else {
+                    toast.deadline = Date.now() + toast.frozen;
+                    NotificationsService.resumeExpire(toast.sId);
+                }
             }
         }
 
@@ -523,28 +533,27 @@ Item {
         }
         toast.sActions = acts;
 
+        // Cuenta atrás propia (paridad con el servicio: normal 8s, low 5s,
+        // critical nunca). Se congela aquí para que el toast sea autónomo.
+        toast.totalMs = NotificationsService.timeoutFor(n);
+        toast.deadline = Date.now() + toast.totalMs;
+        toast.frozen = toast.totalMs;
+        toast.progress = toast.totalMs > 0 ? 1 : 0;
+
         shown = true;
         openAnim.start();
     }
 
-    // Barra de progreso visual (el timer REAL de expiración vive en el
-    // servicio; aquí solo se pinta el tiempo restante que queda).
+    // Cuenta atrás + barra de progreso. Se detiene con el hover.
     Timer {
-        id: progressTimer
+        id: countdown
         interval: 100
         repeat: true
-        running: toast.hasAutoExpire && !toast.closing
+        running: toast.hasAutoExpire && !toast.closing && !toast.hovered
         onTriggered: {
-            const info = NotificationsService.expireInfo(toast.sId);
-            if (!info || info.total <= 0) return;
-            const rem = info.paused
-                ? info.remaining
-                : info.total - (Date.now() - info.started);
-            toast.progress = Math.max(0, Math.min(1, rem / info.total));
-            // Red de seguridad: si el barrido del servicio no llegara a
-            // expirarla (edge case), se cierra desde aquí.
-            if (!info.paused && rem <= 0)
-                NotificationsService.dismiss(toast.sId);
+            const left = toast.deadline - Date.now();
+            toast.progress = Math.max(0, Math.min(1, left / toast.totalMs));
+            if (left <= 0) toast.dismiss();
         }
     }
 
