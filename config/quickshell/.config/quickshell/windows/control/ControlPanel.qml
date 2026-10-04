@@ -44,10 +44,14 @@ FloatingWindow {
     implicitWidth: cardWidth
     implicitHeight: 860
 
-    // Activa la lectura de modos de BatteryService solo mientras la sección
-    // de Energía está visible (polling bajo demanda).
+    // Activa la lectura de modos de BatteryService y las estadísticas detalla-
+    // das (EPP, frecuencias, núcleos, nvidia-smi) solo mientras la sección de
+    // Energía está visible: polling bajo demanda, coste cero en reposo.
     readonly property bool energyActive: shown && currentSection === 2
-    onEnergyActiveChanged: BatteryService.detailMode = energyActive
+    onEnergyActiveChanged: {
+        BatteryService.detailMode = energyActive
+        SystemStatsService.detailStatsRequest = energyActive
+    }
 
     onRequestOpenChanged: {
         if (requestOpen) {

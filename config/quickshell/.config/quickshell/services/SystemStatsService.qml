@@ -35,11 +35,55 @@ Singleton {
     readonly property bool hasCpuTemp: root.__cpuTempPath !== ""
     readonly property int cpuTemp: root.__readTemp(cpuTempFile)
 
+    // ===================== Frecuencias / EPP del CPU =====================
+    // intel_pstate: el EPP es lo que realmente decide el consumo entre
+    // governor y boost. Se leen de cpufreq/policy0 (equivalente a cpu0 en esta
+    // plataforma, pero más robusto: vale también con CPUs sin cpu0cpufreq).
+    readonly property string epp: eppFile.text().trim()
+    readonly property string eppAvailable: eppListFile.text().trim()
+    readonly property bool hasEpp: root.epp !== "" && root.epp !== "unknown"
+
+    // Frecuencias en MHz (sysfs las da en kHz).
+    readonly property real cpuFreqMhz: root.__readKhz(freqFile)
+    readonly property real cpuMinMhz: root.__readKhz(minFreqFile)
+    readonly property real cpuMaxMhz: root.__readKhz(maxFreqFile)
+    readonly property real cpuFreqPercent:
+        root.cpuMaxMhz > 0 ? Math.min(100, (root.cpuFreqMhz / root.cpuMaxMhz) * 100) : 0
+
+    // Nombres legibles de los modos de EPP.
+    function eppLabel(v) {
+        switch (v) {
+            case "performance": return "rendimiento"
+            case "balance_performance": return "balanceado+"
+            case "balance_power": return "ahorro"
+            case "power": return "máx. ahorro"
+            default: return v !== "" ? v : "—"
+        }
+    }
+
+    function __readKhz(file) {
+        const v = Number(file.text().trim())
+        return isNaN(v) || v <= 0 ? 0 : Math.round(v / 1000)
+    }
+
+    // ============================ NÚCLEOS ===============================
+    // Array de {label, temp} con TODOS los sensores de coretemp, no solo el
+    // Package: incluye los núcleos lógicos con SMT. Se rellena al sondear
+    // (detailMode), así que en reposo no hay proceso extra.
+    property var coreTemps: []
+    readonly property int coreTempMax:
+        coreTemps.reduce((m, c) => Math.max(m, c.temp), 0)
+
     // ============================== GPU ==============================
     property bool gpuAvailable: false
     property string gpuName: ""
+    property string gpuDriver: ""
+    property string gpuPstate: ""
     property int gpuUsage: 0
     property int gpuTemp: 0
+    property int gpuCoreClockMhz: 0
+    property int gpuMemClockMhz: 0
+    property real gpuPowerW: 0
     property real vramUsedGb: 0
     property real vramTotalGb: 0
     readonly property real vramPercent: root.vramTotalGb > 0 ? (root.vramUsedGb / root.vramTotalGb) * 100 : 0
@@ -73,6 +117,11 @@ Singleton {
     readonly property int laptopTemp: root.__readTemp(laptopTempFile)
     readonly property bool hasNvmeTemp: root.__nvmeTempPath !== ""
     readonly property int nvmeTemp: root.__readTemp(nvmeTempFile)
+
+    // El NVMe expone un segundo sensor ("Sensor 1"), más cercano al controlador
+    // que el "Composite". Si no existe, se oculta.
+    readonly property bool hasNvmeTemp2: root.__nvmeTemp2Path !== ""
+    readonly property int nvmeTemp2: root.__readTemp(nvmeTemp2File)
 
     function __readTemp(file) {
         const v = parseInt(file.text())
@@ -119,11 +168,19 @@ Singleton {
     // detailMode lo activa el widget cuando su popup está abierto.
     property bool detailMode: false
 
+    // detailStatsRequest permite a otro consumidor (el Panel de Control) pedir
+    // los datos EXPENSOS (nvidia-smi + sondeo de núcleos) sin tocar el modo de
+    // polling del popup, para no subir su refresco a 1 Hz.
+    property bool detailStatsRequest: false
+    readonly property bool detailed: root.detailMode || root.detailStatsRequest
+
     onDetailModeChanged: {
         // Dato fresco al instante + aplica la nueva cadencia ya.
         root.__poll()
         pollTimer.restart()
     }
+
+    onDetailStatsRequestChanged: root.__poll()
 
     Timer {
         id: pollTimer
@@ -140,8 +197,104 @@ Singleton {
         if (root.hasCpuTemp) cpuTempFile.reload()
         if (root.hasLaptopTemp) laptopTempFile.reload()
         if (root.hasNvmeTemp) nvmeTempFile.reload()
-        // GPU solo se consulta cuando el popup la necesita.
-        if (root.detailMode) root.__pollGpu()
+        if (root.hasNvmeTemp2) nvmeTemp2File.reload()
+        // Frecuencias y EPP: lecturas de archivo baratas, siempre activas.
+        freqFile.reload()
+        minFreqFile.reload()
+        maxFreqFile.reload()
+        eppFile.reload()
+        // Sondeo de núcleos (un `cat` por sensor) y nvidia-smi solo cuando
+        // alguien los está mirando.
+        if (root.detailed) {
+            root.__pollCoreTemps()
+            root.__pollGpu()
+        }
+    }
+
+    // ================= FRECUENCIAS / EPP (cpufreq policy0) ==================
+    // Rutas fijas: policy0 existe en cualquier plataforma con intel_pstate y no
+    // cambia entre boots (a diferencia de los índices hwmonN).
+    property FileView freqFile: FileView {
+        path: Qt.resolvedUrl("file:///sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq")
+        blockLoading: false
+        watchChanges: false
+    }
+
+    property FileView minFreqFile: FileView {
+        path: Qt.resolvedUrl("file:///sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq")
+        blockLoading: false
+        watchChanges: false
+    }
+
+    property FileView maxFreqFile: FileView {
+        path: Qt.resolvedUrl("file:///sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq")
+        blockLoading: false
+        watchChanges: false
+    }
+
+    property FileView eppFile: FileView {
+        path: Qt.resolvedUrl("file:///sys/devices/system/cpu/cpufreq/policy0/energy_performance_preference")
+        blockLoading: false
+        watchChanges: false
+    }
+
+    property FileView eppListFile: FileView {
+        path: Qt.resolvedUrl("file:///sys/devices/system/cpu/cpufreq/policy0/energy_performance_available_preferences")
+        blockLoading: false
+        watchChanges: false
+    }
+
+    // ======================== NÚCLEOS (coretemp) ============================
+    // Un único `sh` lee TODOS los sensores de una vez. Cada registro lleva tres
+    // campos separados por `|`:
+    //     <índice>|<milikelvinios>|<etiqueta>
+    // El pipe hace de separador porque las etiquetas de coretemp contienen
+    // espacios ("Package id 0", "Core 12") y no valen como "clave=valor".
+    function __pollCoreTemps() {
+        if (coreProbe.running) return // guard: nunca acumular sondeos
+        if (root.__cpuTempPath === "") return
+        const dir = root.__cpuTempPath.slice(0, root.__cpuTempPath.lastIndexOf("/"))
+        coreProbe.command = [
+            "sh", "-c",
+            'd="' + dir + '"; '
+            + 'for f in "$d"/temp*_input; do '
+            + '[ -e "$f" ] || continue; '
+            + 'l="${f%_input}_label"; n="${f##*/}"; n="${n#temp}"; '
+            + 'printf "%s|%s|%s\n" "${n%_input}" '
+            + '"$(cat "$f" 2>/dev/null)" "$(cat "$l" 2>/dev/null)"; '
+            + "done"
+        ]
+        coreProbe.running = true
+    }
+
+    property Process coreProbe: Process {
+        running: false
+        stdout: StdioCollector {
+            onStreamFinished: root.__parseCoreTemps(text)
+        }
+    }
+
+    // El glob ordena lexicográficamente (temp1, temp10, temp14, temp2...), así
+    // que se reordena por el índice numérico para que el heatmap salga en orden
+    // real de núcleo y no 1, 10, 14, 2...
+    function __parseCoreTemps(out) {
+        const list = []
+        const lines = out.trim().split("\n")
+        for (let i = 0; i < lines.length; i++) {
+            const parts = lines[i].split("|")
+            if (parts.length < 2) continue
+            const num = parseInt(parts[0], 10)
+            const milli = Number(parts[1])
+            if (isNaN(num) || isNaN(milli) || milli <= 0) continue
+            const label = parts.length > 2 && parts[2].trim() !== ""
+                ? parts[2].trim()
+                : "Núcleo " + num
+            list.push({ num: num, label: label, temp: Math.round(milli / 1000) })
+        }
+        if (list.length > 0) {
+            list.sort((a, b) => a.num - b.num)
+            root.coreTemps = list
+        }
     }
 
     // =========================== /proc/stat ==========================
@@ -190,6 +343,7 @@ Singleton {
     property string __cpuTempPath: ""
     property string __laptopTempPath: ""
     property string __nvmeTempPath: ""
+    property string __nvmeTemp2Path: ""
 
     on__CpuTempPathChanged: {
         if (root.__cpuTempPath !== "")
@@ -206,19 +360,29 @@ Singleton {
             nvmeTempFile.path = Qt.resolvedUrl("file://" + root.__nvmeTempPath)
     }
 
+    on__NvmeTemp2PathChanged: {
+        if (root.__nvmeTemp2Path !== "")
+            nvmeTemp2File.path = Qt.resolvedUrl("file://" + root.__nvmeTemp2Path)
+    }
+
     property FileView cpuTempFile: FileView { blockLoading: false; watchChanges: false }
     property FileView laptopTempFile: FileView { blockLoading: false; watchChanges: false }
     property FileView nvmeTempFile: FileView { blockLoading: false; watchChanges: false }
+    property FileView nvmeTemp2File: FileView { blockLoading: false; watchChanges: false }
 
     property Process probeProcess: Process {
         running: false
         stdout: StdioCollector {
             onStreamFinished: {
-                // Una línea: "<cpu> <laptop> <nvme>" (vacíos si no existen).
+                // Una línea: "<cpu> <laptop> <nvme> <nvme2>" (vacíos si no
+                // existen). El segundo sensor del NVMe no siempre está, por eso
+                // va aparte: se resuelve a temp2_input si el dispositivo lo
+                // expone (el kernel lo llama "Sensor 1").
                 const parts = text.trim().split(/\s+/)
                 root.__cpuTempPath = parts[0] ?? ""
                 root.__laptopTempPath = parts[1] ?? ""
                 root.__nvmeTempPath = parts[2] ?? ""
+                root.__nvmeTemp2Path = parts[3] ?? ""
             }
         }
     }
@@ -235,10 +399,21 @@ Singleton {
         if (gpuProcess.running) return // guard: nunca acumular queries
         gpuProcess.command = [
             "nvidia-smi",
-            "--query-gpu=name,utilization.gpu,temperature.gpu,memory.used,memory.total",
+            "--query-gpu=name,utilization.gpu,temperature.gpu,memory.used,memory.total,"
+                + "clocks.current.graphics,clocks.current.memory,pstate,power.draw,driver_version",
             "--format=csv,noheader,nounits"
         ]
         gpuProcess.running = true
+    }
+
+    // nvidia-smi devuelve "[N/A]" en los campos no soportados (p.ej. power.draw
+    // sin límite, o clocks en una laptop sin panel activo): se normalizan a
+    // null para que la UI pueda ocultar el dato en vez de pintar "N/A".
+    function __gpuNum(s) {
+        if (s === undefined || s === "" || s === "[N/A]" || s === "Not Supported")
+            return null
+        const n = Number(s)
+        return isNaN(n) ? null : n
     }
 
     function __parseGpu(out) {
@@ -253,11 +428,17 @@ Singleton {
         root.gpuTemp = Number(p[2])
         root.vramUsedGb = Number(p[3]) / 1024 // MiB -> GiB
         root.vramTotalGb = Number(p[4]) / 1024
+        root.gpuCoreClockMhz = root.__gpuNum(p[5]) ?? 0
+        root.gpuMemClockMhz = root.__gpuNum(p[6]) ?? 0
+        root.gpuPstate = p[7] !== "[N/A]" ? p[7] : ""
+        const w = root.__gpuNum(p[8])
+        root.gpuPowerW = w === null ? 0 : w
+        root.gpuDriver = p.length > 9 && p[9] !== "[N/A]" ? p[9] : ""
         root.gpuAvailable = true
     }
 
     Component.onCompleted: {
-        probeProcess.command = ["sh", "-c", 'cpu=""; lap=""; ssd=""; for d in /sys/class/hwmon/hwmon*; do n=$(cat "$d/name" 2>/dev/null); case "$n" in coretemp|k10temp|zenpower|cpu_thermal) [ -z "$cpu" ] && cpu="$d/temp1_input";; acpitz*) [ -z "$lap" ] && lap="$d/temp1_input";; nvme) [ -z "$ssd" ] && ssd="$d/temp1_input";; esac; done; echo "$cpu $lap $ssd"']
+        probeProcess.command = ["sh", "-c", 'cpu=""; lap=""; ssd=""; ssd2=""; for d in /sys/class/hwmon/hwmon*; do n=$(cat "$d/name" 2>/dev/null); case "$n" in coretemp|k10temp|zenpower|cpu_thermal) [ -z "$cpu" ] && cpu="$d/temp1_input";; acpitz*) [ -z "$lap" ] && lap="$d/temp1_input";; nvme) [ -z "$ssd" ] && { ssd="$d/temp1_input"; [ -e "$d/temp2_input" ] && ssd2="$d/temp2_input"; };; esac; done; echo "$cpu $lap $ssd $ssd2"']
         probeProcess.running = true
     }
 }
