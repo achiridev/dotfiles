@@ -94,7 +94,10 @@ Item {
                     Layout.preferredWidth: 60
                     Layout.preferredHeight: 32
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: NotificationsService.toggleDND()
+                    onClicked: {
+                        NotificationsService.toggleDND()
+                        SettingsService.dndEnabled = NotificationsService.dndEnabled
+                    }
                     Rectangle {
                         anchors.fill: parent
                         anchors.margins: 4
@@ -363,7 +366,10 @@ Item {
                         value: NotificationsService.historyLimit
                         from: 50; to: 500; stepSize: 50
                         editable: true
-                        onValueChanged: NotificationsService.historyLimit = value
+                        onValueChanged: {
+                            NotificationsService.historyLimit = value
+                            SettingsService.historyLimit = value
+                        }
                     }
                 }
 

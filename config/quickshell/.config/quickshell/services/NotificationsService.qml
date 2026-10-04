@@ -12,6 +12,7 @@ import Quickshell
 import Quickshell.Services.Notifications
 
 import qs.globals
+import qs.services
 
 Singleton {
     id: root
@@ -376,6 +377,26 @@ Singleton {
 
     Component.onCompleted: {
         root.syncHistoryModel();
+        root._applySettings();
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // Ajustes persistidos por el Panel de Control
+    //
+    // SettingsService lee settings.json de forma asíncrona, así que el estado
+    // guardado puede llegar después de este Component.onCompleted.
+    // ──────────────────────────────────────────────────────────────
+    Connections {
+        target: SettingsService
+        function onReadyChanged() {
+            if (SettingsService.ready) root._applySettings()
+        }
+    }
+
+    function _applySettings() {
+        if (!SettingsService.ready) return;
+        root.dndEnabled = SettingsService.dndEnabled;
+        root.historyLimit = SettingsService.historyLimit;
     }
 
     // Exponer server para acceso avanzado si hace falta
