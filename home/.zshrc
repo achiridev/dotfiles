@@ -34,3 +34,7 @@ if [[ "$TERM" == "xterm-kitty" && -z "$FASTFETCH_SHOWN" ]]; then
     fastfetch --logo none
 fi
 
+
+
+# Added by Antigravity CLI installer
+export PATH="/home/achiri/.local/bin:$PATH"

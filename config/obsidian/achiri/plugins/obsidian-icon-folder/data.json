@@ -1,0 +1,44 @@
+{
+  "settings": {
+    "migrated": 6,
+    "iconPacksPath": ".obsidian/icons",
+    "fontSize": 16,
+    "emojiStyle": "native",
+    "iconColor": null,
+    "recentlyUsedIcons": [
+      "LiCode",
+      "LiUniversity",
+      "LiAlbum",
+      "LiBrain",
+      "LiArrowBigUp"
+    ],
+    "recentlyUsedIconsSize": 5,
+    "rules": [],
+    "extraMargin": {
+      "top": 0,
+      "right": 4,
+      "bottom": 0,
+      "left": 0
+    },
+    "iconInTabsEnabled": false,
+    "iconInTitleEnabled": false,
+    "iconInTitlePosition": "above",
+    "iconInFrontmatterEnabled": false,
+    "iconInFrontmatterFieldName": "icon",
+    "iconColorInFrontmatterFieldName": "iconColor",
+    "iconsBackgroundCheckEnabled": false,
+    "iconsInNotesEnabled": true,
+    "iconsInLinksEnabled": true,
+    "iconIdentifier": ":",
+    "lucideIconPackType": "native",
+    "debugMode": false,
+    "useInternalPlugins": false
+  },
+  "10_Sistema_Diario": "LiBook",
+  "00_Meta": "LiImagePlay",
+  "20_Proyectos": "LiArrowBigUp",
+  "40_Cerebro": "LiBrain",
+  "30_Areas": "LiAlbum",
+  "40_Cerebro/Universidad": "LiUniversity",
+  "40_Cerebro/Backend": "LiCode"
+}

@@ -1,0 +1,65 @@
+{
+  "collapse-filter": false,
+  "search": "",
+  "showTags": false,
+  "showAttachments": true,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    {
+      "query": "path:40_Cerebro/Backend  ",
+      "color": {
+        "a": 1,
+        "rgb": 835626
+      }
+    },
+    {
+      "query": "path:40_Cerebro/Universidad/Semestre03  ",
+      "color": {
+        "a": 1,
+        "rgb": 14691957
+      }
+    },
+    {
+      "query": "path:\"30_Areas/Arch Linux\"  ",
+      "color": {
+        "a": 1,
+        "rgb": 422654
+      }
+    },
+    {
+      "query": "path:10_Sistema_Diario/Diarias  ",
+      "color": {
+        "a": 1,
+        "rgb": 221549
+      }
+    },
+    {
+      "query": "path:20_Proyectos/MultiVault  ",
+      "color": {
+        "a": 1,
+        "rgb": 14731602
+      }
+    },
+    {
+      "query": "path:40_Cerebro/Universidad/Semestre04  ",
+      "color": {
+        "a": 1,
+        "rgb": 13961128
+      }
+    }
+  ],
+  "collapse-display": true,
+  "showArrow": false,
+  "textFadeMultiplier": 0,
+  "nodeSizeMultiplier": 1,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": true,
+  "centerStrength": 0.774617283950617,
+  "repelStrength": 17.2453103948596,
+  "linkStrength": 0.900444444444445,
+  "linkDistance": 250,
+  "scale": 0.059326171875,
+  "close": true
+}

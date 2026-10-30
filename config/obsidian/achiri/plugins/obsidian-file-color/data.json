@@ -1,0 +1,113 @@
+{
+  "cascadeColors": false,
+  "colorBackground": false,
+  "palette": [
+    {
+      "id": "wDPGaBCD1ZqU2vbEyD5YR",
+      "name": "",
+      "value": "#ff0059"
+    },
+    {
+      "id": "c2jyRa14kZ09UGo1SPlqt",
+      "name": "",
+      "value": "#a200fa"
+    },
+    {
+      "id": "_GIWKnIoi6UO5NKBUs0DL",
+      "name": "",
+      "value": "#23aa08"
+    },
+    {
+      "id": "PuO7JQS8XmMiTZ3Io9rV1",
+      "name": "",
+      "value": "#5900ff"
+    },
+    {
+      "id": "ZzAFyuq1TwRLOCWJfeX9r",
+      "name": "",
+      "value": "#d4ff00"
+    },
+    {
+      "id": "Wf6yNY_R7K9YWkvzzoURD",
+      "name": "",
+      "value": "#00ffbf"
+    },
+    {
+      "id": "2DbpfcE6QYOzRN88tDXP8",
+      "name": "",
+      "value": "#00bfff"
+    },
+    {
+      "id": "GOkicDSfJk_tOixFJrBnL",
+      "name": "",
+      "value": "#ff6600"
+    },
+    {
+      "id": "wT42g7k-hcpIIPgcRcxxx",
+      "name": "",
+      "value": "#ff0000"
+    }
+  ],
+  "fileColors": [
+    {
+      "path": "30_Areas",
+      "color": "PuO7JQS8XmMiTZ3Io9rV1"
+    },
+    {
+      "path": "20_Proyectos",
+      "color": "Wf6yNY_R7K9YWkvzzoURD"
+    },
+    {
+      "path": "40_Cerebro",
+      "color": "c2jyRa14kZ09UGo1SPlqt"
+    },
+    {
+      "path": "10_Sistema_Diario",
+      "color": "_GIWKnIoi6UO5NKBUs0DL"
+    },
+    {
+      "path": "40_Cerebro/Backend",
+      "color": "_GIWKnIoi6UO5NKBUs0DL"
+    },
+    {
+      "path": "40_Cerebro/Universidad",
+      "color": "wDPGaBCD1ZqU2vbEyD5YR"
+    },
+    {
+      "path": "00_Rapido",
+      "color": "2DbpfcE6QYOzRN88tDXP8"
+    },
+    {
+      "path": "10_Sistema_Diario/Diarias",
+      "color": "GOkicDSfJk_tOixFJrBnL"
+    },
+    {
+      "path": "10_Sistema_Diario/Mensuales",
+      "color": "wT42g7k-hcpIIPgcRcxxx"
+    },
+    {
+      "path": "30_Areas/Pago_Servicios",
+      "color": "wDPGaBCD1ZqU2vbEyD5YR"
+    },
+    {
+      "path": "40_Cerebro/Backend/1 - Java Puro",
+      "color": "GOkicDSfJk_tOixFJrBnL"
+    },
+    {
+      "path": "40_Cerebro/Backend/2 - Java Enterprise",
+      "color": "wDPGaBCD1ZqU2vbEyD5YR"
+    },
+    {
+      "path": "40_Cerebro/Backend/3 - Java Framework",
+      "color": "_GIWKnIoi6UO5NKBUs0DL"
+    },
+    {
+      "path": "40_Cerebro/Backend/4- Core Backend",
+      "color": "2DbpfcE6QYOzRN88tDXP8"
+    },
+    {
+      "path": "30_Areas/Arch Linux",
+      "color": "2DbpfcE6QYOzRN88tDXP8"
+    }
+  ]
+}

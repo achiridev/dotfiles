@@ -30,3 +30,19 @@ config/wallust/.config/wallust/colorschemes/
 
 # Notas para agentes/LLMs (contexto local, no se comparte)
 AGENTS.md
+
+# Workspace / session state
+workspace.json
+workspace-mobile.json
+
+# Cache
+cache/
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Sync conflicts
+*.sync-conflict-*.json

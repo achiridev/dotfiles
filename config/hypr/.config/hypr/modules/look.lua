@@ -44,6 +44,13 @@ hl.config({
 			passes    = 1,
 			vibrancy  = 0.1696,
 		},
+		wobble = {
+			enabled = true,
+			stiffness = 400,       -- Rigidez del resorte (valores más altos = rebote más rápido)
+			damping = 10,          -- Amortiguación (valores bajos = oscila por más tiempo)
+			mass = 0.5,            -- Masa de la ventana (influye en la inercia)
+			intensity = 0.4,       -- Multiplicador de la fuerza del impulso al arrastrar
+		}
 	},
 
 	animations = {
