@@ -1,0 +1,1635 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Achiri · tema Obsidian guiado por Wallust
+   --------------------------------------------------------------------------
+   La paleta se inyecta desde `.obsidian/snippets/wallust.css`, generado por
+   Wallust al aplicar colores en el Panel de Control. Este archivo solo define
+   la estructura visual y un fallback (Catppuccin Mocha) por si el snippet aún
+   no existe.
+
+   Mapa semántico (igual que Quickshell / AppTheme):
+     accent  = color5      info    = color4
+     success = color2      warning = color3
+     danger  = color1      special = color13
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ──────────────────────────────────────────────────────────────────────────
+   0. Fallback de paleta (se sobrescribe con el snippet de Wallust)
+   ────────────────────────────────────────────────────────────────────────── */
+:root {
+  --wl-bg: #1e1e2e;
+  --wl-bg-rgb: 30,30,46;
+  --wl-fg: #cdd6f4;
+  --wl-fg-rgb: 205,214,244;
+  --wl-cursor: #f5e0dc;
+  --wl-cursor-rgb: 245,224,220;
+
+  --wl-c0: #45475a;  --wl-c0-rgb: 69,71,90;
+  --wl-c1: #f38ba8;  --wl-c1-rgb: 243,139,168;
+  --wl-c2: #a6e3a1;  --wl-c2-rgb: 166,227,161;
+  --wl-c3: #f9e2af;  --wl-c3-rgb: 249,226,175;
+  --wl-c4: #89b4fa;  --wl-c4-rgb: 137,180,250;
+  --wl-c5: #cba6f7;  --wl-c5-rgb: 203,166,247;
+  --wl-c6: #89dceb;  --wl-c6-rgb: 137,220,235;
+  --wl-c7: #bac2de;  --wl-c7-rgb: 186,194,222;
+  --wl-c8: #585b70;  --wl-c8-rgb: 88,91,112;
+  --wl-c9: #f38ba8;  --wl-c9-rgb: 243,139,168;
+  --wl-c10: #a6e3a1; --wl-c10-rgb: 166,227,161;
+  --wl-c11: #f9e2af; --wl-c11-rgb: 249,226,175;
+  --wl-c12: #89b4fa; --wl-c12-rgb: 137,180,250;
+  --wl-c13: #cba6f7; --wl-c13-rgb: 203,166,247;
+  --wl-c14: #89dceb; --wl-c14-rgb: 137,220,235;
+  --wl-c15: #a6adc8; --wl-c15-rgb: 166,173,200;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   1. Puente semántico y variables base de Obsidian
+   ────────────────────────────────────────────────────────────────────────── */
+body {
+  /* Superficies */
+  --achiri-bg-deep: color-mix(in srgb, var(--wl-bg) 82%, #000);
+  --achiri-bg: var(--wl-bg);
+  --achiri-bg-soft: color-mix(in srgb, var(--wl-bg) 91%, var(--wl-fg));
+  --achiri-bg-raised: color-mix(in srgb, var(--wl-bg) 85%, var(--wl-fg));
+  --achiri-bg-hover: rgba(var(--wl-fg-rgb), 0.06);
+  --achiri-bg-active: rgba(var(--wl-c5-rgb), 0.14);
+
+  /* Texto */
+  --achiri-fg: var(--wl-fg);
+  --achiri-fg-muted: color-mix(in srgb, var(--wl-fg) 68%, var(--wl-bg));
+  --achiri-fg-faint: color-mix(in srgb, var(--wl-fg) 43%, var(--wl-bg));
+  --achiri-fg-ghost: color-mix(in srgb, var(--wl-fg) 26%, var(--wl-bg));
+
+  /* Bordes */
+  --achiri-border: rgba(var(--wl-fg-rgb), 0.10);
+  --achiri-border-strong: rgba(var(--wl-fg-rgb), 0.20);
+  --achiri-border-accent: rgba(var(--wl-c5-rgb), 0.42);
+
+  /* Acentos */
+  --achiri-accent: var(--wl-c5);
+  --achiri-accent-text: color-mix(in srgb, var(--wl-c5) 58%, var(--wl-fg));
+  --achiri-accent-soft: rgba(var(--wl-c5-rgb), 0.14);
+  --achiri-accent-softer: rgba(var(--wl-c5-rgb), 0.07);
+  --achiri-info: var(--wl-c4);
+  --achiri-info-text: color-mix(in srgb, var(--wl-c4) 62%, var(--wl-fg));
+  --achiri-success: var(--wl-c2);
+  --achiri-warning: var(--wl-c3);
+  --achiri-danger: var(--wl-c1);
+  --achiri-special: var(--wl-c13);
+  --achiri-cyan: var(--wl-c6);
+
+  /* Tipografía y métricas */
+  --font-interface-theme: "Noto Sans", "Noto Sans CJK SC", sans-serif;
+  --font-text-theme: "Noto Sans", "Noto Sans CJK SC", sans-serif;
+  --font-monospace-theme: "JetBrainsMono Nerd Font", "JetBrainsMono Nerd Font Mono", monospace;
+  --font-text-size: 16px;
+  --line-height-normal: 1.65;
+  --line-height-tight: 1.3;
+  --file-line-width: 780px;
+  --file-margins: 28px 24px 80px;
+  --p-spacing: 0.85rem;
+  --heading-spacing: 1.5em;
+
+  --radius-s: 6px;
+  --radius-m: 8px;
+  --radius-l: 12px;
+  --radius-xl: 16px;
+  --input-radius: 8px;
+  --tab-radius-active: 8px;
+  --checkbox-radius: 4px;
+
+  --h1-size: 2.05em;
+  --h1-weight: 700;
+  --h1-line-height: 1.18;
+  --h1-color: var(--achiri-accent-text);
+  --h2-size: 1.55em;
+  --h2-weight: 700;
+  --h2-line-height: 1.24;
+  --h2-color: var(--achiri-info-text);
+  --h3-size: 1.28em;
+  --h3-weight: 650;
+  --h3-line-height: 1.3;
+  --h3-color: var(--achiri-cyan);
+  --h4-size: 1.12em;
+  --h4-weight: 650;
+  --h4-line-height: 1.35;
+  --h4-color: var(--achiri-warning);
+  --h5-size: 1em;
+  --h5-weight: 650;
+  --h5-color: var(--achiri-special);
+  --h6-size: 0.9em;
+  --h6-weight: 650;
+  --h6-color: var(--achiri-fg-muted);
+
+  /* Fondos */
+  --background-primary: var(--achiri-bg);
+  --background-primary-alt: var(--achiri-bg-deep);
+  --background-secondary: var(--achiri-bg-deep);
+  --background-secondary-alt: var(--achiri-bg-deep);
+  --background-modifier-border: var(--achiri-border);
+  --background-modifier-border-hover: var(--achiri-border-strong);
+  --background-modifier-border-focus: var(--achiri-border-accent);
+  --background-modifier-hover: var(--achiri-bg-hover);
+  --background-modifier-active-hover: var(--achiri-bg-active);
+  --background-modifier-form-field: color-mix(in srgb, var(--wl-bg) 90%, var(--wl-fg));
+  --background-modifier-form-field-highlighted: color-mix(in srgb, var(--wl-bg) 86%, var(--wl-fg));
+  --background-modifier-box-shadow: rgba(0, 0, 0, 0.38);
+  --background-modifier-cover: rgba(0, 0, 0, 0.58);
+  --background-modifier-success: rgba(var(--wl-c2-rgb), 0.16);
+  --background-modifier-error: rgba(var(--wl-c1-rgb), 0.16);
+  --background-modifier-error-hover: rgba(var(--wl-c1-rgb), 0.26);
+
+  /* Texto */
+  --text-normal: var(--achiri-fg);
+  --text-muted: var(--achiri-fg-muted);
+  --text-faint: var(--achiri-fg-faint);
+  --text-on-accent: var(--achiri-on-accent, var(--achiri-bg-deep));
+  --text-on-accent-inverted: var(--achiri-fg);
+  --text-accent: var(--achiri-accent-text);
+  --text-accent-hover: color-mix(in srgb, var(--wl-c5) 45%, var(--wl-fg));
+  --text-selection: rgba(var(--wl-c5-rgb), 0.30);
+  --text-highlight-bg: rgba(var(--wl-c3-rgb), 0.32);
+  --text-highlight-bg-active: rgba(var(--wl-c3-rgb), 0.46);
+  --text-error: var(--achiri-danger);
+  --text-warning: var(--achiri-warning);
+  --text-success: var(--achiri-success);
+  --text-link: var(--achiri-info-text);
+  --text-a: var(--achiri-info-text);
+  --text-a-hover: var(--achiri-accent-text);
+
+  /* Interactivos */
+  --interactive-normal: color-mix(in srgb, var(--wl-bg) 87%, var(--wl-fg));
+  --interactive-hover: color-mix(in srgb, var(--wl-bg) 78%, var(--wl-fg));
+  --interactive-accent: var(--achiri-accent);
+  --interactive-accent-hover: color-mix(in srgb, var(--wl-c5) 80%, white);
+  --interactive-accent-rgb: var(--wl-c5-rgb);
+  --interactive-success: var(--achiri-success);
+
+  /* Acento HSL (fallback; el script lo recalcula desde color5) */
+  --accent-h: 267;
+  --accent-s: 84%;
+  --accent-l: 81%;
+  --accent-hsl: 267, 84%, 81%;
+  --interactive-accent-hsl: 267, 84%, 81%;
+
+  /* Tabs */
+  --tab-background-active: var(--achiri-bg);
+  --tab-text-color: var(--achiri-fg-muted);
+  --tab-text-color-active: var(--achiri-fg);
+  --tab-text-color-focused: var(--achiri-fg-muted);
+  --tab-text-color-focused-active: var(--achiri-fg);
+  --tab-outline-color: var(--achiri-border);
+  --tab-divider-color: var(--achiri-border);
+  --tab-container-background: var(--achiri-bg-deep);
+
+  /* Ribbon / titlebar / status bar */
+  --ribbon-background: var(--achiri-bg-deep);
+  --ribbon-background-collapsed: var(--achiri-bg-deep);
+  --titlebar-background: var(--achiri-bg-deep);
+  --titlebar-background-focused: var(--achiri-bg-deep);
+  --titlebar-text-color: var(--achiri-fg-muted);
+  --titlebar-text-color-focused: var(--achiri-fg);
+  --status-bar-background: var(--achiri-bg-deep);
+  --status-bar-text-color: var(--achiri-fg-faint);
+  --status-bar-border-color: var(--achiri-border);
+
+  /* Inputs / dropdowns */
+  --input-shadow: 0 0 0 1px var(--achiri-border);
+  --input-shadow-hover: 0 0 0 1px var(--achiri-border-strong);
+  --dropdown-background: var(--achiri-bg-soft);
+  --dropdown-background-hover: var(--achiri-bg-raised);
+  --slider-track-background: rgba(var(--wl-fg-rgb), 0.12);
+  --slider-thumb-border-color: var(--achiri-bg-deep);
+  --checkbox-background: var(--achiri-bg-soft);
+  --checkbox-border-color: var(--achiri-border-strong);
+  --checkbox-marker-color: var(--achiri-on-accent, var(--achiri-bg-deep));
+  --checkbox-color: var(--achiri-accent);
+  --checkbox-color-hover: var(--interactive-accent-hover);
+  --checkbox-border-color-hover: var(--achiri-accent);
+  --toggle-thumb-color: var(--achiri-fg);
+  --toggle-background-color: rgba(var(--wl-fg-rgb), 0.14);
+  --toggle-background-color-hover: rgba(var(--wl-fg-rgb), 0.22);
+  --toggle-background-color-active: var(--achiri-accent);
+
+  /* Código */
+  --code-background: var(--achiri-bg-deep);
+  --code-normal: var(--achiri-fg);
+  --code-comment: var(--achiri-fg-faint);
+  --code-function: var(--wl-c4);
+  --code-important: var(--wl-c1);
+  --code-keyword: var(--wl-c5);
+  --code-operator: var(--wl-c6);
+  --code-property: var(--wl-c3);
+  --code-punctuation: var(--achiri-fg-muted);
+  --code-string: var(--wl-c2);
+  --code-tag: var(--wl-c1);
+  --code-value: var(--wl-c13);
+  --code-size: 0.9em;
+
+  /* Tablas */
+  --table-background: transparent;
+  --table-border-color: var(--achiri-border);
+  --table-header-background: rgba(var(--wl-c5-rgb), 0.12);
+  --table-header-background-hover: rgba(var(--wl-c5-rgb), 0.18);
+  --table-row-background-hover: rgba(var(--wl-fg-rgb), 0.045);
+  --table-selection: rgba(var(--wl-c5-rgb), 0.18);
+  --table-text-color: var(--achiri-fg);
+  --table-header-text-color: var(--achiri-fg);
+  --table-selection-border-color: var(--achiri-accent);
+  --table-drag-handle-background: var(--achiri-accent-soft);
+  --table-drag-handle-color: var(--achiri-accent-text);
+
+  /* Callouts */
+  --callout-border-width: 1px;
+  --callout-border-opacity: 1;
+  --callout-padding: 14px 16px;
+  --callout-radius: var(--radius-m);
+  --callout-blend-mode: normal;
+  --callout-title-color: var(--achiri-fg);
+  --callout-title-padding: 0;
+  --callout-title-size: 0.98em;
+  --callout-content-padding: 8px 0 0;
+  --callout-content-background: transparent;
+  --callout-default: var(--wl-c4-rgb);
+  --callout-info: var(--wl-c4-rgb);
+  --callout-tip: var(--wl-c6-rgb);
+  --callout-success: var(--wl-c2-rgb);
+  --callout-question: var(--wl-c13-rgb);
+  --callout-warning: var(--wl-c3-rgb);
+  --callout-fail: var(--wl-c1-rgb);
+  --callout-error: var(--wl-c1-rgb);
+  --callout-bug: var(--wl-c1-rgb);
+  --callout-example: var(--wl-c5-rgb);
+  --callout-quote: var(--wl-c5-rgb);
+  --callout-summary: var(--wl-c4-rgb);
+  --callout-important: var(--wl-c13-rgb);
+  --callout-todo: var(--wl-c4-rgb);
+
+  /* Tags */
+  --tag-background: rgba(var(--wl-c5-rgb), 0.14);
+  --tag-background-hover: rgba(var(--wl-c5-rgb), 0.24);
+  --tag-color: var(--achiri-accent-text);
+  --tag-color-hover: var(--achiri-fg);
+  --tag-border-color: rgba(var(--wl-c5-rgb), 0.24);
+  --tag-border-color-hover: rgba(var(--wl-c5-rgb), 0.45);
+  --tag-border-width: 1px;
+  --tag-padding-x: 9px;
+  --tag-padding-y: 2px;
+  --tag-radius: 999px;
+  --tag-size: 0.78em;
+
+  /* Scrollbars */
+  --scrollbar-bg: transparent;
+  --scrollbar-thumb-bg: rgba(var(--wl-fg-rgb), 0.18);
+  --scrollbar-active-thumb-bg: rgba(var(--wl-c5-rgb), 0.42);
+
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+}
+
+/* Obsidian define --color-base-* y --color-* en .theme-dark/.theme-light, que
+   tienen más especificidad que `body`. Se sobreescriben aquí para que también
+   sigan la paleta de Wallust. */
+body.theme-dark,
+body.theme-light {
+  --color-base-00: var(--achiri-bg-deep);
+  --color-base-05: color-mix(in srgb, var(--wl-bg) 88%, #000);
+  --color-base-10: var(--achiri-bg);
+  --color-base-20: var(--achiri-bg-soft);
+  --color-base-25: var(--achiri-bg-raised);
+  --color-base-30: color-mix(in srgb, var(--wl-bg) 78%, var(--wl-fg));
+  --color-base-40: color-mix(in srgb, var(--wl-bg) 68%, var(--wl-fg));
+  --color-base-50: var(--achiri-fg-faint);
+  --color-base-60: var(--achiri-fg-muted);
+  --color-base-70: color-mix(in srgb, var(--wl-fg) 82%, var(--wl-bg));
+  --color-base-100: var(--achiri-fg);
+
+  --color-red: var(--wl-c1);
+  --color-orange: var(--wl-c3);
+  --color-yellow: var(--wl-c11);
+  --color-green: var(--wl-c2);
+  --color-cyan: var(--wl-c6);
+  --color-blue: var(--wl-c4);
+  --color-purple: var(--wl-c5);
+  --color-pink: var(--wl-c13);
+  --color-accent: var(--achiri-accent);
+  --color-accent-1: color-mix(in srgb, var(--wl-c5) 82%, white);
+  --color-accent-2: color-mix(in srgb, var(--wl-c5) 62%, black);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   2. Ventana, workspace y layout
+   ────────────────────────────────────────────────────────────────────────── */
+.workspace,
+.workspace-split,
+.workspace-leaf,
+.workspace-tabs,
+.workspace-tab-container {
+  background-color: var(--achiri-bg);
+}
+
+.workspace-split.mod-root .workspace-tabs .workspace-leaf {
+  background-color: var(--achiri-bg);
+}
+
+.workspace-split.mod-left-split,
+.workspace-split.mod-right-split {
+  background-color: var(--achiri-bg-deep);
+}
+
+.workspace-leaf-resize-handle {
+  background-color: var(--achiri-border);
+  transition: background-color 120ms ease;
+}
+
+.workspace-leaf-resize-handle:hover {
+  background-color: var(--achiri-accent);
+}
+
+.workspace-tab-header-container {
+  background-color: var(--achiri-bg-deep);
+  border-bottom: 1px solid var(--achiri-border);
+  padding: 5px 8px 0;
+}
+
+.workspace-tab-header-container-inner {
+  gap: 4px;
+}
+
+.workspace-tab-header {
+  border-radius: var(--radius-m) var(--radius-m) 0 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+  padding: 0 10px;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.workspace-tab-header:hover {
+  background-color: var(--achiri-bg-hover);
+}
+
+.workspace-tab-header.is-active {
+  background-color: var(--achiri-bg);
+  border-color: var(--achiri-border);
+  box-shadow: inset 0 2px 0 var(--achiri-accent);
+}
+
+.workspace-tab-header-inner {
+  padding: 6px 2px;
+}
+
+.workspace-tab-header-inner-title {
+  font-size: 0.88em;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.workspace-tab-header-inner-close-button {
+  border-radius: 999px;
+  color: var(--achiri-fg-faint);
+}
+
+.workspace-tab-header-inner-close-button:hover {
+  background-color: rgba(var(--wl-c1-rgb), 0.18);
+  color: var(--wl-c1);
+}
+
+.workspace-ribbon {
+  background-color: var(--achiri-bg-deep);
+  border-right: 1px solid var(--achiri-border);
+}
+
+.workspace-ribbon.mod-left.is-collapsed {
+  border-right-color: transparent;
+}
+
+.side-dock-ribbon-action,
+.clickable-icon {
+  border-radius: var(--radius-s);
+  color: var(--achiri-fg-muted);
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.side-dock-ribbon-action:hover,
+.clickable-icon:hover {
+  background-color: var(--achiri-bg-hover);
+  color: var(--achiri-fg);
+}
+
+.side-dock-ribbon-action.is-active,
+.clickable-icon.is-active {
+  background-color: var(--achiri-accent-soft);
+  color: var(--achiri-accent-text);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   3. Sidebar y explorador de archivos
+   ────────────────────────────────────────────────────────────────────────── */
+.nav-header {
+  padding: 12px 10px 8px;
+}
+
+.nav-buttons-container {
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.nav-files-container {
+  padding: 4px 8px 16px;
+}
+
+.nav-folder-title,
+.nav-file-title {
+  border-radius: var(--radius-s);
+  padding: 5px 8px;
+  margin: 1px 0;
+  border: 1px solid transparent;
+  transition: background-color 110ms ease, color 110ms ease, border-color 110ms ease;
+}
+
+.nav-folder-title:hover,
+.nav-file-title:hover {
+  background-color: var(--achiri-bg-hover);
+}
+
+.nav-folder-title-content {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.nav-file-title-content {
+  font-weight: 400;
+}
+
+.nav-file-title.is-active {
+  background-color: var(--achiri-accent-soft);
+  border-color: rgba(var(--wl-c5-rgb), 0.20);
+  color: var(--achiri-accent-text);
+  box-shadow: inset 2px 0 0 var(--achiri-accent);
+}
+
+.nav-file-title.is-active .nav-file-title-content {
+  font-weight: 600;
+}
+
+.nav-file-title.is-active .nav-file-tag {
+  color: var(--achiri-accent-text);
+}
+
+.nav-folder-collapse-indicator {
+  color: var(--achiri-fg-faint);
+}
+
+.nav-folder-collapse-indicator:hover {
+  color: var(--achiri-fg);
+}
+
+.nav-file-tag,
+.nav-folder-title[data-count]::after {
+  color: var(--achiri-fg-faint);
+  font-size: 0.72em;
+  font-variant-numeric: tabular-nums;
+}
+
+.nav-file-title:hover .nav-file-tag {
+  color: var(--achiri-fg-muted);
+}
+
+/* Iconos de carpetas (obsidian-icon-folder) */
+.nav-folder-title .iconize-icon,
+.nav-file-title .iconize-icon {
+  color: var(--achiri-fg-muted);
+  opacity: 0.9;
+}
+
+.nav-file-title.is-active .iconize-icon {
+  color: var(--achiri-accent-text);
+  opacity: 1;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   4. Editor y lectura
+   ────────────────────────────────────────────────────────────────────────── */
+.markdown-source-view.mod-cm6 .cm-editor,
+.markdown-source-view.mod-cm6 .cm-scroller,
+.markdown-preview-view,
+.markdown-reading-view {
+  background-color: var(--achiri-bg);
+  color: var(--text-normal);
+  font-family: var(--font-text);
+  font-size: var(--font-text-size);
+}
+
+.markdown-source-view.mod-cm6 .cm-content {
+  padding: 0;
+  caret-color: var(--wl-cursor);
+}
+
+.markdown-source-view.mod-cm6 .cm-line {
+  padding: 0 2px;
+  line-height: var(--line-height-normal);
+}
+
+.markdown-source-view.mod-cm6 .cm-activeLine {
+  background-color: rgba(var(--wl-c5-rgb), 0.045);
+}
+
+.markdown-source-view.mod-cm6 .cm-gutters {
+  background-color: transparent;
+  border-right: 1px solid var(--achiri-border);
+  color: var(--achiri-fg-ghost);
+}
+
+.markdown-source-view.mod-cm6 .cm-lineNumbers .cm-gutterElement {
+  color: var(--achiri-fg-ghost);
+  font-size: 0.78em;
+}
+
+.markdown-source-view.mod-cm6 .cm-activeLineGutter {
+  background-color: transparent;
+  color: var(--achiri-accent-text);
+}
+
+.cm-selectionBackground,
+.cm-content ::selection,
+.markdown-rendered ::selection {
+  background-color: var(--text-selection) !important;
+}
+
+.cm-cursor,
+.cm-dropCursor {
+  border-left-color: var(--wl-cursor) !important;
+  border-left-width: 2px !important;
+}
+
+.cm-searchMatch {
+  background-color: rgba(var(--wl-c3-rgb), 0.22);
+  border-radius: 3px;
+}
+
+.cm-searchMatch-selected {
+  background-color: rgba(var(--wl-c3-rgb), 0.40);
+}
+
+.markdown-preview-view {
+  padding: 32px 24px 80px;
+}
+
+.markdown-rendered {
+  line-height: var(--line-height-normal);
+}
+
+.markdown-rendered p {
+  margin-block: 0 var(--p-spacing);
+}
+
+.markdown-rendered h1,
+.markdown-rendered h2,
+.markdown-rendered h3,
+.markdown-rendered h4,
+.markdown-rendered h5,
+.markdown-rendered h6 {
+  letter-spacing: -0.012em;
+  margin-block: 1.4em 0.55em;
+}
+
+.markdown-rendered h1 {
+  padding-bottom: 0.28em;
+  border-bottom: 1px solid var(--achiri-border);
+}
+
+.markdown-rendered h2 {
+  padding-bottom: 0.18em;
+  border-bottom: 1px solid var(--achiri-border);
+}
+
+.markdown-rendered h1::after,
+.markdown-rendered h2::after {
+  content: "";
+  display: block;
+  width: 46px;
+  height: 2px;
+  margin-top: 0.32em;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--achiri-accent), transparent);
+}
+
+.markdown-rendered a,
+.internal-link,
+.external-link {
+  color: var(--achiri-info-text);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(var(--wl-c4-rgb), 0.24);
+  transition: color 120ms ease, border-color 120ms ease;
+}
+
+.markdown-rendered a:hover,
+.internal-link:hover,
+.external-link:hover {
+  color: var(--achiri-accent-text);
+  border-bottom-color: var(--achiri-accent);
+}
+
+.internal-link.is-unresolved {
+  color: var(--achiri-fg-faint);
+  border-bottom-style: dashed;
+}
+
+.markdown-rendered strong {
+  color: var(--achiri-fg);
+  font-weight: 700;
+}
+
+.markdown-rendered em {
+  color: color-mix(in srgb, var(--wl-fg) 88%, var(--wl-c5));
+}
+
+.markdown-rendered mark {
+  color: var(--achiri-fg);
+  background-color: var(--text-highlight-bg);
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+.markdown-rendered hr {
+  border: none;
+  height: 1px;
+  margin: 2em 0;
+  background: linear-gradient(90deg, transparent, var(--achiri-border-strong), transparent);
+}
+
+.markdown-rendered blockquote {
+  margin: 1.2em 0;
+  padding: 0.35em 1em;
+  color: var(--achiri-fg-muted);
+  border-left: 3px solid rgba(var(--wl-c5-rgb), 0.55);
+  background: rgba(var(--wl-c5-rgb), 0.055);
+  border-radius: 0 var(--radius-m) var(--radius-m) 0;
+}
+
+.markdown-rendered ul,
+.markdown-rendered ol {
+  padding-inline-start: 1.5em;
+}
+
+.markdown-rendered li {
+  margin-block: 0.18em;
+}
+
+.markdown-rendered li::marker {
+  color: var(--achiri-accent);
+}
+
+.markdown-rendered input[type="checkbox"] {
+  appearance: none;
+  width: 1.05em;
+  height: 1.05em;
+  margin-inline-end: 0.45em;
+  vertical-align: -0.12em;
+  border: 1px solid var(--achiri-border-strong);
+  border-radius: var(--checkbox-radius);
+  background-color: var(--achiri-bg-soft);
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.markdown-rendered input[type="checkbox"]:checked {
+  background-color: var(--achiri-accent);
+  border-color: var(--achiri-accent);
+}
+
+.markdown-rendered input[type="checkbox"]:checked::after {
+  content: "✓";
+  display: block;
+  color: var(--achiri-on-accent, var(--achiri-bg-deep));
+  font-size: 0.78em;
+  font-weight: 800;
+  line-height: 1.05em;
+  text-align: center;
+}
+
+.markdown-rendered img,
+.markdown-rendered video,
+.markdown-rendered .image-embed img {
+  border-radius: var(--radius-m);
+  border: 1px solid var(--achiri-border);
+}
+
+.markdown-embed {
+  border: 1px solid var(--achiri-border);
+  border-radius: var(--radius-m);
+  background-color: rgba(var(--wl-fg-rgb), 0.025);
+  padding: 12px 16px;
+}
+
+.markdown-embed-title {
+  color: var(--achiri-accent-text);
+  font-weight: 700;
+}
+
+.markdown-embed-link {
+  color: var(--achiri-fg-faint);
+}
+
+.markdown-embed-link:hover {
+  color: var(--achiri-accent-text);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   5. Código y syntax highlighting
+   ────────────────────────────────────────────────────────────────────────── */
+.markdown-rendered code,
+.cm-inline-code {
+  font-family: var(--font-monospace);
+  font-size: var(--code-size);
+  color: var(--achiri-accent-text);
+  background-color: rgba(var(--wl-c5-rgb), 0.10);
+  border: 1px solid rgba(var(--wl-c5-rgb), 0.16);
+  border-radius: 5px;
+  padding: 0.1em 0.35em;
+}
+
+.markdown-rendered pre {
+  position: relative;
+  margin: 1.1em 0;
+  padding: 14px 16px;
+  overflow: auto;
+  background-color: var(--achiri-bg-deep);
+  border: 1px solid var(--achiri-border);
+  border-radius: var(--radius-m);
+}
+
+.markdown-rendered pre code {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--achiri-fg);
+  font-size: 0.88em;
+  line-height: 1.6;
+}
+
+.markdown-rendered pre::-webkit-scrollbar,
+.markdown-rendered code::-webkit-scrollbar {
+  height: 8px;
+}
+
+.HyperMD-codeblock {
+  background-color: var(--achiri-bg-deep) !important;
+  border-left: 2px solid rgba(var(--wl-c5-rgb), 0.24);
+}
+
+.HyperMD-codeblock-begin {
+  border-top-left-radius: var(--radius-m);
+  border-top-right-radius: var(--radius-m);
+}
+
+.HyperMD-codeblock-end {
+  border-bottom-left-radius: var(--radius-m);
+  border-bottom-right-radius: var(--radius-m);
+}
+
+/* Tokens de lectura (Prism) */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: var(--achiri-fg-faint);
+  font-style: italic;
+}
+
+.token.punctuation {
+  color: var(--achiri-fg-muted);
+}
+
+.token.property,
+.token.tag,
+.token.constant,
+.token.symbol,
+.token.deleted {
+  color: var(--wl-c1);
+}
+
+.token.boolean,
+.token.number {
+  color: var(--wl-c13);
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: var(--wl-c2);
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: var(--wl-c6);
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: var(--wl-c5);
+}
+
+.token.function,
+.token.class-name {
+  color: var(--wl-c4);
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+  color: var(--wl-c3);
+}
+
+/* Tokens del editor (CodeMirror 6) */
+.cm-keyword { color: var(--wl-c5); }
+.cm-atom { color: var(--wl-c13); }
+.cm-number { color: var(--wl-c13); }
+.cm-def { color: var(--wl-c4); }
+.cm-variable { color: var(--achiri-fg); }
+.cm-variable-2 { color: var(--wl-c6); }
+.cm-property { color: var(--wl-c3); }
+.cm-operator { color: var(--wl-c6); }
+.cm-comment { color: var(--achiri-fg-faint); font-style: italic; }
+.cm-string { color: var(--wl-c2); }
+.cm-string-2 { color: var(--wl-c10); }
+.cm-meta { color: var(--achiri-fg-muted); }
+.cm-qualifier { color: var(--wl-c3); }
+.cm-builtin { color: var(--wl-c4); }
+.cm-type { color: var(--wl-c6); }
+.cm-tag { color: var(--wl-c1); }
+.cm-attribute { color: var(--wl-c3); }
+.cm-bracket { color: var(--achiri-fg-muted); }
+.cm-hr { color: var(--achiri-border-strong); }
+.cm-link { color: var(--achiri-info-text); }
+
+/* Code Styler */
+body.code-styler {
+  --code-styler-codeblock-background-colour: var(--achiri-bg-deep);
+  --code-styler-header-background-colour: var(--achiri-bg-soft);
+  --code-styler-gutter-background-colour: var(--achiri-bg-deep);
+  --code-styler-inline-colour: var(--achiri-accent-text);
+  --code-styler-inline-background-colour: rgba(var(--wl-c5-rgb), 0.10);
+  --code-styler-inline-colour-active: var(--achiri-fg);
+  --code-styler-active-codeblock-line-colour: rgba(var(--wl-c5-rgb), 0.08);
+  --code-styler-active-editor-line-colour: rgba(var(--wl-c5-rgb), 0.05);
+  --code-styler-gutter-text-colour: var(--achiri-fg-ghost);
+  --code-styler-gutter-active-text-colour: var(--achiri-accent-text);
+  --code-styler-header-text-colour: var(--achiri-fg-muted);
+  --code-styler-header-language-tag-background-colour: rgba(var(--wl-c5-rgb), 0.14);
+  --code-styler-header-language-tag-text-colour: var(--achiri-accent-text);
+  --code-styler-header-separator-colour: var(--achiri-border);
+  --code-styler-button-colour: var(--achiri-fg-faint);
+  --code-styler-button-active-colour: var(--achiri-accent-text);
+  --code-styler-default-highlight-colour: rgba(var(--wl-c3-rgb), 0.18);
+  --code-styler-external-reference-repository: var(--achiri-info-text);
+  --code-styler-external-reference-timestamp: var(--achiri-fg-faint);
+  --code-styler-external-reference-version: var(--achiri-accent-text);
+}
+
+body.code-styler pre.code-styler-pre {
+  border: 1px solid var(--achiri-border) !important;
+  border-radius: var(--radius-m) !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   6. Tablas
+   ────────────────────────────────────────────────────────────────────────── */
+.markdown-rendered table {
+  width: 100%;
+  margin: 1.2em 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--achiri-border);
+  border-radius: var(--radius-m);
+  overflow: hidden;
+  font-size: 0.94em;
+}
+
+.markdown-rendered thead th {
+  background-color: var(--table-header-background);
+  color: var(--table-header-text-color);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  border-bottom: 1px solid var(--achiri-border-strong);
+}
+
+.markdown-rendered th,
+.markdown-rendered td {
+  padding: 8px 12px;
+  border-right: 1px solid var(--achiri-border);
+  border-bottom: 1px solid var(--achiri-border);
+  vertical-align: top;
+}
+
+.markdown-rendered th:last-child,
+.markdown-rendered td:last-child {
+  border-right: none;
+}
+
+.markdown-rendered tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.markdown-rendered tbody tr:nth-child(even) {
+  background-color: rgba(var(--wl-fg-rgb), 0.025);
+}
+
+.markdown-rendered tbody tr:hover {
+  background-color: var(--table-row-background-hover);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   7. Callouts
+   ────────────────────────────────────────────────────────────────────────── */
+.callout {
+  border-radius: var(--callout-radius);
+  border: 1px solid var(--achiri-border);
+  border-left: 3px solid rgba(var(--callout-color, var(--wl-c4-rgb)), 0.75);
+  background-color: rgba(var(--callout-color, var(--wl-c4-rgb)), 0.075);
+  padding: var(--callout-padding);
+  margin: 1em 0;
+}
+
+.callout-title {
+  gap: 8px;
+  color: var(--callout-title-color);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.callout-icon {
+  color: rgba(var(--callout-color, var(--wl-c4-rgb)), 1);
+}
+
+.callout-title-inner {
+  font-weight: 700;
+}
+
+.callout-content {
+  color: var(--achiri-fg-muted);
+}
+
+.callout-content > :first-child {
+  margin-top: 0;
+}
+
+.callout-content > :last-child {
+  margin-bottom: 0;
+}
+
+.callout[data-callout="note"],
+.callout[data-callout="info"],
+.callout[data-callout="abstract"],
+.callout[data-callout="summary"],
+.callout[data-callout="todo"] {
+  --callout-color: var(--wl-c4-rgb);
+}
+
+.callout[data-callout="tip"],
+.callout[data-callout="hint"],
+.callout[data-callout="success"],
+.callout[data-callout="check"] {
+  --callout-color: var(--wl-c2-rgb);
+}
+
+.callout[data-callout="warning"],
+.callout[data-callout="caution"],
+.callout[data-callout="attention"] {
+  --callout-color: var(--wl-c3-rgb);
+}
+
+.callout[data-callout="danger"],
+.callout[data-callout="error"],
+.callout[data-callout="failure"],
+.callout[data-callout="fail"],
+.callout[data-callout="bug"] {
+  --callout-color: var(--wl-c1-rgb);
+}
+
+.callout[data-callout="quote"],
+.callout[data-callout="cite"] {
+  --callout-color: var(--wl-c5-rgb);
+}
+
+.callout[data-callout="example"] {
+  --callout-color: var(--wl-c6-rgb);
+}
+
+.callout[data-callout="question"],
+.callout[data-callout="help"],
+.callout[data-callout="faq"] {
+  --callout-color: var(--wl-c13-rgb);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   8. Tags, enlaces y metadatos
+   ────────────────────────────────────────────────────────────────────────── */
+.tag,
+.cm-hashtag {
+  border-radius: var(--tag-radius) !important;
+  padding: var(--tag-padding-y) var(--tag-padding-x) !important;
+  border: var(--tag-border-width) solid var(--tag-border-color) !important;
+  font-size: var(--tag-size) !important;
+  font-weight: 600;
+  line-height: 1.5;
+  text-decoration: none !important;
+  transition: filter 120ms ease, border-color 120ms ease;
+}
+
+.tag:hover,
+.cm-hashtag:hover {
+  border-color: var(--tag-border-color-hover) !important;
+  filter: brightness(1.12);
+}
+
+.cm-hashtag-begin,
+.cm-hashtag-end {
+  font-weight: 600;
+}
+
+.metadata-container {
+  border: 1px solid var(--achiri-border);
+  border-radius: var(--radius-m);
+  background-color: rgba(var(--wl-fg-rgb), 0.025);
+  padding: 8px 12px;
+}
+
+.metadata-property-key {
+  color: var(--achiri-fg-faint);
+  font-size: 0.8em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.metadata-property-value {
+  color: var(--achiri-fg);
+}
+
+.metadata-add-button {
+  color: var(--achiri-fg-faint);
+}
+
+.metadata-add-button:hover {
+  color: var(--achiri-accent-text);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   9. Graph view y canvas
+   ────────────────────────────────────────────────────────────────────────── */
+.graph-view.color-fill {
+  color: var(--achiri-accent);
+}
+
+.graph-view.color-fill-focused {
+  color: var(--achiri-warning);
+}
+
+.graph-view.color-fill-tag {
+  color: var(--wl-c6);
+}
+
+.graph-view.color-fill-attachment {
+  color: var(--wl-c3);
+}
+
+.graph-view.color-fill-unresolved {
+  color: var(--achiri-fg-faint);
+}
+
+.graph-view.color-line {
+  color: rgba(var(--wl-fg-rgb), 0.22);
+}
+
+.graph-view.color-text {
+  color: var(--achiri-fg-muted);
+}
+
+.graph-view.color-circle {
+  color: var(--achiri-accent);
+}
+
+.graph-controls {
+  background-color: var(--achiri-bg-deep);
+  border: 1px solid var(--achiri-border);
+  border-radius: var(--radius-m);
+  padding: 10px;
+}
+
+.graph-control-section-header {
+  color: var(--achiri-fg-muted);
+  font-weight: 700;
+}
+
+.graph-control-section {
+  border-bottom: 1px solid var(--achiri-border);
+}
+
+.canvas-wrapper {
+  background-color: var(--achiri-bg-deep);
+}
+
+.canvas-node {
+  border-radius: var(--radius-m);
+  border: 1px solid var(--achiri-border);
+  background-color: var(--achiri-bg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.canvas-node.is-focused {
+  border-color: var(--achiri-accent);
+  box-shadow: 0 0 0 1px var(--achiri-accent), 0 8px 28px rgba(0, 0, 0, 0.32);
+}
+
+.canvas-node-content {
+  border-radius: var(--radius-m);
+}
+
+.canvas-edge {
+  stroke: rgba(var(--wl-fg-rgb), 0.28);
+}
+
+.canvas-edge.is-focused {
+  stroke: var(--achiri-accent);
+}
+
+.canvas-controls,
+.canvas-menu {
+  background-color: var(--achiri-bg-deep);
+  border: 1px solid var(--achiri-border);
+  border-radius: var(--radius-m);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   10. UI: inputs, botones, modales, ajustes, menús
+   ────────────────────────────────────────────────────────────────────────── */
+button,
+.mod-cta,
+.mod-warning {
+  border-radius: var(--radius-m);
+  border: 1px solid var(--achiri-border);
+  box-shadow: none;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+button:hover,
+.mod-cta:hover {
+  border-color: var(--achiri-border-strong);
+}
+
+.mod-cta {
+  background-color: var(--achiri-accent);
+  border-color: var(--achiri-accent);
+  color: var(--achiri-on-accent, var(--achiri-bg-deep));
+  font-weight: 700;
+}
+
+.mod-cta:hover {
+  background-color: var(--interactive-accent-hover);
+  border-color: var(--interactive-accent-hover);
+}
+
+.mod-warning {
+  background-color: var(--achiri-danger);
+  border-color: var(--achiri-danger);
+  color: var(--achiri-on-danger, var(--achiri-bg-deep));
+}
+
+input[type="text"],
+input[type="search"],
+input[type="number"],
+input[type="password"],
+textarea,
+select {
+  border-radius: var(--input-radius);
+  border: 1px solid var(--achiri-border);
+  background-color: var(--background-modifier-form-field);
+  color: var(--text-normal);
+  box-shadow: none;
+}
+
+input[type="text"]:focus,
+input[type="search"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--achiri-accent);
+  box-shadow: 0 0 0 2px rgba(var(--wl-c5-rgb), 0.16);
+}
+
+input[type="range"] {
+  accent-color: var(--achiri-accent);
+}
+
+.checkbox-container {
+  border-radius: 999px;
+  background-color: var(--toggle-background-color);
+}
+
+.checkbox-container.is-enabled {
+  background-color: var(--achiri-accent);
+}
+
+.checkbox-container::after {
+  border-radius: 999px;
+}
+
+.modal-container,
+.modal {
+  border-radius: var(--radius-l);
+  border: 1px solid var(--achiri-border);
+  background-color: var(--achiri-bg);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
+}
+
+.modal-bg {
+  background-color: var(--background-modifier-cover);
+}
+
+.modal-title,
+.modal-header {
+  color: var(--achiri-fg);
+  font-weight: 700;
+}
+
+.prompt,
+.suggestion-container {
+  border-radius: var(--radius-l);
+  border: 1px solid var(--achiri-border);
+  background-color: var(--achiri-bg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.44);
+  overflow: hidden;
+}
+
+.prompt-input,
+.prompt input {
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid var(--achiri-border);
+  border-radius: 0;
+}
+
+.suggestion-item {
+  border-radius: var(--radius-s);
+  padding: 7px 10px;
+}
+
+.suggestion-item.is-selected {
+  background-color: var(--achiri-accent-soft);
+  color: var(--achiri-accent-text);
+}
+
+.suggestion-item .suggestion-note,
+.suggestion-item .suggestion-flair {
+  color: var(--achiri-fg-faint);
+}
+
+.menu {
+  border-radius: var(--radius-m);
+  border: 1px solid var(--achiri-border);
+  background-color: var(--achiri-bg-soft);
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.40);
+  padding: 5px;
+}
+
+.menu-item {
+  border-radius: var(--radius-s);
+  padding: 6px 10px;
+}
+
+.menu-item:hover,
+.menu-item.selected {
+  background-color: var(--achiri-accent-soft);
+  color: var(--achiri-accent-text);
+}
+
+.menu-separator {
+  border-bottom: 1px solid var(--achiri-border);
+}
+
+.tooltip {
+  border-radius: var(--radius-s);
+  border: 1px solid var(--achiri-border);
+  background-color: var(--achiri-bg-soft);
+  color: var(--achiri-fg);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Ajustes */
+.setting-item {
+  border-top: 1px solid var(--achiri-border);
+  padding: 14px 0;
+}
+
+.setting-item-name {
+  color: var(--achiri-fg);
+  font-weight: 600;
+}
+
+.setting-item-description {
+  color: var(--achiri-fg-faint);
+}
+
+.setting-item-control button {
+  border-radius: var(--radius-m);
+}
+
+.vertical-tab-header {
+  background-color: var(--achiri-bg-deep);
+  border-right: 1px solid var(--achiri-border);
+}
+
+.vertical-tab-nav-item {
+  border-radius: var(--radius-s);
+  color: var(--achiri-fg-muted);
+  padding: 7px 10px;
+}
+
+.vertical-tab-nav-item:hover {
+  background-color: var(--achiri-bg-hover);
+  color: var(--achiri-fg);
+}
+
+.vertical-tab-nav-item.is-active {
+  background-color: var(--achiri-accent-soft);
+  color: var(--achiri-accent-text);
+  font-weight: 600;
+}
+
+/* Barra de estado */
+.status-bar {
+  background-color: var(--status-bar-background);
+  border-top: 1px solid var(--achiri-border);
+  color: var(--status-bar-text-color);
+}
+
+.status-bar-item {
+  color: var(--achiri-fg-faint);
+}
+
+.status-bar-item:hover {
+  color: var(--achiri-fg-muted);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-bg);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-active-thumb-bg);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   11. Plugins
+   ────────────────────────────────────────────────────────────────────────── */
+/* Calendar */
+.calendar-container,
+#calendar-container {
+  --color-background-day: transparent;
+  --color-background-day-hover: var(--achiri-bg-hover);
+  --color-background-day-active: var(--achiri-accent-soft);
+  --color-text-today: var(--achiri-accent-text);
+  --color-dot: var(--achiri-accent);
+  border-radius: var(--radius-m);
+}
+
+.calendar-container .day:hover,
+#calendar-container .day:hover {
+  background-color: var(--achiri-bg-hover);
+}
+
+.calendar-container .today,
+#calendar-container .today {
+  color: var(--achiri-accent-text);
+  font-weight: 700;
+}
+
+/* Omnisearch */
+.omnisearch-modal .prompt-results,
+.omnisearch-result {
+  border-radius: var(--radius-s);
+}
+
+.omnisearch-result:hover {
+  background-color: var(--achiri-bg-hover);
+}
+
+.omnisearch-result__title {
+  color: var(--achiri-fg);
+  font-weight: 600;
+}
+
+.omnisearch-result__title > span {
+  color: var(--achiri-accent-text);
+}
+
+.omnisearch-result__excerpt {
+  color: var(--achiri-fg-muted);
+}
+
+.omnisearch-result__folder-path {
+  color: var(--achiri-fg-faint);
+}
+
+/* Commander */
+.cmdr .cmdr-item,
+.cmdr-page-header .cmdr-item {
+  border-radius: var(--radius-s);
+}
+
+.cmdr .cmdr-item:hover {
+  background-color: var(--achiri-bg-hover);
+}
+
+/* File Explorer Plus */
+.file-explorer-plus.pin-icon {
+  color: var(--achiri-accent) !important;
+}
+
+.file-explorer-plus.filters-activated-modal {
+  border-radius: var(--radius-l);
+}
+
+/* Icon Folder */
+.iconize-icon {
+  color: var(--achiri-fg-muted);
+}
+
+.nav-file-title.is-active .iconize-icon,
+.nav-folder-title:hover .iconize-icon {
+  color: var(--achiri-accent-text);
+}
+
+/* Colored Tags (la forma; el color lo inyecta el plugin) */
+.colored-tags-settings .community-palette-card,
+.colored-tags-settings .tag-color-setting {
+  border-radius: var(--radius-m);
+}
+
+.colored-tags-settings .community-palette-card {
+  border: 1px solid var(--achiri-border);
+  background-color: var(--achiri-bg-soft);
+}
+
+.colored-tags-settings .community-palette-card:hover {
+  border-color: var(--achiri-border-strong);
+  background-color: var(--achiri-bg-raised);
+}
+
+/* Ninja Cursor */
+.ninja-cursor {
+  background-color: var(--achiri-accent) !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   12. Dashboard Achiri
+   ────────────────────────────────────────────────────────────────────────── */
+.achiri-dashboard .markdown-preview-sizer {
+  max-width: 920px;
+}
+
+/* La portada no necesita mostrar el bloque de propiedades. */
+.markdown-preview-view.achiri-dashboard .metadata-container {
+  display: none;
+}
+
+.achiri-dashboard h1 {
+  margin-top: 0.2em;
+  font-size: 2.35em;
+  letter-spacing: -0.03em;
+}
+
+.achiri-dashboard h1::after {
+  width: 72px;
+  height: 3px;
+}
+
+.achiri-dashboard .markdown-preview-section > div:first-child p {
+  color: var(--achiri-fg-muted);
+  font-size: 1.02em;
+}
+
+.achiri-dashboard .callout[data-callout="multi-column"] {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 1.2em 0;
+}
+
+.achiri-dashboard .callout[data-callout="multi-column"] > .callout-title {
+  display: none;
+}
+
+.achiri-dashboard .callout[data-callout="multi-column"] > .callout-content {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 0;
+}
+
+.achiri-dashboard .callout[data-callout="multi-column"] > .callout-content > .callout {
+  margin: 0;
+  min-height: 108px;
+  border: 1px solid var(--achiri-border);
+  border-left: 3px solid rgba(var(--callout-color, var(--wl-c5-rgb)), 0.8);
+  background-color: rgba(var(--callout-color, var(--wl-c5-rgb)), 0.065);
+  transition: transform 140ms ease, border-color 140ms ease, background-color 140ms ease;
+}
+
+.achiri-dashboard .callout[data-callout="multi-column"] > .callout-content > .callout:hover {
+  transform: translateY(-2px);
+  border-color: rgba(var(--callout-color, var(--wl-c5-rgb)), 0.55);
+  background-color: rgba(var(--callout-color, var(--wl-c5-rgb)), 0.10);
+}
+
+.achiri-dashboard .callout[data-callout="multi-column"] > .callout-content > .callout .callout-title {
+  font-size: 1em;
+}
+
+.achiri-dashboard .callout[data-callout="multi-column"] > .callout-content > .callout .callout-content {
+  color: var(--achiri-fg-muted);
+  font-size: 0.88em;
+}
+
+.achiri-dashboard .callout[data-callout="multi-column"] > .callout-content > .callout a.internal-link {
+  border-bottom: none;
+  color: var(--achiri-fg);
+  font-weight: 600;
+}
+
+.achiri-dashboard .callout[data-callout="multi-column"] > .callout-content > .callout a.internal-link:hover {
+  color: var(--achiri-accent-text);
+}
+
+.achiri-dashboard .callout[data-callout="quote"] {
+  border-left-width: 3px;
+  background: linear-gradient(90deg, rgba(var(--wl-c5-rgb), 0.10), transparent);
+}
+
+.achiri-dashboard .callout[data-callout="quote"] .callout-content {
+  font-style: italic;
+  color: var(--achiri-fg-muted);
+}
+
+/* Responsive del dashboard */
+@media (max-width: 720px) {
+  .achiri-dashboard .callout[data-callout="multi-column"] > .callout-content {
+    grid-template-columns: 1fr;
+  }
+
+  .achiri-dashboard h1 {
+    font-size: 1.9em;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   13. Ajustes finos de legibilidad
+   ────────────────────────────────────────────────────────────────────────── */
+.markdown-rendered,
+.cm-content {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.markdown-rendered table,
+.markdown-rendered pre,
+.markdown-rendered code,
+.markdown-rendered .tag {
+  font-variant-ligatures: none;
+}
+
+.markdown-rendered pre code,
+.cm-content code,
+code {
+  font-variant-ligatures: none;
+}
+
+::selection {
+  background-color: var(--text-selection);
+}

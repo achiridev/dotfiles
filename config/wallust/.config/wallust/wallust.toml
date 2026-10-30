@@ -29,4 +29,8 @@ keyboard.target = "~/.cache/wallust/keyboard-colors"
 quickshell.template = "colors-quickshell.json"
 quickshell.target = "~/.cache/wallust/colors.json"
 
+obsidian.template = "colors-obsidian.css"
+obsidian.target = "~/dotfiles/config/obsidian/achiri/.obsidian/snippets/wallust.css"
+
 [hooks]
+obsidian = '"$HOME/dotfiles/bin/.local/bin/wallust-obsidian.sh"'

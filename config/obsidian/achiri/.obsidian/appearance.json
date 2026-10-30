@@ -1,0 +1,14 @@
+{
+  "theme": "obsidian",
+  "cssTheme": "Achiri",
+  "enabledCssSnippets": [
+    "wallust"
+  ],
+  "baseFontSize": 16,
+  "textFontFamily": "Noto Sans",
+  "interfaceFontFamily": "Noto Sans",
+  "monospaceFontFamily": "JetBrainsMono Nerd Font",
+  "showViewHeader": true,
+  "nativeMenus": false,
+  "accentColor": ""
+}

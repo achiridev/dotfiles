@@ -1,0 +1,46 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Achiri · puente de color Wallust → Obsidian
+   Generado automáticamente. No editar a mano.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+    --wl-bg: {{background}};
+    --wl-bg-rgb: {{background | rgb}};
+    --wl-fg: {{foreground}};
+    --wl-fg-rgb: {{foreground | rgb}};
+    --wl-cursor: {{cursor}};
+    --wl-cursor-rgb: {{cursor | rgb}};
+
+    --wl-c0: {{color0}};
+    --wl-c0-rgb: {{color0 | rgb}};
+    --wl-c1: {{color1}};
+    --wl-c1-rgb: {{color1 | rgb}};
+    --wl-c2: {{color2}};
+    --wl-c2-rgb: {{color2 | rgb}};
+    --wl-c3: {{color3}};
+    --wl-c3-rgb: {{color3 | rgb}};
+    --wl-c4: {{color4}};
+    --wl-c4-rgb: {{color4 | rgb}};
+    --wl-c5: {{color5}};
+    --wl-c5-rgb: {{color5 | rgb}};
+    --wl-c6: {{color6}};
+    --wl-c6-rgb: {{color6 | rgb}};
+    --wl-c7: {{color7}};
+    --wl-c7-rgb: {{color7 | rgb}};
+    --wl-c8: {{color8}};
+    --wl-c8-rgb: {{color8 | rgb}};
+    --wl-c9: {{color9}};
+    --wl-c9-rgb: {{color9 | rgb}};
+    --wl-c10: {{color10}};
+    --wl-c10-rgb: {{color10 | rgb}};
+    --wl-c11: {{color11}};
+    --wl-c11-rgb: {{color11 | rgb}};
+    --wl-c12: {{color12}};
+    --wl-c12-rgb: {{color12 | rgb}};
+    --wl-c13: {{color13}};
+    --wl-c13-rgb: {{color13 | rgb}};
+    --wl-c14: {{color14}};
+    --wl-c14-rgb: {{color14 | rgb}};
+    --wl-c15: {{color15}};
+    --wl-c15-rgb: {{color15 | rgb}};
+}

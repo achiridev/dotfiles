@@ -153,6 +153,7 @@ Item {
             "sh", "-c",
             "CS_OK=0; " +
             "wallust --config-dir \"" + root.wallustDir + "\" --skip-sequences theme \"" + name + "\" >>\"" + Quickshell.env("HOME") + "/.cache/wallust-apply.log\" 2>&1 || CS_OK=1; " +
+            "\"" + Quickshell.env("HOME") + "/dotfiles/bin/.local/bin/wallust-obsidian.sh\" >>\"" + Quickshell.env("HOME") + "/.cache/wallust-apply.log\" 2>&1 || true; " +
             "\"" + Quickshell.env("HOME") + "/dotfiles/bin/.local/bin/wallust-keyboard.sh\" >/dev/null 2>&1; " +
             "kitty @ set-colors -a ~/.config/kitty/colors.conf 2>/dev/null || true; " +
             "hyprctl reload 2>/dev/null || true; " +
@@ -223,6 +224,7 @@ Item {
             "if ! mkdir -p \"" + root.schemeDir + "\" || ! printf '%s' \"$WALLUST_JSON\" > \"" + root.schemeFile + "\"; then " +
             "echo 'apply-custom: no se pudo escribir ' \"" + root.schemeFile + "\" >>\"" + Quickshell.env("HOME") + "/.cache/wallust-apply.log\"; exit 1; fi; " +
             "wallust --config-dir \"" + root.wallustDir + "\" --skip-sequences cs custom >/dev/null 2>>\"" + Quickshell.env("HOME") + "/.cache/wallust-apply.log\" || CS_OK=1; " +
+            "\"" + Quickshell.env("HOME") + "/dotfiles/bin/.local/bin/wallust-obsidian.sh\" >>\"" + Quickshell.env("HOME") + "/.cache/wallust-apply.log\" 2>&1 || true; " +
             "\"" + Quickshell.env("HOME") + "/dotfiles/bin/.local/bin/wallust-keyboard.sh\" >/dev/null 2>&1; " +
             "kitty @ set-colors -a ~/.config/kitty/colors.conf 2>/dev/null || true; " +
             "hyprctl reload 2>/dev/null || true; " +
@@ -257,6 +259,7 @@ Item {
             "CS_OK=0; rm -f \"" + root.schemeFile + "\"; " +
             "if [ -n \"" + root.lastTheme + "\" ]; then " +
             "wallust --config-dir \"" + root.wallustDir + "\" --skip-sequences theme \"" + root.lastTheme + "\" >>\"" + Quickshell.env("HOME") + "/.cache/wallust-apply.log\" 2>&1 || CS_OK=1; " +
+            "\"" + Quickshell.env("HOME") + "/dotfiles/bin/.local/bin/wallust-obsidian.sh\" >>\"" + Quickshell.env("HOME") + "/.cache/wallust-apply.log\" 2>&1 || true; " +
             "else " +
             "\"" + Quickshell.env("HOME") + "/dotfiles/bin/.local/bin/wallust-keyboard.sh\" >/dev/null 2>&1; " +
             "fi; exit $CS_OK"
