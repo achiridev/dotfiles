@@ -11,6 +11,10 @@
 #    4. Añade el bloque HSL del acento (color5) al snippet `wallust.css`,
 #       necesario porque Obsidian usa --accent-h/s/l en sus componentes.
 #
+#  Si alguno de esos archivos no existe (clon nuevo), se crea a partir de la
+#  estructura versionada en `.obsidian/seeds/` y después se recolorea. Los
+#  archivos generados están en .gitignore; las semillas no se sobrescriben.
+#
 #  Es idempotente: se puede ejecutar tantas veces como haga falta.
 # ══════════════════════════════════════════════════════════════════════════════
 set -euo pipefail
@@ -31,12 +35,12 @@ if [ ! -d "$OBSIDIAN_DIR" ]; then
     exit 0
 fi
 
-python3 - "$COLORS_JSON" "$OBSIDIAN_DIR" "$SNIPPET" <<'PY'
+python3 - "$COLORS_JSON" "$OBSIDIAN_DIR" "$SNIPPET" "$OBSIDIAN_DIR/seeds" <<'PY'
 import json
 import sys
 from pathlib import Path
 
-colors_path, obsidian_dir, snippet_path = map(Path, sys.argv[1:4])
+colors_path, obsidian_dir, snippet_path, seeds_dir = map(Path, sys.argv[1:5])
 data = json.loads(colors_path.read_text())
 colors = data["colors"]
 
@@ -76,11 +80,17 @@ graph_map = {
 }
 
 
-def load_json(path):
-    try:
-        return json.loads(path.read_text())
-    except (FileNotFoundError, json.JSONDecodeError):
-        return None
+def load_json(path, seed_name, valid):
+    # Si el archivo generado no existe o perdió la estructura necesaria (clon
+    # nuevo, Obsidian creó valores por defecto), se usa la semilla versionada.
+    for candidate in (path, seeds_dir / seed_name):
+        try:
+            payload = json.loads(candidate.read_text())
+        except (FileNotFoundError, json.JSONDecodeError):
+            continue
+        if valid(payload):
+            return payload
+    return None
 
 
 def save_json(path, payload):
@@ -92,7 +102,11 @@ def save_json(path, payload):
 
 # ── 1. obsidian-file-color ────────────────────────────────────────────────
 file_color_path = obsidian_dir / "plugins/obsidian-file-color/data.json"
-file_color = load_json(file_color_path)
+file_color = load_json(
+    file_color_path,
+    "file-color.json",
+    lambda d: isinstance(d, dict) and isinstance(d.get("palette"), list) and bool(d["palette"]),
+)
 if isinstance(file_color, dict) and isinstance(file_color.get("palette"), list):
     for index, entry in enumerate(file_color["palette"]):
         if isinstance(entry, dict):
@@ -101,7 +115,7 @@ if isinstance(file_color, dict) and isinstance(file_color.get("palette"), list):
 
 # ── 2. colored-tags ───────────────────────────────────────────────────────
 tags_path = obsidian_dir / "plugins/colored-tags/data.json"
-tags = load_json(tags_path)
+tags = load_json(tags_path, "colored-tags.json", lambda d: isinstance(d, dict) and bool(d))
 if isinstance(tags, dict):
     tag_palette = [get("color1", palette[0]), get("color3", palette[4]),
                    get("color2", palette[2]), get("color4", palette[3]),
@@ -112,7 +126,11 @@ if isinstance(tags, dict):
 
 # ── 3. graph.json ─────────────────────────────────────────────────────────
 graph_path = obsidian_dir / "graph.json"
-graph = load_json(graph_path)
+graph = load_json(
+    graph_path,
+    "graph.json",
+    lambda d: isinstance(d, dict) and isinstance(d.get("colorGroups"), list) and bool(d["colorGroups"]),
+)
 if isinstance(graph, dict) and isinstance(graph.get("colorGroups"), list):
     for index, group in enumerate(graph["colorGroups"]):
         if not isinstance(group, dict):

@@ -29,6 +29,12 @@ config/waybar/.config/waybar/colors.css
 config/wallust/.config/wallust/colorschemes/
 config/obsidian/achiri/.obsidian/snippets/wallust.css
 
+# Config de Obsidian generada por wallust-obsidian.sh
+# (la estructura versionada vive en .obsidian/seeds/)
+config/obsidian/achiri/.obsidian/graph.json
+config/obsidian/achiri/.obsidian/plugins/obsidian-file-color/data.json
+config/obsidian/achiri/.obsidian/plugins/colored-tags/data.json
+
 # Notas para agentes/LLMs (contexto local, no se comparte)
 AGENTS.md
 
@@ -46,4 +52,7 @@ cache/
 Thumbs.db
 
 # Sync conflicts
-*.sync-conflict-*.json
+*sync-conflict*
+
+# Datos generados por plugins de Obsidian
+config/obsidian/achiri/.obsidian/plugins/code-styler/reference-files/
