@@ -39,6 +39,7 @@ Singleton {
     property bool activateEnabled: true
     property bool visualizerEnabled: true
     property bool notificationsEnabled: true
+    property bool clipboardEnabled: true
     property bool dndEnabled: false
     property int historyLimit: 500
 
@@ -53,6 +54,7 @@ Singleton {
         "activateEnabled",
         "visualizerEnabled",
         "notificationsEnabled",
+        "clipboardEnabled",
         "dndEnabled",
         "historyLimit"
     ]
@@ -189,6 +191,7 @@ Singleton {
     onActivateEnabledChanged: _onChanged()
     onVisualizerEnabledChanged: _onChanged()
     onNotificationsEnabledChanged: _onChanged()
+    onClipboardEnabledChanged: _onChanged()
     onDndEnabledChanged: _onChanged()
     onHistoryLimitChanged: _onChanged()
 }

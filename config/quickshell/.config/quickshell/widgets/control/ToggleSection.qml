@@ -1,8 +1,8 @@
 // widgets/control/ToggleSection.qml
 // Sección "Componentes" del Panel de Control. Permite activar/desactivar los
 // componentes de Quickshell (Bar, Overview, Wallpapers, Launcher, Activate,
-// Visualizer). Cada toggle escribe ControlState.<x>Enabled, que alimenta los
-// Loaders de shell.qml.
+// Visualizer, Notificaciones, Portapapeles). Cada toggle escribe
+// ControlState.<x>Enabled, que alimenta los Loaders de shell.qml.
 import QtQuick
 import QtQuick.Layouts
 import qs.globals
@@ -11,7 +11,7 @@ Item {
     id: root
 
     // Altura natural de la sección (para que el panel se ajuste).
-    readonly property int sectionHeight: 320
+    readonly property int sectionHeight: 360
 
     // Fila con switch on/off reutilizable en toda la sección.
     component ToggleRow: Rectangle {
@@ -147,6 +147,13 @@ Item {
             icon: String.fromCodePoint(0xf0f3) // campana
             checked: ControlState.notificationsEnabled
             onToggled: () => { ControlState.notificationsEnabled = !ControlState.notificationsEnabled }
+        }
+
+        ToggleRow {
+            label: "Portapapeles"
+            icon: String.fromCodePoint(0xf0c5) // portapapeles
+            checked: ControlState.clipboardEnabled
+            onToggled: () => { ControlState.clipboardEnabled = !ControlState.clipboardEnabled }
         }
 
         // Espaciador para mantener el contenido arriba.

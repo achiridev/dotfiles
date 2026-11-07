@@ -1,0 +1,21 @@
+# Unit propia: sustituye a /usr/lib/systemd/user/cliphist.service del paquete.
+# Diferencia clave: usa clipboard-store, que prefiere la imagen cuando el
+# portapapeles ofrece texto + imagen (imágenes copiadas desde navegadores).
+#
+# Se arranca desde autostart.lua con: systemctl --user start cliphist.service
+# PartOf/After graphical-session garantiza WAYLAND_DISPLAY en el entorno.
+[Unit]
+Description=Clipboard history (cliphist + image-preferring watcher)
+Documentation=https://github.com/sentriz/cliphist
+PartOf=graphical-session.target
+After=graphical-session.target
+Requisite=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/wl-paste --watch %h/.local/bin/clipboard-store
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target

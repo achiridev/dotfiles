@@ -1,0 +1,19 @@
+# Configuración de cliphist (historial del portapapeles).
+#
+# Formato: una directiva `clave valor` por línea. Los comentarios con # se
+# ignoran. cliphist se lanza sin flags desde clipboard-store / clipboard-ctl,
+# así que estos valores son los efectivos.
+
+# Tope de entradas. Al superarlo, cliphist elimina las más antiguas.
+max-items 500
+
+# Ventana de búsqueda de duplicados. Un valor alto evita que el mismo texto
+# copiado dos veces cree dos entradas aunque haya muchas copias por medio.
+max-dedupe-search 300
+
+# No guardar contenido vacío (portapapeles limpiado, selecciones vacías…).
+min-store-length 1
+
+# Longitud del preview que devuelve `cliphist list`. 1024 permite buscar en
+# más de la primera línea sin disparar el tamaño de salida (< 200 KB).
+preview-width 1024

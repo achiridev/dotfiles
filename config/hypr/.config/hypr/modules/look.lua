@@ -99,6 +99,14 @@ hl.layer_rule({
 	ignore_alpha = 0.2,
 })
 
+-- Portapapeles (Quickshell): capa sin animación de entrada/salida. No se
+-- activa blur: el backdrop oscuro ya separa la tarjeta del escritorio.
+hl.layer_rule({
+	name = "clipboard-noanim",
+	match = { namespace = "^quickshell:clipboard$" },
+	no_anim = true,
+})
+
 -- Bar (Quickshell): namespace "quickshell-bar" en windows/bar/Bar.qml. La
 -- barra es semitransparente (alpha bg 0.55) sobre WlrLayer.Top; sin blur no
 -- hace un pase de blur por frame 24/7 sobre todo lo que pasa por debajo.

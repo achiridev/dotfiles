@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# ──────────────────────────────────────────────────────────────────────────────
+#  clipboard-store — watcher de portapapeles para `wl-paste --watch`.
+#
+#  wl-paste elige por defecto texto antes que imagen. Al copiar una imagen
+#  desde un navegador eso guarda el HTML/URL en lugar de la imagen. Este
+#  wrapper prefiere la imagen cuando el portapapeles ofrece texto + imagen,
+#  pero respeta `text/uri-list` (copiar archivos desde un file manager), donde
+#  lo útil es el URI, no una miniatura.
+#
+#  wl-paste exporta CLIPBOARD_TYPE con el MIME que ha elegido y CLIPBOARD_STATE
+#  ("nil", "data" o "sensitive"). El stdin contiene SIEMPRE los datos de ese
+#  tipo; hay que consumirlo para no bloquear al compositor.
+# ──────────────────────────────────────────────────────────────────────────────
+set -uo pipefail
+
+type="${CLIPBOARD_TYPE:-}"
+
+# Sin tipo (portapapeles vacío): cliphist store descarta por min-store-length.
+if [[ -z "$type" ]]; then
+    exec cliphist store
+fi
+
+# Solo se plantea cambiar a imagen si wl-paste eligió un tipo de texto.
+if [[ "$type" == text/* || "$type" == "UTF8_STRING" || "$type" == "STRING" ]]; then
+    types="$(wl-paste --list-types 2>/dev/null || true)"
+
+    has_image=0
+    has_uri=0
+    while IFS= read -r offered; do
+        [[ "$offered" == image/* ]] && has_image=1
+        [[ "$offered" == "text/uri-list" ]] && has_uri=1
+    done <<< "$types"
+
+    if [[ $has_image -eq 1 && $has_uri -eq 0 ]]; then
+        # Consumir y descartar el texto para liberar el pipe de wl-paste.
+        cat >/dev/null
+        # "image" sin subtipo: wl-paste pide cualquier image/* disponible.
+        wl-paste --type image | cliphist store
+        exit $?
+    fi
+fi
+
+cliphist store

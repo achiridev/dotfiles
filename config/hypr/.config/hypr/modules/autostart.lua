@@ -18,8 +18,9 @@ hl.on("hyprland.start", function ()
 	-- hl.exec_cmd("awww-daemon")
 	-- hl.exec_cmd("waybar")
 
-	-- Portapapeles y gestor de archivos
-	hl.exec_cmd("wl-paste --watch cliphist store")
+	-- Portapapeles: historial persistente (cliphist) con watcher propio que
+	-- prefiere imágenes cuando el portapapeles ofrece texto + imagen.
+	hl.exec_cmd("systemctl --user start cliphist.service")
 	hl.exec_cmd("thunar --daemon")
 
 	-- Hypr

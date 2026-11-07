@@ -1,0 +1,230 @@
+#!/usr/bin/env bash
+# ──────────────────────────────────────────────────────────────────────────────
+#  clipboard-ctl — adaptador CLI entre Quickshell y el historial de cliphist.
+#
+#  Es el ÚNICO punto que habla con cliphist / wl-clipboard / ImageMagick.
+#  Quickshell solo ejecuta este script y lee su stdout, de modo que la lógica
+#  del portapapeles no queda acoplada a QML.
+#
+#  Uso:
+#    clipboard-ctl list                 → id<TAB>preview (más reciente primero)
+#    clipboard-ctl text <id> [max]      → texto completo saneado (máx. bytes)
+#    clipboard-ctl mime <id>            → MIME real del contenido (file -i)
+#    clipboard-ctl thumb <id>           → ruta de la miniatura cacheada
+#    clipboard-ctl copy <id>            → restaura el elemento al portapapeles
+#    clipboard-ctl delete <id>          → elimina una entrada y su miniatura
+#    clipboard-ctl wipe                 → borra todo el historial y la caché
+#
+#  Variables de entorno:
+#    CLIPBOARD_DB_PATH   usa otra DB de cliphist (pruebas / multi-perfil).
+#    CLIPBOARD_CACHE_DIR cambia la caché de miniaturas.
+# ──────────────────────────────────────────────────────────────────────────────
+set -uo pipefail
+
+readonly TEXT_MAX_DEFAULT=32768
+readonly PREVIEW_WIDTH=1024
+readonly THUMB_MAX=700
+readonly CACHE_DIR="${CLIPBOARD_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/quickshell/clipboard}"
+readonly THUMB_DIR="$CACHE_DIR/thumbs"
+
+die() {
+    printf 'clipboard-ctl: %s\n' "$*" >&2
+    exit 1
+}
+
+cliphist_cmd() {
+    if [[ -n "${CLIPBOARD_DB_PATH:-}" ]]; then
+        cliphist -db-path "$CLIPBOARD_DB_PATH" "$@"
+    else
+        cliphist "$@"
+    fi
+}
+
+thumb_path() {
+    printf '%s/%s.png' "$THUMB_DIR" "$1"
+}
+
+# Heurística para `text/uri-list`: file(1) lo clasifica como text/plain. Si
+# todas las líneas útiles son URI (file://, https://…), se restaura con su MIME
+# real para que los gestores de archivos puedan pegar los archivos.
+is_uri_list() {
+    local line found=0
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        line=${line%$'\r'}
+        [[ -z "$line" || "$line" == \#* ]] && continue
+        if [[ "$line" =~ ^[A-Za-z][A-Za-z0-9+.-]*:// || "$line" =~ ^file:/ ]]; then
+            found=1
+        else
+            return 1
+        fi
+    done < "$1"
+    [[ $found -eq 1 ]]
+}
+
+require_id() {
+    [[ -n "${1:-}" ]] || die "falta el <id> de la entrada"
+}
+
+# Borra miniaturas huérfanas. cliphist deduplica borrando+insertando, así que
+# una entrada re-copiada cambia de ID y deja atrás su PNG. Se conserva la caché
+# al día sin coste perceptible (unas decenas de archivos).
+prune_thumbs() {
+    [[ -d "$THUMB_DIR" ]] || return 0
+    local listing="$1" f base id
+    local -A keep=()
+    while IFS=$'\t' read -r id _; do
+        [[ -n "$id" ]] && keep["$id"]=1
+    done <<< "$listing"
+    for f in "$THUMB_DIR"/*.png; do
+        [[ -e "$f" ]] || continue
+        base=${f##*/}
+        id=${base%.png}
+        [[ -n "${keep[$id]:-}" ]] || rm -f "$f"
+    done
+}
+
+usage() {
+    sed -n '2,21p' "$0" | sed -e 's/^# \{0,2\}//' -e 's/^#$//'
+}
+
+case "${1:-}" in
+    list)
+        # cliphist sustituye saltos de línea por espacios, así que cada entrada
+        # ocupa exactamente una línea. Se eliminan NUL para que Qt no trunque
+        # previews de binarios.
+        out="$(cliphist_cmd -preview-width "$PREVIEW_WIDTH" list 2>/dev/null \
+            | tr -d '\000')"
+        list_rc=$?
+        [[ -n "$out" ]] && printf '%s\n' "$out"
+        # Con una DB alternativa (pruebas/multi-perfil) no se toca la caché
+        # por defecto: sus IDs no se corresponden. Si `list` falló, no se poda
+        # nada (la caché podría seguir siendo válida).
+        if [[ $list_rc -eq 0 && -z "${CLIPBOARD_DB_PATH:-}" ]]; then
+            prune_thumbs "$out"
+        fi
+        exit $list_rc
+        ;;
+
+    text)
+        id="${2:-}"
+        max="${3:-$TEXT_MAX_DEFAULT}"
+        require_id "$id"
+        # head puede provocar SIGPIPE en cliphist (esperado); iconv -c descarta
+        # secuencias UTF-8 inválidas y tr elimina NUL.
+        cliphist_cmd decode "$id" 2>/dev/null \
+            | head -c "$max" \
+            | tr -d '\000' \
+            | iconv -c -f UTF-8 -t UTF-8
+        exit 0
+        ;;
+
+    mime)
+        id="${2:-}"
+        require_id "$id"
+        mime="$(cliphist_cmd decode "$id" 2>/dev/null \
+            | file -b --mime-type - 2>/dev/null \
+            | head -n 1 | tr -d '\r\n')"
+        printf '%s\n' "${mime:-application/octet-stream}"
+        ;;
+
+    thumb)
+        id="${2:-}"
+        require_id "$id"
+        out="$(thumb_path "$id")"
+
+        # Caché: si ya existe una miniatura válida no se vuelve a decodificar.
+        if [[ -s "$out" ]]; then
+            printf '%s\n' "$out"
+            exit 0
+        fi
+
+        mkdir -p "$THUMB_DIR" || die "no se pudo crear $THUMB_DIR"
+        tmp="$(mktemp "$THUMB_DIR/.$id.XXXXXX")" || die "no se pudo crear temporal"
+        # -flatten deja un único frame estático (GIF/WebP animados incluidos).
+        # Los límites de memoria evitan que una imagen enorme tumbe la sesión;
+        # si ImageMagick falla, la UI muestra "sin vista previa".
+        if cliphist_cmd decode "$id" 2>/dev/null \
+            | magick -limit memory 192MiB -limit map 384MiB - \
+                -thumbnail "${THUMB_MAX}x${THUMB_MAX}>" \
+                -background none -flatten -depth 8 \
+                -define png:compression-level=1 "png:$tmp" 2>/dev/null \
+            && [[ -s "$tmp" ]]; then
+            mv -f "$tmp" "$out"
+            printf '%s\n' "$out"
+        else
+            rm -f "$tmp"
+            exit 1
+        fi
+        ;;
+
+    copy)
+        id="${2:-}"
+        require_id "$id"
+        # Se decodifica a un temporal con extensión, se detecta el MIME real y
+        # se pasa explícito a wl-copy. Así las imágenes/PDF/ZIP se restauran con
+        # su tipo correcto aunque xdg-mime no adivine bien desde stdin.
+        tmp="$(mktemp "${XDG_RUNTIME_DIR:-/tmp}/clipboard-copy.XXXXXX")" \
+            || die "no se pudo crear temporal"
+        if ! cliphist_cmd decode "$id" > "$tmp" 2>/dev/null; then
+            rm -f "$tmp"
+            die "no se pudo decodificar la entrada $id"
+        fi
+
+        mime="$(file -b --mime-type "$tmp" 2>/dev/null | head -n 1 | tr -d '\r\n')"
+        [[ -n "$mime" ]] || mime="text/plain"
+
+        # Tipos que file clasifica como "application/*" pero son texto: se
+        # restauran como texto plano para que cualquier app pueda pegarlos.
+        # wl-copy, al recibir un MIME text/*, ofrece además UTF8_STRING,
+        # STRING y text/plain;charset=utf-8.
+        if [[ "$mime" == "text/uri-list" ]] \
+            || { [[ "$mime" == text/* ]] && is_uri_list "$tmp"; }; then
+            # text/uri-list es text/*: wl-copy añade igualmente los alias de
+            # texto plano, y los file managers reciben los archivos.
+            wl-copy --type "text/uri-list" < "$tmp"
+        else
+            case "$mime" in
+                text/*|application/json|application/xml|application/javascript|\
+                application/x-shellscript|application/x-yaml|application/yaml|\
+                application/toml)
+                    wl-copy --type "text/plain;charset=utf-8" < "$tmp"
+                    ;;
+                *)
+                    wl-copy --type "$mime" < "$tmp"
+                    ;;
+            esac
+        fi
+        rc=$?
+
+        rm -f "$tmp"
+        exit $rc
+        ;;
+
+    delete)
+        id="${2:-}"
+        require_id "$id"
+        # cliphist delete lee los IDs por stdin (no como argumento).
+        printf '%s\n' "$id" | cliphist_cmd delete
+        rm -f "$(thumb_path "$id")"
+        ;;
+
+    wipe)
+        cliphist_cmd wipe
+        rm -rf "$THUMB_DIR"
+        ;;
+
+    check)
+        for cmd in cliphist wl-copy wl-paste magick file iconv; do
+            command -v "$cmd" >/dev/null 2>&1 || die "falta $cmd"
+        done
+        printf 'ok\n'
+        ;;
+
+    ""|-h|--help|help)
+        usage
+        ;;
+
+    *)
+        die "orden desconocida: $1"
+        ;;
+esac

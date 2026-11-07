@@ -25,6 +25,7 @@ Singleton {
     property bool activateEnabled: true
     property bool visualizerEnabled: true
     property bool notificationsEnabled: true
+    property bool clipboardEnabled: true
 
     // ============================================================
     // VISIBILIDAD DEL PANEL DE CONTROL (ventana flotante)
@@ -83,6 +84,7 @@ Singleton {
         root.activateEnabled = SettingsService.activateEnabled
         root.visualizerEnabled = SettingsService.visualizerEnabled
         root.notificationsEnabled = SettingsService.notificationsEnabled
+        root.clipboardEnabled = SettingsService.clipboardEnabled
     }
 
     // ============================================================
@@ -126,6 +128,11 @@ Singleton {
     }
     onNotificationsEnabledChanged: {
         SettingsService.notificationsEnabled = root.notificationsEnabled
+        SettingsService.scheduleSave()
+    }
+    onClipboardEnabledChanged: {
+        if (!root.clipboardEnabled) ClipboardState.close()
+        SettingsService.clipboardEnabled = root.clipboardEnabled
         SettingsService.scheduleSave()
     }
 }

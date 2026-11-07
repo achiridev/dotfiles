@@ -11,7 +11,9 @@ local mainMod = "SUPER"
 -- ───────── GENERAL ─────────
 local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
 hl.bind(mainMod .. " + K", hl.dsp.window.pseudo())
-hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
+-- Portapapeles (Quickshell) — reemplaza el toggle de flotante.
+hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("quickshell ipc call clipboard toggle"))
+hl.bind(mainMod .. " + SHIFT + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
 hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ action = "toggle" }))
 -- Workspace Overview (Quickshell) — reemplaza a hyprexpo

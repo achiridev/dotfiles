@@ -11,6 +11,7 @@ import qs.windows.overview
 import qs.windows.wallpapers
 import qs.windows.launcher
 import qs.windows.activate
+import qs.windows.clipboard
 import qs.widgets.notifications
 
 ShellRoot {
@@ -57,6 +58,10 @@ ShellRoot {
     Loader {
         active: ControlState.launcherEnabled
         sourceComponent: LauncherWindow {}
+    }
+    Loader {
+        active: ControlState.clipboardEnabled
+        sourceComponent: ClipboardWindow {}
     }
     Loader {
         active: ControlState.activateEnabled
