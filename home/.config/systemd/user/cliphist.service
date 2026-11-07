@@ -3,13 +3,15 @@
 # portapapeles ofrece texto + imagen (imágenes copiadas desde navegadores).
 #
 # Se arranca desde autostart.lua con: systemctl --user start cliphist.service
-# PartOf/After graphical-session garantiza WAYLAND_DISPLAY en el entorno.
+# PartOf detiene el watcher al cerrar la sesión gráfica. NO se usa Requisite:
+# en el arranque, autostart corre antes de que graphical-session.target esté
+# activo y la unidad fallaría por dependencia. WAYLAND_DISPLAY ya está en el
+# entorno del gestor de usuario (Hyprland lo importa al iniciar).
 [Unit]
 Description=Clipboard history (cliphist + image-preferring watcher)
 Documentation=https://github.com/sentriz/cliphist
 PartOf=graphical-session.target
 After=graphical-session.target
-Requisite=graphical-session.target
 
 [Service]
 Type=simple
