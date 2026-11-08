@@ -37,6 +37,8 @@ Item {
 
         delegate: ClipboardRow {
             required property int index
+            required property var modelData
+            entry: modelData
             selected: index === root.selectedIndex
             onActivated: id => root.activated(id)
             onDeleteRequested: id => root.deleteRequested(id)
