@@ -1,0 +1,163 @@
+/* ══════════════════════════════════════════════════════════════
+   Achiri · Índices (consume variables de wallust.css)
+   Solo afecta a notas con cssclasses: achiri-index
+   ══════════════════════════════════════════════════════════════ */
+
+/* Colores por tipo */
+.achiri-index .callout[data-callout="note"]    { --callout-color: var(--wl-c4-rgb, 69,133,136); }
+.achiri-index .callout[data-callout="tip"]     { --callout-color: var(--wl-c2-rgb, 152,151,26); }
+.achiri-index .callout[data-callout="warning"] { --callout-color: var(--wl-c3-rgb, 215,153,33); }
+.achiri-index .callout[data-callout="example"] { --callout-color: var(--wl-c5-rgb, 177,98,134); }
+
+/* Contenedor de columnas invisible */
+.achiri-index .callout[data-callout="multi-column"] {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+/* El tema solo define la rejilla para el dashboard; el índice necesita la suya. */
+.achiri-index .callout[data-callout="multi-column"] > .callout-title {
+    display: none;
+}
+
+.achiri-index .callout[data-callout="multi-column"] > .callout-content {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding: 0;
+}
+
+@media (max-width: 720px) {
+    .achiri-index .callout[data-callout="multi-column"] > .callout-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Tarjetas internas */
+.achiri-index .callout .callout {
+    background: rgba(var(--callout-color), 0.08);
+    border: 1px solid rgba(var(--callout-color), 0.30);
+    border-left: 4px solid rgb(var(--callout-color));
+    border-radius: 10px;
+    transition: border-color .15s ease, background .15s ease;
+}
+
+.achiri-index .callout .callout:hover {
+    background: rgba(var(--callout-color), 0.14);
+    border-color: rgb(var(--callout-color));
+}
+
+.achiri-index .callout .callout .callout-title {
+    color: rgb(var(--callout-color));
+    font-weight: 600;
+}
+
+/* Enlaces y listas dentro de las tarjetas */
+.achiri-index .callout .callout a.internal-link {
+    color: var(--wl-fg, var(--text-normal));
+}
+.achiri-index .callout .callout a.internal-link:hover {
+    color: rgb(var(--callout-color));
+}
+.achiri-index .callout .callout li::marker {
+    color: rgba(var(--callout-color), 0.8);
+}
+
+/* Títulos de sección */
+.achiri-index h2 {
+    color: hsl(var(--accent-hsl, 333, 34%, 54%));
+    border-bottom: 1px solid rgba(var(--wl-fg-rgb, 235,219,178), 0.15);
+    padding-bottom: .25em;
+}
+
+/* ── Apartado especial: Lista de tareas ───────────────────── */
+.achiri-index .callout[data-callout="tareas"] {
+    --callout-color: var(--wl-c11-rgb, 250,189,47);   /* amarillo brillante */
+    --callout-icon: lucide-list-checks;
+
+    background: rgba(var(--callout-color), 0.10);
+    border: 1px solid rgba(var(--callout-color), 0.40);
+    border-left: 6px solid rgb(var(--callout-color));
+    border-radius: 12px;
+    margin: 1rem 0 1.5rem;
+}
+
+.achiri-index .callout[data-callout="tareas"] .callout-title {
+    color: rgb(var(--callout-color));
+    font-size: 1.1em;
+    font-weight: 700;
+}
+
+/* La lista pasa a ser una fila de botones */
+.achiri-index .callout[data-callout="tareas"] ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    list-style: none;
+    padding: 0;
+    margin: .25rem 0 0;
+}
+
+.achiri-index .callout[data-callout="tareas"] li {
+    margin: 0;
+    padding: 0;
+}
+
+/* Quita viñetas (también las de Live Preview) */
+.achiri-index .callout[data-callout="tareas"] li::marker,
+.achiri-index .callout[data-callout="tareas"] .list-bullet {
+    display: none;
+    content: "";
+}
+
+/* Cada enlace = un botón */
+.achiri-index .callout[data-callout="tareas"] a.internal-link {
+    display: inline-block;
+    padding: .35em .9em;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--callout-color), 0.5);
+    background: rgba(var(--callout-color), 0.12);
+    color: rgb(var(--callout-color));
+    font-weight: 600;
+    text-decoration: none;
+    transition: background .15s ease, color .15s ease, transform .15s ease;
+}
+
+.achiri-index .callout[data-callout="tareas"] a.internal-link:hover {
+    background: rgb(var(--callout-color));
+    color: var(--achiri-on-accent, #101010);
+    transform: translateY(-2px);
+}
+
+/* ── Multi-column: máximo 2 tarjetas por fila ─────────────── */
+:is(.achiri-dashboard, .achiri-index)
+.callout[data-callout="multi-column"] > .callout-content {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    align-items: stretch;     /* las 2 de cada fila con la misma altura */
+    padding: 0;
+}
+
+/* Tarjetas internas: sin márgenes, el espacio lo da el gap */
+:is(.achiri-dashboard, .achiri-index)
+.callout[data-callout="multi-column"] > .callout-content > .callout {
+    margin: 0 !important;
+    min-width: 0;
+}
+
+/* Elementos vacíos que el plugin o la línea ">" puedan generar
+   (si no se ocultan, ocupan una celda del grid) */
+:is(.achiri-dashboard, .achiri-index)
+.callout[data-callout="multi-column"] > .callout-content > :not(.callout) {
+    display: none;
+}
+
+/* En pantallas angostas: 1 por fila */
+@media (max-width: 700px) {
+    :is(.achiri-dashboard, .achiri-index)
+    .callout[data-callout="multi-column"] > .callout-content {
+        grid-template-columns: 1fr;
+    }
+}

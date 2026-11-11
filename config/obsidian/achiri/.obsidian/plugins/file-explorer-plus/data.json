@@ -73,6 +73,13 @@
         "type": "FILES",
         "pattern": "20_Proyectos/Indice_Proyectos.md",
         "patternType": "STRICT"
+      },
+      {
+        "name": "",
+        "active": true,
+        "type": "FILES",
+        "pattern": "20_Proyectos/EarnIt/Indice EarnIt.md",
+        "patternType": "STRICT"
       }
     ],
     "frontMatter": [

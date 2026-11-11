@@ -2,7 +2,9 @@
   "theme": "obsidian",
   "cssTheme": "Achiri",
   "enabledCssSnippets": [
-    "wallust"
+    "wallust",
+    "achiri-dashboard",
+    "achiri-index"
   ],
   "baseFontSize": 16,
   "textFontFamily": "Noto Sans",

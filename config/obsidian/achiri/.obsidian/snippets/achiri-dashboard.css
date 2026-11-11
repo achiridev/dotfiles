@@ -1,0 +1,133 @@
+/* ══════════════════════════════════════════════════════════════
+   Achiri · Dashboard (consume variables de wallust.css)
+   Solo afecta a notas con cssclasses: achiri-dashboard
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 1. Mapa tipo de callout → color de Wallust ──────────────
+   Cambia el número cN si quieres otro color. Los valores tras la
+   coma son respaldo por si wallust.css no está activo. */
+.achiri-dashboard {
+    --card-note:    var(--wl-c4-rgb,  69,133,136);   /* azul    */
+    --card-tip:     var(--wl-c2-rgb, 152,151,26);    /* verde   */
+    --card-warning: var(--wl-c3-rgb, 215,153,33);    /* amarillo*/
+    --card-example: var(--wl-c5-rgb, 177,98,134);    /* magenta */
+    --card-info:    var(--wl-c12-rgb,131,165,152);   /* celeste */
+    --card-success: var(--wl-c6-rgb, 104,157,106);   /* aqua    */
+    --card-danger:  var(--wl-c1-rgb, 204,36,29);     /* rojo    */
+    --card-quote:   var(--wl-c8-rgb, 146,131,116);   /* gris    */
+}
+
+.achiri-dashboard .callout[data-callout="note"]    { --callout-color: var(--card-note); }
+.achiri-dashboard .callout[data-callout="tip"]     { --callout-color: var(--card-tip); }
+.achiri-dashboard .callout[data-callout="warning"] { --callout-color: var(--card-warning); }
+.achiri-dashboard .callout[data-callout="example"] { --callout-color: var(--card-example); }
+.achiri-dashboard .callout[data-callout="info"]    { --callout-color: var(--card-info); }
+.achiri-dashboard .callout[data-callout="success"] { --callout-color: var(--card-success); }
+.achiri-dashboard .callout[data-callout="danger"]  { --callout-color: var(--card-danger); }
+.achiri-dashboard .callout[data-callout="quote"]   { --callout-color: var(--card-quote); }
+
+/* ── 2. Contenedor multi-column invisible ─────────────────── */
+.achiri-dashboard .callout[data-callout="multi-column"] {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+/* ── 3. Estilo de las tarjetas (solo las internas) ────────── */
+/* Se usa la misma cadena que el tema Achiri (sección 12) + `body`
+   para ganar en especificidad y que el snippet mande sobre el tema. */
+body .achiri-dashboard .callout[data-callout="multi-column"] > .callout-content > .callout {
+    position: relative;               /* ancla del enlace estirado */
+    cursor: pointer;
+    background: rgba(var(--callout-color), 0.10);
+    border: 1px solid rgba(var(--callout-color), 0.35);
+    border-left: 4px solid rgb(var(--callout-color));
+    border-radius: 10px;
+    transition: transform .15s ease, box-shadow .15s ease,
+    background .15s ease, border-color .15s ease;
+}
+
+body .achiri-dashboard .callout[data-callout="multi-column"] > .callout-content > .callout .callout-title {
+    color: rgb(var(--callout-color));
+    font-weight: 600;
+}
+
+body .achiri-dashboard .callout[data-callout="multi-column"] > .callout-content > .callout .callout-content {
+    color: var(--wl-fg, var(--text-normal));
+}
+
+/* ── 4. Toda la tarjeta clickeable (stretched link) ───────── */
+body .achiri-dashboard .callout[data-callout="multi-column"] > .callout-content > .callout a.internal-link {
+    color: rgb(var(--callout-color));
+    text-decoration: none;
+    font-weight: 600;
+}
+
+body .achiri-dashboard .callout[data-callout="multi-column"] > .callout-content > .callout a.internal-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+
+/* ── 5. Hover ─────────────────────────────────────────────── */
+body .achiri-dashboard .callout[data-callout="multi-column"] > .callout-content > .callout:hover {
+    transform: translateY(-3px);
+    background: rgba(var(--callout-color), 0.18);
+    border-color: rgb(var(--callout-color));
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .35),
+    0 0 0 1px rgba(var(--callout-color), 0.4);
+}
+
+/* ── 6. Tarjeta extra ──────────── */
+.achiri-dashboard .callout[data-callout="destacado"] {
+    background: hsla(var(--accent-hsl), 0.12);
+    border-left: 4px solid hsl(var(--accent-hsl));
+}
+.achiri-dashboard .callout[data-callout="destacado"] .callout-title,
+.achiri-dashboard .callout[data-callout="destacado"] a.internal-link {
+    color: hsl(var(--accent-hsl));
+}
+
+/* ── 7. Ejemplo de tipos propios (para tus nuevas tarjetas) ──────────── */
+.achiri-dashboard .callout[data-callout="biblioteca"] {
+    --callout-color: var(--wl-c13-rgb, 211,134,155);
+    --callout-icon: lucide-library;
+}
+
+.achiri-dashboard .callout[data-callout="miproyecto"] {
+    --callout-color: var(--wl-c10-rgb);
+    --callout-icon: lucide-rocket;
+}
+
+/* ── Multi-column: máximo 2 tarjetas por fila ─────────────── */
+:is(.achiri-dashboard, .achiri-index)
+.callout[data-callout="multi-column"] > .callout-content {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    align-items: stretch;     /* las 2 de cada fila con la misma altura */
+    padding: 0;
+}
+
+/* Tarjetas internas: sin márgenes, el espacio lo da el gap */
+:is(.achiri-dashboard, .achiri-index)
+.callout[data-callout="multi-column"] > .callout-content > .callout {
+    margin: 0 !important;
+    min-width: 0;
+}
+
+/* Elementos vacíos que el plugin o la línea ">" puedan generar
+   (si no se ocultan, ocupan una celda del grid) */
+:is(.achiri-dashboard, .achiri-index)
+.callout[data-callout="multi-column"] > .callout-content > :not(.callout) {
+    display: none;
+}
+
+/* En pantallas angostas: 1 por fila */
+@media (max-width: 700px) {
+    :is(.achiri-dashboard, .achiri-index)
+    .callout[data-callout="multi-column"] > .callout-content {
+        grid-template-columns: 1fr;
+    }
+}
